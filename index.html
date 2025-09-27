@@ -1,20 +1,29 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <meta
-      http-equiv="X-Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <title>Hello from Electron renderer!</title>
-  </head>
-  <body>
-    <h1>Hello from Electron renderer!</h1>
-    <p>👋</p>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline';">
+  <title>SQLite Electron App</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .user-item { padding: 10px; border: 1px solid #ccc; margin: 5px 0; }
+    .form-group { margin: 10px 0; }
+    input, button { padding: 8px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>User Management</h1>
+  
+  <div class="form-group">
+    <input type="text" id="nameInput" placeholder="Name" required>
+    <input type="email" id="emailInput" placeholder="Email" required>
+    <button id="addUserBtn">Add User</button>
+    <button id="refreshBtn">Refresh</button>
+  </div>
+  
+  <div id="users"></div>
+  <div id="status"></div>
+
+  <script src="renderer.js"></script>
+</body>
 </html>
