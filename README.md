@@ -63,6 +63,7 @@ npm run preview
 ## Features (UI Only - No Functionality Yet)
 
 - **Electron Desktop App**: Native desktop application for macOS, Windows, and Linux
+- **Navigation Sidebar**: 240px fixed sidebar with Search, Home, All Documents, Resources, and Calendar
 - **Recently Opened Documents**: Quick access to your most recent files
 - **Progress Dashboard**: Visual representation of interview progress with circular chart
 - **Calendar Widget**: Today's scheduled events with color-coded priorities
@@ -75,11 +76,14 @@ npm run preview
 ```
 src/
 ├── components/
+│   ├── Sidebar.tsx            # 240px navigation sidebar
 │   ├── DocumentCard.tsx       # Individual document card component
 │   ├── RecentlyOpened.tsx     # Recently opened documents section
 │   ├── ProgressChart.tsx      # Circular progress chart widget
 │   ├── CalendarWidget.tsx     # Calendar events widget
 │   └── DocumentGrid.tsx       # Main documents grid with search
+├── hooks/
+│   └── useElectron.ts         # Hook to detect Electron environment
 ├── types.ts                   # TypeScript type definitions
 ├── electron.d.ts              # Electron API type definitions
 ├── App.tsx                    # Main application component

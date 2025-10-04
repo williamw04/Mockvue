@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import Sidebar from './components/Sidebar';
 import RecentlyOpened from './components/RecentlyOpened';
 import ProgressChart from './components/ProgressChart';
 import CalendarWidget from './components/CalendarWidget';
@@ -85,6 +86,7 @@ const allDocuments: Document[] = [
 const App: React.FC = () => {
   const totalWords = allDocuments.reduce((sum, doc) => sum + doc.wordCount, 0);
   const { isElectron } = useElectron();
+  const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
     if (isElectron) {
@@ -96,21 +98,33 @@ const App: React.FC = () => {
     }
   }, [isElectron]);
 
+  const handleNavigation = (section: string) => {
+    setActiveSection(section);
+    console.log('Navigating to:', section);
+    // TODO: Implement navigation logic
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Recently Opened */}
-        <RecentlyOpened documents={recentDocuments} />
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar onNavigate={handleNavigation} />
 
-        {/* Progress and Calendar Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <ProgressChart stats={progressStats} title="Interview Progress" />
-          <CalendarWidget events={calendarEvents} date="1/5" />
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Recently Opened */}
+          <RecentlyOpened documents={recentDocuments} />
+
+          {/* Progress and Calendar Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <ProgressChart stats={progressStats} title="Interview Progress" />
+            <CalendarWidget events={calendarEvents} date="1/5" />
+          </div>
+
+          {/* Documents Grid */}
+          <DocumentGrid documents={allDocuments} totalWords={totalWords} />
         </div>
-
-        {/* Documents Grid */}
-        <DocumentGrid documents={allDocuments} totalWords={totalWords} />
-      </div>
+      </main>
     </div>
   );
 };

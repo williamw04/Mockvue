@@ -5,6 +5,7 @@
     "lib": ["ES2020"],
     "moduleResolution": "node",
     "outDir": "dist-electron",
+    "outFile": null,
     "rootDir": "electron",
     "strict": true,
     "esModuleInterop": true,
@@ -13,6 +14,11 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["electron/**/*"],
-  "exclude": ["node_modules", "dist", "dist-electron"]
+  "exclude": ["node_modules", "dist", "dist-electron"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
 }
 
