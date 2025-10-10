@@ -33,5 +33,3 @@ release
 out/
 build/electron/
 
-# Package Lock
-package-lock.json

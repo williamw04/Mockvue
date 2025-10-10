@@ -104,11 +104,23 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
           <div className="absolute top-full left-4 right-4 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
             {/* User Info Section */}
             <div className="p-4 text-center border-b border-gray-100">
-              <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-semibold">
-                W
+              <div className="relative w-16 h-16 mx-auto mb-3 group cursor-pointer">
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-semibold">
+                  W
+                </div>
+                {/* Pencil icon on hover */}
+                <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center">
+                  <svg 
+                    className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
               </div>
-              <p className="text-sm font-semibold text-gray-900 mb-1">William Wu</p>
-              <button className="text-xs text-gray-500 hover:text-gray-700">Change photo</button>
+              <p className="text-sm font-semibold text-gray-900">William Wu</p>
             </div>
 
             {/* Menu Options */}
@@ -128,19 +140,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
                 <span className="text-sm text-gray-700">Settings</span>
-              </button>
-            </div>
-
-            {/* Community Profile Section */}
-            <div className="border-t border-gray-100 p-3">
-              <button className="w-full flex items-start gap-3 px-2 py-2 hover:bg-gray-50 rounded-lg transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-                  W
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="text-xs font-medium text-gray-900">Create a community profile</p>
-                  <p className="text-xs text-gray-500">williamwu120@gmail.com</p>
-                </div>
               </button>
             </div>
 
