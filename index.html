@@ -1,29 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline';">
-  <title>SQLite Electron App</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .user-item { padding: 10px; border: 1px solid #ccc; margin: 5px 0; }
-    .form-group { margin: 10px 0; }
-    input, button { padding: 8px; margin: 5px; }
-  </style>
-</head>
-<body>
-  <h1>User Management</h1>
-  
-  <div class="form-group">
-    <input type="text" id="nameInput" placeholder="Name" required>
-    <input type="email" id="emailInput" placeholder="Email" required>
-    <button id="addUserBtn">Add User</button>
-    <button id="refreshBtn">Refresh</button>
-  </div>
-  
-  <div id="users"></div>
-  <div id="status"></div>
-
-  <script src="renderer.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mockvue - Document Manager</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
+
