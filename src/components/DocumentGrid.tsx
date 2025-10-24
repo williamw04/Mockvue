@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Document } from '../types';
 import DocumentCard from './DocumentCard';
 
@@ -17,12 +18,14 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({ documents, totalWords }) =>
             {documents.length} documents • {totalWords.toLocaleString()} total words
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Document
-        </button>
+        <Link to="/document">
+          <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Document
+          </button>
+        </Link>
       </div>
 
       <div className="flex items-center gap-4 mb-6">

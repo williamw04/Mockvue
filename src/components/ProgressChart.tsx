@@ -1,8 +1,5 @@
 import React from 'react';
 import { ProgressStats } from '../types';
-import { Card, CardContent } from './ui/card';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Progress } from './ui/progress';
 
 interface ProgressChartProps {
   stats: ProgressStats;
@@ -10,93 +7,91 @@ interface ProgressChartProps {
 }
 
 const ProgressChart: React.FC<ProgressChartProps> = ({ stats, title }) => {
-  const chartData = [
-    { name: 'Completed', value: stats.completed, color: '#10b981' },
-    { name: 'In Progress', value: stats.inProgress, color: '#f59e0b' },
-    { name: 'Scheduled', value: stats.scheduled, color: '#3b82f6' },
-    { name: 'Pending', value: stats.pending, color: '#d1d5db' }
-  ];
-
-  const total = chartData.reduce((sum, item) => sum + item.value, 0);
-  const completedPercentage = total > 0 ? Math.round((stats.completed / total) * 100) : 0;
+  const total = stats.completed + stats.inProgress + stats.scheduled + stats.pending;
   
   return (
-    <Card className="h-full">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+      <div className="flex items-center gap-2 mb-6">
+        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+      </div>
+      
+      <div className="flex flex-col items-center">
+        <div className="relative w-40 h-40 mb-6">
+          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+            {/* Background circle */}
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="none"
+              stroke="#e5e7eb"
+              strokeWidth="8"
+            />
+            {/* Completed (green) */}
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="none"
+              stroke="#10b981"
+              strokeWidth="8"
+              strokeDasharray={`${(stats.completed / total) * 251.2} 251.2`}
+              strokeLinecap="round"
+            />
+            {/* In Progress (blue) */}
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="none"
+              stroke="#3b82f6"
+              strokeWidth="8"
+              strokeDasharray={`${(stats.inProgress / total) * 251.2} 251.2`}
+              strokeDashoffset={-((stats.completed / total) * 251.2)}
+              strokeLinecap="round"
+            />
+            {/* Scheduled (orange) */}
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="none"
+              stroke="#f59e0b"
+              strokeWidth="8"
+              strokeDasharray={`${(stats.scheduled / total) * 251.2} 251.2`}
+              strokeDashoffset={-(((stats.completed + stats.inProgress) / total) * 251.2)}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-4xl font-bold text-gray-900">{stats.completed}</div>
+            <div className="text-xs text-gray-500">Completed</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-4 gap-4 w-full text-center">
           <div>
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <p className="text-sm text-gray-500">Track your progress</p>
+            <div className="text-xl font-bold text-gray-900">{stats.completed}</div>
+            <div className="text-xs text-gray-500">Completed</div>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-emerald-600">{completedPercentage}%</div>
-            <p className="text-xs text-gray-500">Completed</p>
+          <div>
+            <div className="text-xl font-bold text-gray-900">{stats.inProgress}</div>
+            <div className="text-xs text-gray-500">In Progress</div>
           </div>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="flex-shrink-0">
-            <div className="relative w-24 h-24">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={28}
-                    outerRadius={48}
-                    paddingAngle={1}
-                    dataKey="value"
-                    startAngle={90}
-                    endAngle={450}
-                    animationBegin={0}
-                    animationDuration={800}
-                    animationEasing="ease-out"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-lg font-bold">{stats.completed}</div>
-                  <div className="text-xs text-gray-500">Done</div>
-                </div>
-              </div>
-            </div>
+          <div>
+            <div className="text-xl font-bold text-gray-900">{stats.scheduled}</div>
+            <div className="text-xs text-gray-500">Scheduled</div>
           </div>
-
-          <div className="flex-1 space-y-3">
-            {chartData.map((item, index) => (
-              <div 
-                key={index} 
-                className="flex items-center justify-between opacity-0 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
-              >
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300 hover:scale-125" 
-                    style={{ backgroundColor: item.color }}
-                  ></div>
-                  <span className="text-sm">{item.name}</span>
-                </div>
-                <span className="text-sm font-medium">{item.value}</span>
-              </div>
-            ))}
+          <div>
+            <div className="text-xl font-bold text-gray-900">{stats.pending}</div>
+            <div className="text-xs text-gray-500">Pending</div>
           </div>
         </div>
-
-        <div className="mt-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-gray-500">Overall Progress</span>
-            <span className="text-sm font-medium">{stats.completed}/{total}</span>
-          </div>
-          <Progress value={completedPercentage} className="h-2" />
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
