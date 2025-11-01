@@ -40,7 +40,6 @@ export class ElectronFileService implements IFileService {
     }
 
     try {
-      const extension = filename?.split('.').pop() || 'txt';
       const filters = [
         { name: 'Text Files', extensions: ['txt'] },
         { name: 'HTML Files', extensions: ['html'] },

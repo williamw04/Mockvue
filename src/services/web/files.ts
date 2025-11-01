@@ -18,7 +18,7 @@ export class WebFileService implements IFileService {
     // Try modern File System Access API first
     if (this.hasFileSystemAccess()) {
       try {
-        const pickerOpts: OpenFilePickerOptions = {
+        const pickerOpts: any = {
           multiple: options?.multiple || false,
           types: options?.accept ? [{
             description: 'Documents',

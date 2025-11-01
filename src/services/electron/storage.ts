@@ -38,24 +38,10 @@ export class ElectronStorageService implements IStorageService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
-    const documentData = {
-      ...data,
-      id: crypto.randomUUID(),
-      wordCount: data.content ? data.content.split(/\s+/).length : 0,
-      lastModified: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      tags: data.tags || [],
-    };
 
     try {
-      const result = await window.electronAPI.createDocument(documentData);
-      
-      if (result.success) {
-        return documentData as Document;
-      }
-      
-      throw new Error('Failed to create document');
+      const result = await window.electronAPI.createDocument(data);
+      return result;
     } catch (error) {
       console.error('Error creating document:', error);
       throw error;
@@ -68,26 +54,8 @@ export class ElectronStorageService implements IStorageService {
     }
     
     try {
-      const existingDoc = await this.getDocument(id);
-      
-      if (!existingDoc) {
-        throw new Error(`Document with id ${id} not found`);
-      }
-      
-      const updatedData = {
-        ...existingDoc,
-        ...data,
-        wordCount: data.content ? data.content.split(/\s+/).length : existingDoc.wordCount,
-        lastModified: new Date().toISOString(),
-      };
-
-      const result = await window.electronAPI.updateDocument(id, updatedData);
-      
-      if (result.success) {
-        return updatedData as Document;
-      }
-      
-      throw new Error('Failed to update document');
+      const result = await window.electronAPI.updateDocument(id, data);
+      return result;
     } catch (error) {
       console.error('Error updating document:', error);
       throw error;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import RecentlyOpened from './RecentlyOpened';
 import ProgressChart from './ProgressChart';
@@ -44,7 +44,6 @@ const formatRelativeTime = (isoDate: string): string => {
 export function Dashboard() {
   const storage = useStorage();
   const notifications = useNotifications();
-  const [activeSection, setActiveSection] = useState('home');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [recentDocuments, setRecentDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +113,6 @@ export function Dashboard() {
   };
 
   const handleNavigation = (section: string) => {
-    setActiveSection(section);
     console.log('Navigating to:', section);
   };
 

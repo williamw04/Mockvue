@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -47,29 +47,15 @@ export default function MyEditor() {
   useEffect(() => {
     if (!document) return;
 
-    const handleChange = () => {
-      setHasUnsavedChanges(true);
-      
-      // Clear existing timeout
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-      
-      // Set new timeout for auto-save (2 seconds after last change)
-      saveTimeoutRef.current = setTimeout(() => {
-        handleAutoSave();
-      }, 2000);
-    };
-
-    // Note: You might need to add BlockNote's onChange handler here
-    // editor.onChange(handleChange);
+    // Note: Auto-save can be integrated with BlockNote's onChange
+    // For now, users can manually save
     
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [document, editor]);
+  }, [document]);
 
   const loadDocument = async (docId: string) => {
     try {
@@ -104,11 +90,6 @@ export default function MyEditor() {
     }
   };
 
-  const handleAutoSave = async () => {
-    if (!document || !hasUnsavedChanges) return;
-    await saveDocument(false); // false = don't show notification
-  };
-
   const saveDocument = async (showNotification = true) => {
     if (!document) return;
     
@@ -118,10 +99,6 @@ export default function MyEditor() {
       // Get current editor content
       const blocks = editor.document;
       const content = JSON.stringify(blocks);
-      
-      // Calculate word count
-      const text = blocks.map((block: any) => block.content || '').join(' ');
-      const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
       
       // Update or create document
       if (id) {
