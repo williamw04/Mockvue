@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Document } from '../types';
 
 interface RecentlyOpenedProps {
@@ -6,6 +7,16 @@ interface RecentlyOpenedProps {
 }
 
 const RecentlyOpened: React.FC<RecentlyOpenedProps> = ({ documents }) => {
+  const navigate = useNavigate();
+
+  const handleDocumentClick = (docId: string) => {
+    navigate(`/document/${docId}`);
+  };
+
+  if (documents.length === 0) {
+    return null; // Don't show section if no recent documents
+  }
+
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-4">
@@ -18,7 +29,8 @@ const RecentlyOpened: React.FC<RecentlyOpenedProps> = ({ documents }) => {
         {documents.map((doc) => (
           <div
             key={doc.id}
-            className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
+            onClick={() => handleDocumentClick(doc.id)}
+            className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-all hover:scale-105 cursor-pointer border border-gray-100"
           >
             <div className="flex items-start gap-2 mb-2">
               <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

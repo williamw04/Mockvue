@@ -5,18 +5,10 @@ import ProgressChart from './ProgressChart';
 import CalendarWidget from './CalendarWidget';
 import DocumentGrid from './DocumentGrid';
 import { Document, CalendarEvent, ProgressStats } from '../types';
-import { useElectron } from '../hooks/useElectron';
+import { useStorage, useNotifications } from '../services';
+import { getPlatformInfo } from '../utils/platform';
 
-// Mock data
-const recentDocuments: Document[] = [
-  { id: '1', title: 'Project Planning Meeting', description: '', tags: [], wordCount: 0, lastModified: '2 hours ago' },
-  { id: '2', title: 'Weekend Recipe Ideas', description: '', tags: [], wordCount: 0, lastModified: '1 day ago' },
-  { id: '3', title: 'Book Club Discussion: The Library', description: '', tags: [], wordCount: 0, lastModified: '3 days ago' },
-  { id: '4', title: 'Travel Itinerary - Japan', description: '', tags: [], wordCount: 0, lastModified: '1 week ago' },
-  { id: '5', title: 'Learning Notes: React', description: '', tags: [], wordCount: 0, lastModified: '1 week ago' },
-  { id: '6', title: 'Garden Planning for Spring', description: '', tags: [], wordCount: 0, lastModified: '2 weeks ago' },
-];
-
+// Mock data for widgets (can be made dynamic later)
 const progressStats: ProgressStats = {
   completed: 24,
   inProgress: 8,
@@ -32,77 +24,150 @@ const calendarEvents: CalendarEvent[] = [
   { id: '5', time: '4:30 PM', title: 'Prepare PM interview questions', type: 'success' },
 ];
 
-const allDocuments: Document[] = [
-  {
-    id: 'd1',
-    title: 'Project Planning Meeting',
-    description: 'Discussed the upcoming product launch timeline and key milestones. The team agreed on...',
-    tags: ['work', 'meetings', 'planning'],
-    wordCount: 1247,
-    lastModified: '2 hours ago',
-  },
-  {
-    id: 'd2',
-    title: 'Weekend Recipe Ideas',
-    description: 'Collecting some delicious recipes to try this weekend. Found an interesting pasta...',
-    tags: ['personal', 'cooking', 'recipes'],
-    wordCount: 892,
-    lastModified: '1 day ago',
-  },
-  {
-    id: 'd3',
-    title: 'Book Club Discussion: The Library',
-    description: "Notes from our book club discussion about Matt Haig's 'The Midnight Library'. Key...",
-    tags: ['books', 'discussion', 'philosophy'],
-    wordCount: 1560,
-    lastModified: '3 days ago',
-  },
-  {
-    id: 'd4',
-    title: 'Travel Itinerary - Japan',
-    description: 'Planning our two-week trip to Japan in the spring. Day 1-3: Tokyo (Shibuya,...',
-    tags: ['travel', 'japan', 'itinerary'],
-    wordCount: 2134,
-    lastModified: '1 week ago',
-  },
-  {
-    id: 'd5',
-    title: 'Learning Notes: React',
-    description: 'Deep dive into React hooks and their use cases, useState for state management, useEffect...',
-    tags: ['programming', 'react', 'learning'],
-    wordCount: 587,
-    lastModified: '1 week ago',
-  },
-  {
-    id: 'd6',
-    title: 'Garden Planning for Spring',
-    description: 'Ideas for the spring garden layout. Want to plant tomatoes, basil, and peppers in the sunny...',
-    tags: ['gardening', 'planning', 'spring'],
-    wordCount: 743,
-    lastModified: '2 weeks ago',
-  },
-];
+// Helper function to format relative time
+const formatRelativeTime = (isoDate: string): string => {
+  const date = new Date(isoDate);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  const diffWeeks = Math.floor(diffMs / 604800000);
+
+  if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
+  if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+  if (diffDays < 7) return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+  if (diffWeeks < 4) return `${diffWeeks} ${diffWeeks === 1 ? 'week' : 'weeks'} ago`;
+  return date.toLocaleDateString();
+};
 
 export function Dashboard() {
-  const totalWords = allDocuments.reduce((sum, doc) => sum + doc.wordCount, 0);
-  const { isElectron } = useElectron();
+  const storage = useStorage();
+  const notifications = useNotifications();
   const [activeSection, setActiveSection] = useState('home');
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [recentDocuments, setRecentDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Load documents on mount
   useEffect(() => {
-    if (isElectron) {
-      console.log('Running in Electron!');
-      // TODO: Load real data from Electron API
-      // const documents = await window.electronAPI?.getDocuments();
-    } else {
-      console.log('Running in browser');
+    loadDocuments();
+    
+    // Log platform info
+    const platformInfo = getPlatformInfo();
+    console.log('Running on:', platformInfo.platform, '|', platformInfo.os);
+  }, []);
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const docs = await storage.getDocuments();
+      
+      // Sort by last modified (most recent first)
+      const sortedDocs = [...docs].sort((a, b) => 
+        new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+      );
+      
+      setDocuments(sortedDocs);
+      setRecentDocuments(sortedDocs.slice(0, 6)); // Get 6 most recent
+      
+      // If no documents exist, create some sample documents
+      if (docs.length === 0) {
+        await createSampleDocuments();
+      }
+    } catch (err) {
+      console.error('Error loading documents:', err);
+      setError('Failed to load documents');
+      await notifications.showError('Failed to load documents');
+    } finally {
+      setLoading(false);
     }
-  }, [isElectron]);
+  };
+
+  const createSampleDocuments = async () => {
+    const sampleDocs = [
+      {
+        title: 'Welcome to Mockvue',
+        description: 'Get started with your first document. This app works both as a desktop app and in your browser!',
+        content: 'Welcome to Mockvue! This is a powerful document editor that works seamlessly across platforms.',
+        tags: ['welcome', 'getting-started'],
+      },
+      {
+        title: 'Project Planning',
+        description: 'Ideas and notes for the upcoming project launch.',
+        content: 'Project timeline and key milestones...',
+        tags: ['work', 'planning'],
+      },
+    ];
+
+    try {
+      for (const doc of sampleDocs) {
+        await storage.createDocument(doc);
+      }
+      await loadDocuments(); // Reload to show new documents
+      await notifications.showSuccess('Sample documents created!');
+    } catch (err) {
+      console.error('Error creating sample documents:', err);
+    }
+  };
 
   const handleNavigation = (section: string) => {
     setActiveSection(section);
     console.log('Navigating to:', section);
-    // TODO: Implement navigation logic
   };
+
+  const handleDeleteDocument = async (id: string) => {
+    try {
+      await storage.deleteDocument(id);
+      await notifications.showSuccess('Document deleted');
+      await loadDocuments();
+    } catch (err) {
+      console.error('Error deleting document:', err);
+      await notifications.showError('Failed to delete document');
+    }
+  };
+
+  // Format documents with relative time
+  const formattedDocuments = documents.map(doc => ({
+    ...doc,
+    lastModified: formatRelativeTime(doc.lastModified),
+  }));
+
+  const formattedRecentDocuments = recentDocuments.map(doc => ({
+    ...doc,
+    lastModified: formatRelativeTime(doc.lastModified),
+  }));
+
+  const totalWords = documents.reduce((sum, doc) => sum + doc.wordCount, 0);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-50 items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading documents...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-50 items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={loadDocuments}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -113,7 +178,7 @@ export function Dashboard() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Recently Opened */}
-          <RecentlyOpened documents={recentDocuments} />
+          <RecentlyOpened documents={formattedRecentDocuments} />
 
           {/* Progress and Calendar Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -122,7 +187,12 @@ export function Dashboard() {
           </div>
 
           {/* Documents Grid */}
-          <DocumentGrid documents={allDocuments} totalWords={totalWords} />
+          <DocumentGrid 
+            documents={formattedDocuments} 
+            totalWords={totalWords}
+            onDelete={handleDeleteDocument}
+            onRefresh={loadDocuments}
+          />
         </div>
       </main>
     </div>

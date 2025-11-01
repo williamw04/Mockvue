@@ -8,25 +8,56 @@ import type { IFileService } from '../interfaces';
 
 export class ElectronFileService implements IFileService {
   async pickFile(options?: FilePickerOptions): Promise<File | File[] | null> {
-    // Note: In a full implementation, you would add IPC handlers in main.ts
-    // for dialog.showOpenDialog
-    console.warn('File picker not yet fully implemented for Electron');
-    console.log('Options:', options);
-    
-    // For now, return null. This would be implemented with:
-    // return await window.electronAPI.openFileDialog(options);
-    return null;
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const filters = options?.accept
+        ? [{ name: 'Documents', extensions: options.accept.map(ext => ext.replace('.', '')) }]
+        : [{ name: 'All Files', extensions: ['*'] }];
+
+      const result = await window.electronAPI.showOpenDialog({ filters });
+
+      if (result.canceled || !result.content || !result.fileName) {
+        return null;
+      }
+
+      // Create a File object from the result
+      const blob = new Blob([result.content], { type: 'text/plain' });
+      const file = new File([blob], result.fileName, { type: 'text/plain' });
+
+      return options?.multiple ? [file] : file;
+    } catch (error) {
+      console.error('Error picking file:', error);
+      return null;
+    }
   }
 
   async saveFile(content: string, filename?: string): Promise<boolean> {
-    // Note: In a full implementation, you would add IPC handlers in main.ts
-    // for dialog.showSaveDialog and fs.writeFile
-    console.warn('Save file not yet fully implemented for Electron');
-    console.log('Saving:', filename, 'Content length:', content.length);
-    
-    // For now, return true. This would be implemented with:
-    // return await window.electronAPI.saveFileDialog(content, filename);
-    return true;
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const extension = filename?.split('.').pop() || 'txt';
+      const filters = [
+        { name: 'Text Files', extensions: ['txt'] },
+        { name: 'HTML Files', extensions: ['html'] },
+        { name: 'JSON Files', extensions: ['json'] },
+        { name: 'All Files', extensions: ['*'] },
+      ];
+
+      const result = await window.electronAPI.showSaveDialog(content, {
+        defaultPath: filename || 'document.txt',
+        filters,
+      });
+
+      return !result.canceled;
+    } catch (error) {
+      console.error('Error saving file:', error);
+      return false;
+    }
   }
 
   async readFile(file: File | string): Promise<string> {

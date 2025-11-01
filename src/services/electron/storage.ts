@@ -22,9 +22,12 @@ export class ElectronStorageService implements IStorageService {
   }
 
   async getDocument(id: string): Promise<Document | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+    
     try {
-      const documents = await this.getDocuments();
-      return documents.find(doc => doc.id === id) || null;
+      return await window.electronAPI.getDocument(id);
     } catch (error) {
       console.error('Error getting document:', error);
       return null;
@@ -109,16 +112,12 @@ export class ElectronStorageService implements IStorageService {
   }
 
   async searchDocuments(query: string): Promise<Document[]> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+    
     try {
-      const documents = await this.getDocuments();
-      const lowerQuery = query.toLowerCase();
-      
-      return documents.filter(doc => 
-        doc.title.toLowerCase().includes(lowerQuery) ||
-        doc.description?.toLowerCase().includes(lowerQuery) ||
-        doc.content?.toLowerCase().includes(lowerQuery) ||
-        doc.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
-      );
+      return await window.electronAPI.searchDocuments(query);
     } catch (error) {
       console.error('Error searching documents:', error);
       return [];
