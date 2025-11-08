@@ -1,6 +1,6 @@
 import { HashRouter, BrowserRouter, Routes, Route } from "react-router-dom";
 import { Dashboard } from "./components/Dashboard";
-import MyEditor from "./components/MyEditor";
+import DocumentPage from "./components/DocumentPage";
 import { isElectron } from "./utils/platform";
 
 // Use HashRouter for Electron, BrowserRouter for Web
@@ -11,8 +11,8 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/document" element={<MyEditor />} />
-        <Route path="/document/:id" element={<MyEditor />} />
+        <Route path="/document" element={<DocumentPage />} />
+        <Route path="/document/:id" element={<DocumentPage />} />
       </Routes>
     </Router>
   );
