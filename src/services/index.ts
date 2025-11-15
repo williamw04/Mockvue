@@ -8,6 +8,7 @@ export type {
   IStorageService,
   IFileService,
   INotificationService,
+  IAgenticService,
   IAppServices,
 } from './interfaces';
 
@@ -21,6 +22,7 @@ export {
   useStorage,
   useFiles,
   useNotifications,
+  useAgentic,
 } from './context';
 
 // Individual service implementations (for advanced usage)
@@ -28,11 +30,13 @@ export {
   ElectronStorageService,
   ElectronFileService,
   ElectronNotificationService,
+  ElectronAgenticService,
 } from './electron';
 
 export {
   WebStorageService,
   WebFileService,
   WebNotificationService,
+  WebAgenticService,
 } from './web';
 

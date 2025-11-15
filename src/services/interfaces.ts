@@ -108,11 +108,38 @@ export interface INotificationService {
 }
 
 /**
+ * AI/Agentic service interface
+ * Handles AI-powered features like brainstorming, feedback, and drafting
+ */
+export interface IAgenticService {
+  /**
+   * Generate brainstorming ideas
+   */
+  brainstorm(context: string, questionText?: string): Promise<string[]>;
+  
+  /**
+   * Provide feedback on selected response
+   */
+  provideFeedback(response: string, context?: string): Promise<string>;
+  
+  /**
+   * Generate a draft based on context and responses
+   */
+  generateDraft(context: string, responses?: string[]): Promise<string>;
+  
+  /**
+   * Check if the service is available
+   */
+  isAvailable(): boolean;
+}
+
+/**
  * Combined services interface
  */
 export interface IAppServices {
   storage: IStorageService;
   files: IFileService;
   notifications: INotificationService;
+  agentic: IAgenticService;
 }
 

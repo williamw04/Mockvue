@@ -1,0 +1,91 @@
+Add LangGraph agentic system integration demo
+
+This commit adds a complete demonstration of integrating an agentic AI system
+with the document service using custom BlockNote blocks. The implementation
+includes:
+
+FEATURES:
+- Custom BlockNote blocks: Question ❓, Response 💬, Context 📋, Notes 📝
+- Three AI features: Brainstorm 💡, Feedback 📝, Draft ✍️
+- Mock agentic service layer (web & electron)
+- AI Assistant panel with feature selection
+- Response selector for choosing content to analyze
+- Enhanced document page with custom block insertion
+- Dashboard banner promoting AI demo
+
+ARCHITECTURE:
+- IAgenticService interface following app's service pattern
+- WebAgenticService & ElectronAgenticService implementations
+- useAgentic() React hook for component access
+- Custom BlockNote schema extending default blocks
+- Type-safe implementation with TypeScript
+
+COMPONENTS:
+- AIAssistantPanel: Main AI features UI with processing indicators
+- ResponseSelector: Interactive response management and selection
+- DocumentPageWithAI: Enhanced editor with custom blocks and AI panel
+- Updated Dashboard: Prominent AI demo banner and navigation
+
+AI FEATURES:
+1. Brainstorm: Generate creative ideas from document context
+2. Feedback: Provide detailed analysis of selected responses
+3. Draft: Create structured documents from responses and context
+
+MOCK IMPLEMENTATION:
+- Simulates AI processing with realistic delays (1.5-2.5s)
+- Pre-generated varied responses for consistent demo experience
+- No API keys or external services required
+- Architecture ready for real LangGraph integration
+
+DOCUMENTATION:
+- AI_AGENTIC_DEMO.md: Detailed technical documentation
+- DEMO_README.md: Quick start guide for users
+- INTEGRATION_SUMMARY.md: Implementation overview
+- Inline code comments throughout
+
+NEW FILES:
+- src/blocks/schema.tsx
+- src/components/AIAssistantPanel.tsx
+- src/components/ResponseSelector.tsx
+- src/components/DocumentPageWithAI.tsx
+- src/services/web/agentic.ts
+- src/services/electron/agentic.ts
+- AI_AGENTIC_DEMO.md
+- DEMO_README.md
+- INTEGRATION_SUMMARY.md
+
+MODIFIED FILES:
+- src/types.ts (AI types)
+- src/services/interfaces.ts (IAgenticService)
+- src/services/factory.ts (agentic service creation)
+- src/services/context.tsx (useAgentic hook)
+- src/services/index.ts (exports)
+- src/services/web/index.ts (exports)
+- src/services/electron/index.ts (exports)
+- src/App.tsx (AI document routes)
+- src/components/Dashboard.tsx (AI demo banner)
+
+USAGE:
+1. Run: npm run dev
+2. Click "Try AI Demo" on dashboard
+3. Explore sample document with custom blocks
+4. Select responses and use AI features
+5. Insert AI-generated content into document
+
+TECH STACK:
+- BlockNote: Custom block schema
+- React: Component architecture
+- TypeScript: Type safety
+- Service Pattern: Platform abstraction
+- Context API: State management
+
+FUTURE ENHANCEMENTS:
+- Replace mock with real LangGraph agents
+- Add streaming AI responses
+- Implement agent workflows
+- Add user customization options
+
+Branch: agentic-langraph
+Status: Demo Complete ✅
+Ready for testing and extension with real AI services
+

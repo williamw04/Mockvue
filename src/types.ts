@@ -44,3 +44,38 @@ export interface FilePickerOptions {
   suggestedName?: string;
 }
 
+// AI/Agentic System Types
+export type AIFeatureType = 'brainstorm' | 'feedback' | 'draft';
+
+export interface AIRequest {
+  feature: AIFeatureType;
+  context?: string;
+  selectedText?: string;
+  questionText?: string;
+  responses?: string[];
+  additionalContext?: string;
+}
+
+export interface AIResponse {
+  success: boolean;
+  result?: string | string[];
+  error?: string;
+  timestamp: string;
+}
+
+export interface QuestionBlockData {
+  id: string;
+  questionText: string;
+  responses: ResponseBlockData[];
+  context?: string;
+  notes?: string;
+}
+
+export interface ResponseBlockData {
+  id: string;
+  text: string;
+  selected: boolean;
+  aiGenerated: boolean;
+  timestamp: string;
+}
+

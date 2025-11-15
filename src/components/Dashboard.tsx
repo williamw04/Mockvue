@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import RecentlyOpened from './RecentlyOpened';
 import ProgressChart from './ProgressChart';
@@ -42,6 +43,7 @@ const formatRelativeTime = (isoDate: string): string => {
 };
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const storage = useStorage();
   const notifications = useNotifications();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -175,6 +177,51 @@ export function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* AI Feature Banner */}
+          <div className="mb-6 bg-gradient-to-r from-purple-500 via-purple-600 to-blue-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-3xl">🤖</span>
+                  <h3 className="text-2xl font-bold">AI-Powered Documents</h3>
+                  <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-semibold backdrop-blur-sm">
+                    NEW DEMO
+                  </span>
+                </div>
+                <p className="text-purple-100 mb-4 max-w-2xl">
+                  Experience the future of document editing with integrated AI features: Brainstorm ideas, get feedback on responses, and generate structured drafts using custom question blocks.
+                </p>
+                <div className="flex flex-wrap gap-3 text-sm text-purple-100">
+                  <div className="flex items-center gap-2">
+                    <span>💡</span>
+                    <span>Brainstorm</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>📝</span>
+                    <span>Feedback</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>✍️</span>
+                    <span>Draft Generation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>❓</span>
+                    <span>Question Blocks</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/ai-document')}
+                className="ml-4 px-6 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2"
+              >
+                <span>Try AI Demo</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
           {/* Recently Opened */}
           <RecentlyOpened documents={formattedRecentDocuments} />
 
