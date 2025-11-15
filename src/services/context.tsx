@@ -74,3 +74,11 @@ export function useNotifications() {
   return notifications;
 }
 
+/**
+ * Hook to access agent service
+ */
+export function useAgent() {
+  const { agent } = useServices();
+  return agent;
+}
+

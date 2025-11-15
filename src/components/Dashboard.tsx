@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import RecentlyOpened from './RecentlyOpened';
 import ProgressChart from './ProgressChart';
@@ -175,6 +176,26 @@ export function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* AI Assistant Demo Banner */}
+          <Link to="/ai-assistant">
+            <div className="mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02] cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">🤖</div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-1">AI Assistant Demo</h3>
+                    <p className="text-blue-100">
+                      Try the new LangGraph-powered agentic system integration
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold">
+                  Try Now →
+                </div>
+              </div>
+            </div>
+          </Link>
+
           {/* Recently Opened */}
           <RecentlyOpened documents={formattedRecentDocuments} />
 

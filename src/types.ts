@@ -44,3 +44,48 @@ export interface FilePickerOptions {
   suggestedName?: string;
 }
 
+// AI Agent Types
+export type AgentFeatureType = 
+  | 'summarize'
+  | 'rewrite'
+  | 'expand'
+  | 'translate'
+  | 'brainstorm'
+  | 'outline'
+  | 'custom';
+
+export interface AgentTask {
+  id: string;
+  feature: AgentFeatureType;
+  input: string;
+  context?: {
+    documentId?: string;
+    targetLanguage?: string;
+    tone?: string;
+    additionalInstructions?: string;
+  };
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  result?: string;
+  error?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface AgentCapability {
+  feature: AgentFeatureType;
+  name: string;
+  description: string;
+  icon: string;
+  requiresContext?: boolean;
+}
+
+export interface AgentResponse {
+  taskId: string;
+  result: string;
+  metadata?: {
+    tokensUsed?: number;
+    modelUsed?: string;
+    processingTime?: number;
+  };
+}
+

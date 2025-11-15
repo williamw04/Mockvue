@@ -2,7 +2,16 @@
  * Service interfaces for platform abstraction
  */
 
-import type { Document, DocumentData, NotificationOptions, FilePickerOptions } from '../types';
+import type { 
+  Document, 
+  DocumentData, 
+  NotificationOptions, 
+  FilePickerOptions,
+  AgentTask,
+  AgentCapability,
+  AgentResponse,
+  AgentFeatureType
+} from '../types';
 
 /**
  * Storage service interface
@@ -108,11 +117,57 @@ export interface INotificationService {
 }
 
 /**
+ * AI Agent service interface
+ * Handles AI-powered features and agentic workflows
+ */
+export interface IAgentService {
+  /**
+   * Get available agent capabilities
+   */
+  getCapabilities(): AgentCapability[];
+  
+  /**
+   * Execute an agent task
+   */
+  executeTask(
+    feature: AgentFeatureType,
+    input: string,
+    context?: AgentTask['context']
+  ): Promise<AgentResponse>;
+  
+  /**
+   * Get task history
+   */
+  getTaskHistory(): Promise<AgentTask[]>;
+  
+  /**
+   * Get a specific task by ID
+   */
+  getTask(taskId: string): Promise<AgentTask | null>;
+  
+  /**
+   * Cancel a running task
+   */
+  cancelTask(taskId: string): Promise<boolean>;
+  
+  /**
+   * Stream task results (for real-time updates)
+   */
+  streamTask(
+    feature: AgentFeatureType,
+    input: string,
+    context?: AgentTask['context'],
+    onChunk?: (chunk: string) => void
+  ): Promise<AgentResponse>;
+}
+
+/**
  * Combined services interface
  */
 export interface IAppServices {
   storage: IStorageService;
   files: IFileService;
   notifications: INotificationService;
+  agent: IAgentService;
 }
 
