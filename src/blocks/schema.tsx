@@ -277,11 +277,11 @@ export const customSchema = BlockNoteSchema.create({
   blockSpecs: {
     // Include default blocks
     ...defaultBlockSpecs,
-    // Add custom blocks
-    question: QuestionBlock,
-    response: ResponseBlock,
-    context: ContextBlock,
-    notes: NotesBlock,
+    // Add custom blocks - call the functions to get the specs
+    question: QuestionBlock(),
+    response: ResponseBlock(),
+    context: ContextBlock(),
+    notes: NotesBlock(),
   },
 });
 
