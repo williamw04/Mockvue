@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import RecentlyOpened from './RecentlyOpened';
 import ProgressChart from './ProgressChart';
-import CalendarWidget from './CalendarWidget';
+import { DailyTasks } from './DailyTasks';
 import DocumentGrid from './DocumentGrid';
-import { Document, CalendarEvent, ProgressStats } from '../types';
+import { Document, ProgressStats } from '../types';
 import { useStorage, useNotifications } from '../services';
 import { getPlatformInfo } from '../utils/platform';
 
@@ -16,14 +16,6 @@ const progressStats: ProgressStats = {
   scheduled: 12,
   pending: 6,
 };
-
-const calendarEvents: CalendarEvent[] = [
-  { id: '1', time: '9:00 AM', title: 'User interview with Sarah M.', type: 'error' },
-  { id: '2', time: '11:00 AM', title: 'Review interview transcripts', type: 'info' },
-  { id: '3', time: '2:00 PM', title: 'Update research findings', type: 'warning' },
-  { id: '4', time: '3:30 PM', title: "Schedule next week's interviews", type: 'warning' },
-  { id: '5', time: '4:30 PM', title: 'Prepare PM interview questions', type: 'success' },
-];
 
 // Helper function to format relative time
 const formatRelativeTime = (isoDate: string): string => {
@@ -202,7 +194,7 @@ export function Dashboard() {
           {/* Progress and Calendar Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <ProgressChart stats={progressStats} title="Interview Progress" />
-            <CalendarWidget events={calendarEvents} date="1/5" />
+            <DailyTasks />
           </div>
 
           {/* Documents Grid */}
