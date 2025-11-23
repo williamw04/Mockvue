@@ -177,14 +177,14 @@ npm run lint
 
 ## 📚 Documentation
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System design and architecture
-- **[SERVICES_USAGE.md](SERVICES_USAGE.md)** - How to use services
-- **[PHASE_1_COMPLETE.md](PHASE_1_COMPLETE.md)** - Service layer implementation
-- **[PHASE_2_COMPLETE.md](PHASE_2_COMPLETE.md)** - Component migration
-- **[PHASE_3_COMPLETE.md](PHASE_3_COMPLETE.md)** - Electron implementation
-- **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - Testing both platforms
-- **[ELECTRON_TESTING.md](ELECTRON_TESTING.md)** - Electron-specific tests
-- **[MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md)** - Project progress
+- **[ARCHITECTURE.md](docs/guide/ARCHITECTURE.md)** - System design and architecture
+- **[SERVICES_USAGE.md](docs/guide/SERVICES_USAGE.md)** - How to use services
+- **[PHASE_1_COMPLETE.md](docs/ai-feature-summary/PHASE_1_COMPLETE.md)** - Service layer implementation
+- **[PHASE_2_COMPLETE.md](docs/ai-feature-summary/PHASE_2_COMPLETE.md)** - Component migration
+- **[PHASE_3_COMPLETE.md](docs/ai-feature-summary/PHASE_3_COMPLETE.md)** - Electron implementation
+- **[TESTING_GUIDE.md](docs/guide/TESTING_GUIDE.md)** - Testing both platforms
+- **[ELECTRON_TESTING.md](docs/guide/ELECTRON_TESTING.md)** - Electron-specific tests
+- **[MIGRATION_CHECKLIST.md](docs/ai-feature-summary/MIGRATION_CHECKLIST.md)** - Project progress
 
 ## 🧪 Testing
 
@@ -337,7 +337,7 @@ MIT License - feel free to use this project as a template!
 
 - Check documentation in the project
 - Open an issue for bugs
-- Read [TESTING_GUIDE.md](TESTING_GUIDE.md) for help
+- Read [TESTING_GUIDE.md](docs/guide/TESTING_GUIDE.md) for help
 
 ## 🎯 Project Status
 
