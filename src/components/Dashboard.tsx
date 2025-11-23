@@ -227,7 +227,6 @@ export function Dashboard() {
             totalWords={totalWords}
             onDelete={handleDeleteDocument}
             onRefresh={loadDocuments}
-            onSearchClick={() => setIsSearchOpen(true)}
           />
         </div>
       </main>

@@ -3,31 +3,60 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Document } from '../types';
 import DocumentCard from './DocumentCard';
 import { useTheme } from '../services/ThemeContext';
+import { useStorage } from '../services';
+import { LayoutGrid, List } from 'lucide-react';
 
 interface DocumentGridProps {
   documents: Document[];
   totalWords: number;
   onDelete?: (id: string) => void;
   onRefresh?: () => void;
-  onSearchClick?: () => void;
 }
 
 type SortOption = 'recent' | 'alphabetical' | 'wordCount';
+type ViewMode = 'grid' | 'list';
 
 const DocumentGrid: React.FC<DocumentGridProps> = ({ 
   documents, 
   totalWords,
   onDelete,
   onRefresh,
-  onSearchClick,
 }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const storage = useStorage();
   const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<Document[]>([]);
+
+  // Handle search with debounce
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    
+    if (query.trim()) {
+      setIsSearching(true);
+      try {
+        const results = await storage.searchDocuments(query);
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  // Determine which documents to display
+  const displayDocuments = searchQuery.trim() ? searchResults : documents;
 
   // Sort documents based on selected option
   const sortedDocuments = useMemo(() => {
-    const docs = [...documents];
+    const docs = [...displayDocuments];
     
     switch (sortBy) {
       case 'alphabetical':
@@ -38,7 +67,7 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
       default:
         return docs; // Already sorted by recent in Dashboard
     }
-  }, [documents, sortBy]);
+  }, [displayDocuments, sortBy]);
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value as SortOption);
@@ -70,30 +99,61 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
 
         <div className="flex items-center gap-4 mb-6">
           <div className="flex-1 relative">
-            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <button
-              onClick={onSearchClick}
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg text-sm transition-colors flex items-center justify-between cursor-text ${
-                theme === 'dark' 
-                  ? 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700' 
-                  : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-              }`}
-            >
-              <span>Search documents...</span>
-              <div className="flex items-center gap-1">
-                <kbd className={`hidden sm:inline-flex items-center h-5 px-1.5 text-[10px] font-medium rounded border ${
-                  theme === 'dark' 
-                    ? 'bg-gray-900 border-gray-600 text-gray-400' 
-                    : 'bg-gray-100 border-gray-300 text-gray-500'
-                }`}>
-                  ⌘K
-                </kbd>
+            {isSearching && (
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
               </div>
-            </button>
+            )}
+            {!isSearching && (
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-colors ${
+                theme === 'dark' 
+                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' 
+                  : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
+              }`}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => handleSearch('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2">
+            <div className={`flex items-center border rounded-lg overflow-hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 transition-colors ${viewMode === 'grid' 
+                  ? (theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900') 
+                  : (theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700')
+                }`}
+                title="Grid view"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 transition-colors ${viewMode === 'list' 
+                  ? (theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900') 
+                  : (theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700')
+                }`}
+                title="List view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
             <select 
               className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
               value={sortBy}
@@ -123,11 +183,15 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <p className="text-gray-500 text-sm">
-              No documents yet
+              {searchQuery ? 'No documents found matching your search' : 'No documents yet'}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={
+            viewMode === "grid" 
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
+              : "space-y-4"
+          }>
             {sortedDocuments.map((doc) => (
               <DocumentCard 
                 key={doc.id} 
