@@ -24,6 +24,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
   }, []);
 
   const handleNavigation = (section: string) => {
+    if (section === 'search') {
+      if (onNavigate) onNavigate(section);
+      return;
+    }
     setActiveSection(section);
     if (onNavigate) {
       onNavigate(section);

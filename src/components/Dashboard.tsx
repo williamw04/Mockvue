@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import RecentlyOpened from './RecentlyOpened';
 import ProgressChart from './ProgressChart';
 import { DailyTasks } from './DailyTasks';
 import DocumentGrid from './DocumentGrid';
+import { SearchCommandPalette } from './SearchCommandPalette';
 import { Document, ProgressStats } from '../types';
 import { useStorage, useNotifications } from '../services';
 import { getPlatformInfo } from '../utils/platform';
@@ -43,6 +44,7 @@ export function Dashboard() {
   const [recentDocuments, setRecentDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Load documents on mount
   useEffect(() => {
@@ -51,6 +53,17 @@ export function Dashboard() {
     // Log platform info
     const platformInfo = getPlatformInfo();
     console.log('Running on:', platformInfo.platform, '|', platformInfo.os);
+
+    // Keyboard shortcut for search
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const loadDocuments = async () => {
@@ -108,7 +121,11 @@ export function Dashboard() {
   };
 
   const handleNavigation = (section: string) => {
-    console.log('Navigating to:', section);
+    if (section === 'search') {
+      setIsSearchOpen(true);
+    } else {
+      console.log('Navigating to:', section);
+    }
   };
 
   const handleDeleteDocument = async (id: string) => {
@@ -164,6 +181,11 @@ export function Dashboard() {
 
   return (
     <div className={`flex h-screen overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
+      <SearchCommandPalette 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+      />
+
       {/* Sidebar */}
       <Sidebar onNavigate={handleNavigation} />
 
@@ -205,6 +227,7 @@ export function Dashboard() {
             totalWords={totalWords}
             onDelete={handleDeleteDocument}
             onRefresh={loadDocuments}
+            onSearchClick={() => setIsSearchOpen(true)}
           />
         </div>
       </main>
