@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Calendar as CalendarIcon, Plus, Expand } from "lucide-react";
 import { useState } from "react";
+import { useTheme } from '../services/ThemeContext';
 
 interface CalendarEvent {
   id: string;
@@ -62,6 +63,7 @@ const priorityDots = {
 } as const;
 
 export function DailyTasks() {
+  const { theme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
   const [showFullCalendar, setShowFullCalendar] = useState(false);
 
@@ -79,16 +81,16 @@ export function DailyTasks() {
 
   return (
     <div 
-      className="relative group"
+      className="relative group h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Card className="h-full">
+      <Card className={`h-full transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className={`flex items-center gap-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             <CalendarIcon className="w-5 h-5" />
             Today's Calendar
-            <Badge variant="outline" className="ml-2 text-xs">
+            <Badge variant="outline" className={`ml-2 text-xs ${theme === 'dark' ? 'text-gray-300 border-gray-600' : 'text-gray-900 border-gray-200'}`}>
               {completedCount}/{totalEvents}
             </Badge>
           </CardTitle>
@@ -99,14 +101,20 @@ export function DailyTasks() {
               <div 
                 key={event.id}
                 className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
-                  event.completed ? 'bg-muted/50 opacity-60' : 'hover:bg-muted/30'
+                  event.completed 
+                    ? (theme === 'dark' ? 'bg-gray-700/50 opacity-60' : 'bg-muted/50 opacity-60')
+                    : (theme === 'dark' ? 'hover:bg-gray-700/30' : 'hover:bg-muted/30')
                 }`}
               >
                 <div className={`w-2 h-2 rounded-full ${priorityDots[event.priority]}`}></div>
-                <div className="text-xs text-muted-foreground min-w-[50px]">
+                <div className={`text-xs min-w-[50px] ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
                   {event.time}
                 </div>
-                <div className={`text-sm truncate ${event.completed ? 'line-through text-muted-foreground' : ''}`}>
+                <div className={`text-sm truncate ${
+                  event.completed 
+                    ? (theme === 'dark' ? 'line-through text-gray-500' : 'line-through text-muted-foreground') 
+                    : (theme === 'dark' ? 'text-gray-200' : 'text-gray-900')
+                }`}>
                   {event.title}
                 </div>
               </div>
@@ -114,7 +122,7 @@ export function DailyTasks() {
           </div>
           
           {todayEvents.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className={`text-center py-8 ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
               <CalendarIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No events scheduled for today</p>
             </div>
@@ -126,14 +134,14 @@ export function DailyTasks() {
       {isHovered && (
         <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
           <button 
-            className="w-8 h-8 rounded-md bg-background border shadow-sm hover:bg-accent flex items-center justify-center transition-colors"
+            className={`w-8 h-8 rounded-md border shadow-sm flex items-center justify-center transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700 text-white' : 'bg-background border hover:bg-accent text-gray-900'}`}
             onClick={handleAddEvent}
             title="Add new event"
           >
             <Plus className="w-4 h-4" />
           </button>
           <button 
-            className="w-8 h-8 rounded-md bg-background border shadow-sm hover:bg-accent flex items-center justify-center transition-colors"
+            className={`w-8 h-8 rounded-md border shadow-sm flex items-center justify-center transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700 text-white' : 'bg-background border hover:bg-accent text-gray-900'}`}
             onClick={handleExpandCalendar}
             title="Expand calendar view"
           >
@@ -144,4 +152,3 @@ export function DailyTasks() {
     </div>
   );
 }
-

@@ -8,6 +8,7 @@ import DocumentGrid from './DocumentGrid';
 import { Document, ProgressStats } from '../types';
 import { useStorage, useNotifications } from '../services';
 import { getPlatformInfo } from '../utils/platform';
+import { useTheme } from '../services/ThemeContext';
 
 // Mock data for widgets (can be made dynamic later)
 const progressStats: ProgressStats = {
@@ -37,6 +38,7 @@ const formatRelativeTime = (isoDate: string): string => {
 export function Dashboard() {
   const storage = useStorage();
   const notifications = useNotifications();
+  const { theme } = useTheme();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [recentDocuments, setRecentDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,10 +137,10 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50 items-center justify-center">
+      <div className={`flex h-screen items-center justify-center transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading documents...</p>
+          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Loading documents...</p>
         </div>
       </div>
     );
@@ -146,7 +148,7 @@ export function Dashboard() {
 
   if (error) {
     return (
-      <div className="flex h-screen bg-gray-50 items-center justify-center">
+      <div className={`flex h-screen items-center justify-center transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
@@ -161,7 +163,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className={`flex h-screen overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
       {/* Sidebar */}
       <Sidebar onNavigate={handleNavigation} />
 

@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Document } from '../types';
 import DocumentCard from './DocumentCard';
 import { useStorage } from '../services';
+import { useTheme } from '../services/ThemeContext';
 
 interface DocumentGridProps {
   documents: Document[];
@@ -20,6 +21,8 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
   onRefresh,
 }) => {
   const storage = useStorage();
+  const { theme } = useTheme();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [isSearching, setIsSearching] = useState(false);
@@ -67,17 +70,22 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value as SortOption);
   };
+
+  const handleDocumentClick = (id: string) => {
+    navigate(`/document/${id}`);
+  };
+
   return (
-    <div className="bg-gray-50 rounded-lg p-6">
+    <div className={`rounded-lg p-6 transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">My Documents</h2>
-          <p className="text-sm text-gray-600">
+          <h2 className={`text-xl font-bold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>My Documents</h2>
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             {documents.length} documents • {totalWords.toLocaleString()} total words
           </p>
         </div>
         <Link to="/document">
-          <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
+          <button className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'}`}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -103,7 +111,7 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
             placeholder="Search documents..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'}`}
           />
           {searchQuery && (
             <button
@@ -118,7 +126,7 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <select 
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+            className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
             value={sortBy}
             onChange={handleSortChange}
           >
@@ -129,10 +137,10 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
           {onRefresh && (
             <button 
               onClick={onRefresh}
-              className="p-2 border border-gray-200 rounded-lg hover:bg-white transition-colors"
+              className={`p-2 border rounded-lg transition-colors ${theme === 'dark' ? 'border-gray-700 hover:bg-gray-800 text-gray-400' : 'border-gray-200 hover:bg-white text-gray-600'}`}
               title="Refresh documents"
             >
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
@@ -154,7 +162,13 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
           {sortedDocuments.map((doc) => (
             <DocumentCard 
               key={doc.id} 
-              document={doc} 
+              id={doc.id}
+              title={doc.title}
+              preview={doc.description || doc.content.substring(0, 100) + '...'} 
+              lastModified={doc.lastModified}
+              tags={doc.tags}
+              wordCount={doc.wordCount}
+              onClick={() => handleDocumentClick(doc.id)}
               onDelete={onDelete}
             />
           ))}
@@ -165,4 +179,3 @@ const DocumentGrid: React.FC<DocumentGridProps> = ({
 };
 
 export default DocumentGrid;
-

@@ -4,6 +4,7 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useStorage, useNotifications } from "../services";
 import { Document } from "../types";
+import { useTheme } from "../services/ThemeContext";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
@@ -12,6 +13,7 @@ export default function DocumentPage() {
   const { id } = useParams<{ id?: string }>();
   const storage = useStorage();
   const notifications = useNotifications();
+  const { theme } = useTheme();
   
   // Document state
   const [document, setDocument] = useState<Document | null>(null);
@@ -149,14 +151,14 @@ export default function DocumentPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#1a1a1a] text-white overflow-hidden">
+    <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a] text-white' : 'bg-white text-gray-900'}`}>
       {/* Top Navigation Bar */}
-      <header className="flex-shrink-0 h-14 border-b border-gray-800 flex items-center justify-between px-4">
+      <header className={`flex-shrink-0 h-14 border-b flex items-center justify-between px-4 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
         <div className="flex items-center gap-4">
           {/* Back button */}
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            className={`flex items-center gap-2 transition-colors ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -168,24 +170,24 @@ export default function DocumentPage() {
         {/* Right actions */}
         <div className="flex items-center gap-2">
           {/* Duplicate */}
-          <button className="p-2 hover:bg-gray-800 rounded transition-colors">
+          <button className={`p-2 rounded transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </button>
 
           {/* Menu */}
-          <button className="p-2 hover:bg-gray-800 rounded transition-colors">
+          <button className={`p-2 rounded transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
           {/* Divider */}
-          <div className="h-6 w-px bg-gray-700 mx-2"></div>
+          <div className={`h-6 w-px mx-2 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
 
           {/* Comments tab */}
-          <button className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+          <button className={`px-3 py-1.5 text-sm transition-colors flex items-center gap-2 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -193,7 +195,7 @@ export default function DocumentPage() {
           </button>
 
           {/* Updates tab */}
-          <button className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+          <button className={`px-3 py-1.5 text-sm transition-colors flex items-center gap-2 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -203,7 +205,7 @@ export default function DocumentPage() {
           {/* Close button */}
           <button
             onClick={() => navigate('/')}
-            className="p-2 hover:bg-gray-800 rounded transition-colors ml-2"
+            className={`p-2 rounded transition-colors ml-2 ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -215,7 +217,7 @@ export default function DocumentPage() {
       {/* Main Content Area with Sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-[#1a1a1a]">
+        <main className={`flex-1 overflow-y-auto transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
           <div className="max-w-3xl mx-auto px-12 py-8">
             
             {/* Document Icon - with subtle animation */}
@@ -227,41 +229,42 @@ export default function DocumentPage() {
 
             {/* Document Title - with subtle animation */}
             <div className="mb-8 animate-fade-in" style={{animationDelay: '100ms'}}>
-              <h1 className="text-4xl font-bold text-gray-300 mb-4 text-center hover:text-white transition-colors duration-300">
+              <h1 className={`text-4xl font-bold mb-4 text-center transition-colors duration-300 ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-800 hover:text-black'}`}>
                 The Science and Strategies of Success
               </h1>
             </div>
 
-            {/* Editor Toolbar - Custom styling to match dark theme */}
-            <div className="mb-2 flex items-center gap-4 text-sm text-gray-400">
-              <button className="hover:text-white transition-colors flex items-center gap-1">
+            {/* Editor Toolbar - Custom styling to match theme */}
+            <div className={`mb-2 flex items-center gap-4 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+              <button className={`transition-colors flex items-center gap-1 ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>
                 <span className="font-medium">T</span>
               </button>
-              <button className="hover:text-white transition-colors">
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>
                 <span className="font-bold">H</span>
               </button>
-              <div className="h-4 w-px bg-gray-700"></div>
-              <button className="hover:text-white transition-colors">≡</button>
-              <button className="hover:text-white transition-colors">☰</button>
-              <div className="h-4 w-px bg-gray-700"></div>
-              <button className="hover:text-white transition-colors">&lt;/&gt;</button>
-              <button className="hover:text-white transition-colors">99</button>
-              <div className="h-4 w-px bg-gray-700"></div>
-              <button className="hover:text-white transition-colors">📎</button>
-              <button className="hover:text-white transition-colors">🔗</button>
-              <button className="hover:text-white transition-colors">☺</button>
+              <div className={`h-4 w-px ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>≡</button>
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>☰</button>
+              <div className={`h-4 w-px ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>&lt;/&gt;</button>
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>99</button>
+              <div className={`h-4 w-px ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>📎</button>
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>🔗</button>
+              <button className={`transition-colors ${theme === 'dark' ? 'hover:text-white' : 'hover:text-black'}`}>☺</button>
             </div>
 
             {/* Document metadata */}
-            <div className="mb-6 flex items-center gap-4 text-xs text-gray-500 pb-4 border-b border-gray-800">
+            <div className={`mb-6 flex items-center gap-4 text-xs pb-4 border-b ${theme === 'dark' ? 'text-gray-500 border-gray-800' : 'text-gray-500 border-gray-200'}`}>
               <span>3 sources</span>
               <span>•</span>
               <span>Last edited 2 hours ago</span>
             </div>
 
-            {/* Editor Content - Custom styling for dark theme */}
-            <div className="document-editor-dark">
+            {/* Editor Content - Custom styling for theme */}
+            <div className={theme === 'dark' ? 'document-editor-dark' : 'document-editor-light'}>
               <style>{`
+                /* DARK MODE STYLES */
                 .document-editor-dark .bn-container {
                   background-color: transparent !important;
                 }
@@ -307,10 +310,39 @@ export default function DocumentPage() {
                 .document-editor-dark .bn-drag-handle {
                   color: #6b7280;
                 }
+
+                /* LIGHT MODE STYLES */
+                .document-editor-light .bn-container {
+                  background-color: transparent !important;
+                }
+                .document-editor-light .bn-block-content {
+                  color: #374151 !important;
+                }
+                .document-editor-light [data-node-type="heading"] {
+                  color: #111827 !important;
+                  font-weight: 600;
+                }
+                .document-editor-light h1 {
+                  font-size: 2em;
+                  font-weight: 700;
+                  color: #111827 !important;
+                  margin: 1em 0 0.5em;
+                }
+                .document-editor-light h2 {
+                  font-size: 1.5em;
+                  font-weight: 600;
+                  color: #1f2937 !important;
+                  margin: 0.8em 0 0.4em;
+                }
+                .document-editor-light p {
+                  color: #374151 !important;
+                  line-height: 1.6;
+                  margin: 0.5em 0;
+                }
               `}</style>
               <BlockNoteView 
                 editor={editor} 
-                theme="dark"
+                theme={theme === 'dark' ? "dark" : "light"}
               />
             </div>
 
@@ -320,7 +352,7 @@ export default function DocumentPage() {
                 <button
                   onClick={saveDocument}
                   disabled={isSaving}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium transition-colors text-white"
                 >
                   {isSaving ? (
                     <>
@@ -337,7 +369,7 @@ export default function DocumentPage() {
                   )}
                 </button>
                 {lastSaved && !isSaving && (
-                  <p className="text-xs text-gray-500 text-center mt-2">
+                  <p className={`text-xs text-center mt-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                     Saved {lastSaved.toLocaleTimeString()}
                   </p>
                 )}
@@ -348,20 +380,20 @@ export default function DocumentPage() {
         </main>
 
         {/* Right Sidebar */}
-        <aside className="w-80 border-l border-gray-800 overflow-y-auto bg-[#1a1a1a]">
+        <aside className={`w-80 border-l overflow-y-auto transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a] border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
           <div className="flex flex-col">
             
             {/* TABLE OF CONTENTS */}
-            <div className="border-b border-gray-800">
+            <div className={`border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               <button
                 onClick={() => setTocOpen(!tocOpen)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+                className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}
               >
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                   Table of Contents
                 </span>
                 <svg
-                  className={`w-4 h-4 text-gray-400 transition-transform ${tocOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 transition-transform ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} ${tocOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -371,10 +403,10 @@ export default function DocumentPage() {
               </button>
               {tocOpen && (
                 <div className="px-4 pb-4 space-y-1">
-                  <a href="#overview" className="block py-1.5 text-sm text-gray-300 hover:text-white transition-colors">
+                  <a href="#overview" className={`block py-1.5 text-sm transition-colors ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}>
                     — Overview
                   </a>
-                  <a href="#key-concepts" className="block py-1.5 text-sm text-gray-300 hover:text-white transition-colors">
+                  <a href="#key-concepts" className={`block py-1.5 text-sm transition-colors ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}>
                     — Key Concepts
                   </a>
                 </div>
@@ -382,16 +414,16 @@ export default function DocumentPage() {
             </div>
 
             {/* PROPERTIES */}
-            <div className="border-b border-gray-800">
+            <div className={`border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               <button
                 onClick={() => setPropertiesOpen(!propertiesOpen)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+                className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}
               >
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                   Properties
                 </span>
                 <svg
-                  className={`w-4 h-4 text-gray-400 transition-transform ${propertiesOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 transition-transform ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} ${propertiesOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -403,10 +435,10 @@ export default function DocumentPage() {
                 <div className="px-4 pb-4 space-y-3">
                   {/* Status */}
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span className="text-sm text-gray-400">Status</span>
+                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Status</span>
                     <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-green-500/20 text-green-400 rounded">
                       In Progress
                     </span>
@@ -414,10 +446,10 @@ export default function DocumentPage() {
 
                   {/* Tags */}
                   <div className="flex items-start gap-2">
-                    <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
-                    <span className="text-sm text-gray-400 flex-shrink-0">Tags</span>
+                    <span className={`text-sm flex-shrink-0 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Tags</span>
                     <div className="ml-auto flex flex-wrap gap-1.5 justify-end">
                       <span className="px-2 py-0.5 text-xs font-medium bg-purple-500/20 text-purple-400 rounded">
                         Psychology
@@ -430,31 +462,31 @@ export default function DocumentPage() {
 
                   {/* Created */}
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-sm text-gray-400">Created</span>
-                    <span className="ml-auto text-sm text-gray-300">Nov 6, 2025</span>
+                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Created</span>
+                    <span className={`ml-auto text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Nov 6, 2025</span>
                   </div>
 
                   {/* Sources */}
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    <span className="text-sm text-gray-400">Sources</span>
-                    <span className="ml-auto text-sm text-gray-300">3</span>
+                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Sources</span>
+                    <span className={`ml-auto text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>3</span>
                   </div>
 
                   {/* Shared with */}
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    <span className="text-sm text-gray-400">Shared with</span>
+                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Shared with</span>
                     <div className="ml-auto flex -space-x-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 border-2 border-[#1a1a1a]"></div>
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border-2 border-[#1a1a1a]"></div>
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 border-2 border-white dark:border-[#1a1a1a]"></div>
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border-2 border-white dark:border-[#1a1a1a]"></div>
                     </div>
                   </div>
                 </div>
@@ -462,16 +494,16 @@ export default function DocumentPage() {
             </div>
 
             {/* AI STUDIO */}
-            <div className="border-b border-gray-800">
+            <div className={`border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               <button
                 onClick={() => setAiStudioOpen(!aiStudioOpen)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+                className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}
               >
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                   AI Studio
                 </span>
                 <svg
-                  className={`w-4 h-4 text-gray-400 transition-transform ${aiStudioOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 transition-transform ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} ${aiStudioOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -482,67 +514,67 @@ export default function DocumentPage() {
               {aiStudioOpen && (
                 <div className="px-4 pb-4 space-y-2">
                   {/* Audio Overview */}
-                  <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800/50 transition-colors group">
+                  <button className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}>
                     <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                       </svg>
                     </div>
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-white">Audio Overview</div>
-                      <div className="text-xs text-gray-400">Generate summary</div>
+                      <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Audio Overview</div>
+                      <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Generate summary</div>
                     </div>
                   </button>
 
                   {/* Video Overview */}
-                  <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800/50 transition-colors group">
+                  <button className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}>
                     <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-white">Video Overview</div>
-                      <div className="text-xs text-gray-400">Create visualization</div>
+                      <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Video Overview</div>
+                      <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Create visualization</div>
                     </div>
                   </button>
 
                   {/* Mind Map */}
-                  <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800/50 transition-colors group">
+                  <button className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}>
                     <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-white">Mind Map</div>
-                      <div className="text-xs text-gray-400">Generate diagram</div>
+                      <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Mind Map</div>
+                      <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Generate diagram</div>
                     </div>
                   </button>
 
                   {/* Flashcards */}
-                  <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800/50 transition-colors group">
+                  <button className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}>
                     <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
                     </div>
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-white">Flashcards</div>
-                      <div className="text-xs text-gray-400">Study cards</div>
+                      <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Flashcards</div>
+                      <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Study cards</div>
                     </div>
                   </button>
 
                   {/* Quiz */}
-                  <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800/50 transition-colors group">
+                  <button className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}>
                     <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-white">Quiz</div>
-                      <div className="text-xs text-gray-400">Test knowledge</div>
+                      <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Quiz</div>
+                      <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Test knowledge</div>
                     </div>
                   </button>
                 </div>
@@ -553,13 +585,13 @@ export default function DocumentPage() {
             <div>
               <button
                 onClick={() => setBacklinksOpen(!backlinksOpen)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+                className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}
               >
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                   Backlinks
                 </span>
                 <svg
-                  className={`w-4 h-4 text-gray-400 transition-transform ${backlinksOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 transition-transform ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} ${backlinksOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -569,7 +601,7 @@ export default function DocumentPage() {
               </button>
               {backlinksOpen && (
                 <div className="px-4 pb-4">
-                  <p className="text-sm text-gray-500 italic">No backlinks yet</p>
+                  <p className={`text-sm italic ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>No backlinks yet</p>
                 </div>
               )}
             </div>
@@ -580,4 +612,3 @@ export default function DocumentPage() {
     </div>
   );
 }
-

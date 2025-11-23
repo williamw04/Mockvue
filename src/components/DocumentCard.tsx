@@ -1,103 +1,97 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Document } from '../types';
+import { Card, CardContent, CardHeader } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { MoreHorizontal, FileText } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useTheme } from '../services/ThemeContext';
 
 interface DocumentCardProps {
-  document: Document;
-  compact?: boolean;
-  onDelete?: (id: string) => void;
+  id: string;
+  title: string;
+  preview: string;
+  lastModified: string;
+  tags: string[];
+  wordCount: number;
+  onClick?: () => void;
+  onDelete?: (id: string) => void; // Kept for compatibility if needed
 }
 
-const DocumentCard: React.FC<DocumentCardProps> = ({ document, compact = false, onDelete }) => {
-  const navigate = useNavigate();
-  const [showMenu, setShowMenu] = useState(false);
-
-  const handleClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on menu button
-    if ((e.target as HTMLElement).closest('.menu-button')) {
-      return;
-    }
-    navigate(`/document/${document.id}`);
-  };
+export default function DocumentCard({ 
+  id,
+  title, 
+  preview, 
+  lastModified, 
+  tags, 
+  wordCount,
+  onClick,
+  onDelete
+}: DocumentCardProps) {
+  const { theme } = useTheme();
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onDelete && window.confirm(`Delete "${document.title}"?`)) {
-      onDelete(document.id);
+    if (onDelete) {
+      if (window.confirm(`Delete "${title}"?`)) {
+        onDelete(id);
+      }
     }
-    setShowMenu(false);
   };
 
   return (
-    <div 
-      className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100 relative group"
-      onClick={handleClick}
+    <Card 
+      className={`group hover:shadow-md transition-shadow cursor-pointer ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white'}`} 
+      onClick={onClick}
     >
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-1">
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 pt-4 px-4">
+        <div className="flex items-center space-x-2 flex-1 min-w-0">
+          <FileText className={`w-5 h-5 flex-shrink-0 ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`} />
+          <h3 className={`truncate font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>{title}</h3>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 truncate mb-1">
-            {document.title}
-          </h3>
-          {!compact && (
-            <p className="text-xs text-gray-600 mb-3 line-clamp-2">
-              {document.description}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {document.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-md"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>{document.lastModified}</span>
-            <span>{document.wordCount} words</span>
-          </div>
-        </div>
-        
-        {/* Menu button - visible on hover */}
-        {onDelete && (
-          <div className="relative menu-button">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
-              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded transition-opacity"
+        <DropdownMenu>
+          <DropdownMenuTrigger className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 h-8 w-8 rounded-md inline-flex items-center justify-center ${theme === 'dark' ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-accent hover:text-accent-foreground'}`}>
+            <MoreHorizontal className="w-4 h-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className={theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : ''}>
+            <DropdownMenuItem className={theme === 'dark' ? 'focus:bg-gray-700 focus:text-gray-200' : ''}>Edit</DropdownMenuItem>
+            <DropdownMenuItem className={theme === 'dark' ? 'focus:bg-gray-700 focus:text-gray-200' : ''}>Duplicate</DropdownMenuItem>
+            <DropdownMenuItem className={theme === 'dark' ? 'focus:bg-gray-700 focus:text-gray-200' : ''}>Share</DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
+              onClick={handleDelete}
             >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
-            
-            {showMenu && (
-              <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px]">
-                <button
-                  onClick={handleDelete}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardHeader>
+      <CardContent className="space-y-3 px-4 pb-4">
+        <p className={`line-clamp-3 leading-relaxed text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
+          {preview || "No preview available"}
+        </p>
+        <div className="flex flex-wrap gap-1">
+          {tags.map((tag) => (
+            <Badge 
+              key={tag} 
+              variant="secondary" 
+              className={`text-xs ${theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : ''}`}
+            >
+              {tag}
+            </Badge>
+          ))}
+        </div>
+        <div className={`flex items-center justify-between pt-2 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
+          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
+            {lastModified}
+          </span>
+          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
+            {wordCount} words
+          </span>
+        </div>
+      </CardContent>
+    </Card>
   );
-};
-
-export default DocumentCard;
-
+}
