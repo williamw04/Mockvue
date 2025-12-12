@@ -21,8 +21,6 @@ export default function DocumentPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
   // Sidebar section collapse states
-  const [tocOpen, setTocOpen] = useState(true);
-  const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [aiStudioOpen, setAiStudioOpen] = useState(true);
   const [backlinksOpen, setBacklinksOpen] = useState(true);
   
@@ -151,7 +149,7 @@ export default function DocumentPage() {
   };
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a] text-white' : 'bg-white text-gray-900'}`}>
+    <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
       {/* Top Navigation Bar */}
       <header className={`flex-shrink-0 h-14 border-b flex items-center justify-between px-4 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
         <div className="flex items-center gap-4">
@@ -183,25 +181,6 @@ export default function DocumentPage() {
             </svg>
           </button>
 
-          {/* Divider */}
-          <div className={`h-6 w-px mx-2 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-
-          {/* Comments tab */}
-          <button className={`px-3 py-1.5 text-sm transition-colors flex items-center gap-2 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            Comments
-          </button>
-
-          {/* Updates tab */}
-          <button className={`px-3 py-1.5 text-sm transition-colors flex items-center gap-2 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Updates
-          </button>
-
           {/* Close button */}
           <button
             onClick={() => navigate('/')}
@@ -217,16 +196,9 @@ export default function DocumentPage() {
       {/* Main Content Area with Sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Main Content */}
-        <main className={`flex-1 overflow-y-auto transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+        <main className={`flex-1 overflow-y-auto transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
           <div className="max-w-3xl mx-auto px-12 py-8">
             
-            {/* Document Icon - with subtle animation */}
-            <div className="mb-6 flex items-center justify-center animate-fade-in">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
-                <span className="text-4xl">🧠</span>
-              </div>
-            </div>
-
             {/* Document Title - with subtle animation */}
             <div className="mb-8 animate-fade-in" style={{animationDelay: '100ms'}}>
               <h1 className={`text-4xl font-bold mb-4 text-center transition-colors duration-300 ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-800 hover:text-black'}`}>
@@ -266,7 +238,13 @@ export default function DocumentPage() {
               <style>{`
                 /* DARK MODE STYLES */
                 .document-editor-dark .bn-container {
-                  background-color: transparent !important;
+                  background-color: #111827 !important;
+                }
+                .document-editor-dark .bn-editor {
+                  background-color: #111827 !important;
+                }
+                .document-editor-dark [data-theming-css-variables-demo] {
+                  background-color: #111827 !important;
                 }
                 .document-editor-dark .bn-block-content {
                   color: #d1d5db !important;
@@ -280,35 +258,44 @@ export default function DocumentPage() {
                 }
                 .document-editor-dark .ProseMirror {
                   padding: 0;
+                  background-color: #111827 !important;
+                }
+                .document-editor-dark [class*="bn-"] {
+                  --bn-colors-editor-background: #111827 !important;
                 }
                 .document-editor-dark h1 {
                   font-size: 2em;
                   font-weight: 700;
                   color: #f9fafb !important;
-                  margin: 1em 0 0.5em;
                 }
                 .document-editor-dark h2 {
                   font-size: 1.5em;
                   font-weight: 600;
                   color: #f3f4f6 !important;
-                  margin: 0.8em 0 0.4em;
                 }
                 .document-editor-dark h3 {
                   font-size: 1.17em;
                   font-weight: 600;
                   color: #e5e7eb !important;
-                  margin: 0.6em 0 0.3em;
                 }
                 .document-editor-dark p {
                   color: #d1d5db !important;
                   line-height: 1.6;
-                  margin: 0.5em 0;
                 }
                 .document-editor-dark .bn-side-menu {
                   color: #9ca3af;
                 }
                 .document-editor-dark .bn-drag-handle {
                   color: #6b7280;
+                }
+                /* Fix slash menu positioning */
+                .document-editor-dark .bn-suggestion-menu {
+                  position: fixed !important;
+                  z-index: 9999 !important;
+                }
+                .document-editor-dark .bn-slash-menu {
+                  position: fixed !important;
+                  z-index: 9999 !important;
                 }
 
                 /* LIGHT MODE STYLES */
@@ -326,18 +313,24 @@ export default function DocumentPage() {
                   font-size: 2em;
                   font-weight: 700;
                   color: #111827 !important;
-                  margin: 1em 0 0.5em;
                 }
                 .document-editor-light h2 {
                   font-size: 1.5em;
                   font-weight: 600;
                   color: #1f2937 !important;
-                  margin: 0.8em 0 0.4em;
                 }
                 .document-editor-light p {
                   color: #374151 !important;
                   line-height: 1.6;
-                  margin: 0.5em 0;
+                }
+                /* Fix slash menu positioning */
+                .document-editor-light .bn-suggestion-menu {
+                  position: fixed !important;
+                  z-index: 9999 !important;
+                }
+                .document-editor-light .bn-slash-menu {
+                  position: fixed !important;
+                  z-index: 9999 !important;
                 }
               `}</style>
               <BlockNoteView 
@@ -380,119 +373,9 @@ export default function DocumentPage() {
         </main>
 
         {/* Right Sidebar */}
-        <aside className={`w-80 border-l overflow-y-auto transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1a1a1a] border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
+        <aside className={`w-80 border-l overflow-y-auto transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
           <div className="flex flex-col">
             
-            {/* TABLE OF CONTENTS */}
-            <div className={`border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-              <button
-                onClick={() => setTocOpen(!tocOpen)}
-                className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}
-              >
-                <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Table of Contents
-                </span>
-                <svg
-                  className={`w-4 h-4 transition-transform ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} ${tocOpen ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {tocOpen && (
-                <div className="px-4 pb-4 space-y-1">
-                  <a href="#overview" className={`block py-1.5 text-sm transition-colors ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}>
-                    — Overview
-                  </a>
-                  <a href="#key-concepts" className={`block py-1.5 text-sm transition-colors ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}>
-                    — Key Concepts
-                  </a>
-                </div>
-              )}
-            </div>
-
-            {/* PROPERTIES */}
-            <div className={`border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-              <button
-                onClick={() => setPropertiesOpen(!propertiesOpen)}
-                className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-100'}`}
-              >
-                <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Properties
-                </span>
-                <svg
-                  className={`w-4 h-4 transition-transform ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} ${propertiesOpen ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {propertiesOpen && (
-                <div className="px-4 pb-4 space-y-3">
-                  {/* Status */}
-                  <div className="flex items-center gap-2">
-                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Status</span>
-                    <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-green-500/20 text-green-400 rounded">
-                      In Progress
-                    </span>
-                  </div>
-
-                  {/* Tags */}
-                  <div className="flex items-start gap-2">
-                    <svg className={`w-4 h-4 mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                    <span className={`text-sm flex-shrink-0 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Tags</span>
-                    <div className="ml-auto flex flex-wrap gap-1.5 justify-end">
-                      <span className="px-2 py-0.5 text-xs font-medium bg-purple-500/20 text-purple-400 rounded">
-                        Psychology
-                      </span>
-                      <span className="px-2 py-0.5 text-xs font-medium bg-blue-500/20 text-blue-400 rounded">
-                        Research
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Created */}
-                  <div className="flex items-center gap-2">
-                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Created</span>
-                    <span className={`ml-auto text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Nov 6, 2025</span>
-                  </div>
-
-                  {/* Sources */}
-                  <div className="flex items-center gap-2">
-                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Sources</span>
-                    <span className={`ml-auto text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>3</span>
-                  </div>
-
-                  {/* Shared with */}
-                  <div className="flex items-center gap-2">
-                    <svg className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Shared with</span>
-                    <div className="ml-auto flex -space-x-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 border-2 border-white dark:border-[#1a1a1a]"></div>
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border-2 border-white dark:border-[#1a1a1a]"></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* AI STUDIO */}
             <div className={`border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               <button
