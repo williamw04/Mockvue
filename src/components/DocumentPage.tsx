@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
+import { SuggestionMenuController } from "@blocknote/react";
 import { useStorage, useNotifications } from "../services";
 import { Document } from "../types";
 import { useTheme } from "../services/ThemeContext";
+import { customSchema, getCustomSlashMenuItems } from "./blocks";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
@@ -24,8 +26,9 @@ export default function DocumentPage() {
   const [aiStudioOpen, setAiStudioOpen] = useState(true);
   const [backlinksOpen, setBacklinksOpen] = useState(true);
   
-  // Initialize BlockNote editor
+  // Initialize BlockNote editor with custom schema for Q&A blocks
   const editor = useCreateBlockNote({
+    schema: customSchema,
     initialContent: [
       {
         type: "heading",
@@ -50,6 +53,37 @@ export default function DocumentPage() {
       {
         type: "heading",
         content: "Key Concepts",
+      },
+      {
+        type: "paragraph",
+        content: "",
+      },
+      // Demo Q&A blocks
+      {
+        type: "question",
+        props: {
+          status: "answered",
+          priority: "high",
+        },
+        content: "What are the core character strengths in the VIA system?",
+      },
+      {
+        type: "answer",
+        props: {
+          confidence: "certain",
+          isVerified: true,
+          author: "Study Guide",
+          source: "VIA Classification",
+        },
+        content: "The VIA system classifies 24 character strengths under 6 core virtues: Wisdom, Courage, Humanity, Justice, Temperance, and Transcendence.",
+      },
+      {
+        type: "note",
+        props: {
+          noteType: "clarification",
+          isCollapsed: false,
+        },
+        content: "Each strength can be developed through deliberate practice and self-awareness exercises.",
       },
       {
         type: "paragraph",
@@ -332,11 +366,86 @@ export default function DocumentPage() {
                   position: fixed !important;
                   z-index: 9999 !important;
                 }
+
+                /* Q&A BLOCK STYLES - DARK MODE */
+                .document-editor-dark .question-block {
+                  margin: 16px 0;
+                }
+                .document-editor-dark .question-block select,
+                .document-editor-dark .question-block input {
+                  background-color: transparent;
+                }
+                .document-editor-dark .answer-block {
+                  margin: 8px 0 8px 24px;
+                }
+                .document-editor-dark .answer-block select,
+                .document-editor-dark .answer-block input,
+                .document-editor-dark .answer-block button {
+                  background-color: transparent;
+                }
+                .document-editor-dark .note-block {
+                  margin: 8px 0 8px 24px;
+                }
+                .document-editor-dark .note-block select,
+                .document-editor-dark .note-block button {
+                  background-color: transparent;
+                }
+
+                /* Q&A BLOCK STYLES - LIGHT MODE */
+                .document-editor-light .question-block {
+                  margin: 16px 0;
+                }
+                .document-editor-light .question-block select,
+                .document-editor-light .question-block input {
+                  background-color: transparent;
+                }
+                .document-editor-light .answer-block {
+                  margin: 8px 0 8px 24px;
+                }
+                .document-editor-light .answer-block select,
+                .document-editor-light .answer-block input,
+                .document-editor-light .answer-block button {
+                  background-color: transparent;
+                }
+                .document-editor-light .note-block {
+                  margin: 8px 0 8px 24px;
+                }
+                .document-editor-light .note-block select,
+                .document-editor-light .note-block button {
+                  background-color: transparent;
+                }
+
+                /* Ensure proper text colors in custom blocks */
+                .document-editor-dark .question-block .bn-inline-content,
+                .document-editor-dark .answer-block .bn-inline-content,
+                .document-editor-dark .note-block .bn-inline-content {
+                  color: inherit !important;
+                }
+                .document-editor-light .question-block .bn-inline-content,
+                .document-editor-light .answer-block .bn-inline-content,
+                .document-editor-light .note-block .bn-inline-content {
+                  color: inherit !important;
+                }
               `}</style>
               <BlockNoteView 
                 editor={editor} 
                 theme={theme === 'dark' ? "dark" : "light"}
-              />
+                slashMenu={false}
+              >
+                <SuggestionMenuController
+                  triggerCharacter="/"
+                  getItems={async (query) =>
+                    getCustomSlashMenuItems(editor).filter(
+                      (item) =>
+                        item.title.toLowerCase().includes(query.toLowerCase()) ||
+                        (item.aliases &&
+                          item.aliases.some((alias) =>
+                            alias.toLowerCase().includes(query.toLowerCase())
+                          ))
+                    )
+                  }
+                />
+              </BlockNoteView>
             </div>
 
             {/* Save button floating at bottom */}

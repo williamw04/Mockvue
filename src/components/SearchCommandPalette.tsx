@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, FileText, Clock, ArrowRight } from 'lucide-react';
+import { Search, X, FileText, ArrowRight } from 'lucide-react';
 import { Document } from '../types';
 import { useTheme } from '../services/ThemeContext';
 import { useStorage } from '../services';

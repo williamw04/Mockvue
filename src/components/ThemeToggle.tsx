@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTheme } from '../services/ThemeContext';
 import { Moon, Sun } from 'lucide-react';
 import { cn } from './ui/utils';
