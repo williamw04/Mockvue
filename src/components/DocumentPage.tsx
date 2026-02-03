@@ -322,15 +322,6 @@ export default function DocumentPage() {
                 .document-editor-dark .bn-drag-handle {
                   color: #6b7280;
                 }
-                /* Fix slash menu positioning */
-                .document-editor-dark .bn-suggestion-menu {
-                  position: fixed !important;
-                  z-index: 9999 !important;
-                }
-                .document-editor-dark .bn-slash-menu {
-                  position: fixed !important;
-                  z-index: 9999 !important;
-                }
 
                 /* LIGHT MODE STYLES */
                 .document-editor-light .bn-container {
@@ -356,15 +347,6 @@ export default function DocumentPage() {
                 .document-editor-light p {
                   color: #374151 !important;
                   line-height: 1.6;
-                }
-                /* Fix slash menu positioning */
-                .document-editor-light .bn-suggestion-menu {
-                  position: fixed !important;
-                  z-index: 9999 !important;
-                }
-                .document-editor-light .bn-slash-menu {
-                  position: fixed !important;
-                  z-index: 9999 !important;
                 }
 
                 /* Q&A BLOCK STYLES - DARK MODE */

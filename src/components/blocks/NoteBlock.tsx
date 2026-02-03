@@ -240,3 +240,4 @@ export const NoteBlock = createReactBlockSpec(
 );
 
 export default NoteBlock;
+

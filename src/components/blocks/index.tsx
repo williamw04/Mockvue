@@ -1,11 +1,8 @@
 // Custom BlockNote Blocks
-// This module exports custom block definitions and a configured schema
+// This module exports custom block definitions and a minimal schema
 
 import { BlockNoteSchema, defaultBlockSpecs } from "@blocknote/core";
-import {
-  DefaultReactSuggestionItem,
-  getDefaultReactSlashMenuItems,
-} from "@blocknote/react";
+import { DefaultReactSuggestionItem } from "@blocknote/react";
 import { QuestionBlock } from "./QuestionBlock";
 import { AnswerBlock } from "./AnswerBlock";
 import { NoteBlock } from "./NoteBlock";
@@ -15,13 +12,17 @@ export { QuestionBlock } from "./QuestionBlock";
 export { AnswerBlock } from "./AnswerBlock";
 export { NoteBlock } from "./NoteBlock";
 
-// Create the custom schema with our blocks
-// The custom block specs are factory functions that need to be invoked
+// Create a MINIMAL custom schema with only essential blocks + Q&A blocks
+// This removes all the extra blocks from the slash menu
 export const customSchema = BlockNoteSchema.create({
   blockSpecs: {
-    // Include all default blocks
-    ...defaultBlockSpecs,
-    // Add our custom blocks (invoke the factory functions)
+    // Essential default blocks only
+    paragraph: defaultBlockSpecs.paragraph,
+    heading: defaultBlockSpecs.heading,
+    bulletListItem: defaultBlockSpecs.bulletListItem,
+    numberedListItem: defaultBlockSpecs.numberedListItem,
+    
+    // Our custom Q&A blocks
     question: QuestionBlock(),
     answer: AnswerBlock(),
     note: NoteBlock(),
@@ -148,11 +149,109 @@ export const insertNote = (editor: any) => ({
   ),
 });
 
-// Get custom slash menu items including our blocks
+// Custom slash menu items - ONLY includes blocks in our minimal schema
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getCustomSlashMenuItems = (editor: any): DefaultReactSuggestionItem[] => [
-  ...getDefaultReactSlashMenuItems(editor),
+  // Basic blocks
+  {
+    title: "Paragraph",
+    subtext: "Plain text block",
+    onItemClick: () => {
+      const currentBlock = editor.getTextCursorPosition().block;
+      editor.insertBlocks([{ type: "paragraph" }], currentBlock, "after");
+    },
+    aliases: ["p", "paragraph", "text"],
+    group: "Basic",
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+      </svg>
+    ),
+  },
+  {
+    title: "Heading 1",
+    subtext: "Large section heading",
+    onItemClick: () => {
+      const currentBlock = editor.getTextCursorPosition().block;
+      editor.insertBlocks([{ type: "heading", props: { level: 1 } }], currentBlock, "after");
+    },
+    aliases: ["h1", "heading1", "title"],
+    group: "Basic",
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <text x="4" y="18" fontSize="16" fontWeight="bold">H1</text>
+      </svg>
+    ),
+  },
+  {
+    title: "Heading 2",
+    subtext: "Medium section heading",
+    onItemClick: () => {
+      const currentBlock = editor.getTextCursorPosition().block;
+      editor.insertBlocks([{ type: "heading", props: { level: 2 } }], currentBlock, "after");
+    },
+    aliases: ["h2", "heading2", "subtitle"],
+    group: "Basic",
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <text x="4" y="18" fontSize="14" fontWeight="bold">H2</text>
+      </svg>
+    ),
+  },
+  {
+    title: "Heading 3",
+    subtext: "Small section heading",
+    onItemClick: () => {
+      const currentBlock = editor.getTextCursorPosition().block;
+      editor.insertBlocks([{ type: "heading", props: { level: 3 } }], currentBlock, "after");
+    },
+    aliases: ["h3", "heading3"],
+    group: "Basic",
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <text x="4" y="18" fontSize="12" fontWeight="bold">H3</text>
+      </svg>
+    ),
+  },
+  {
+    title: "Bullet List",
+    subtext: "Unordered list item",
+    onItemClick: () => {
+      const currentBlock = editor.getTextCursorPosition().block;
+      editor.insertBlocks([{ type: "bulletListItem" }], currentBlock, "after");
+    },
+    aliases: ["ul", "bullet", "list", "-"],
+    group: "Basic",
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        <circle cx="2" cy="6" r="1" fill="currentColor" />
+        <circle cx="2" cy="12" r="1" fill="currentColor" />
+        <circle cx="2" cy="18" r="1" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    title: "Numbered List",
+    subtext: "Ordered list item",
+    onItemClick: () => {
+      const currentBlock = editor.getTextCursorPosition().block;
+      editor.insertBlocks([{ type: "numberedListItem" }], currentBlock, "after");
+    },
+    aliases: ["ol", "numbered", "1."],
+    group: "Basic",
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 6h13M7 12h13M7 18h13" />
+        <text x="1" y="8" fontSize="8" fill="currentColor">1</text>
+        <text x="1" y="14" fontSize="8" fill="currentColor">2</text>
+        <text x="1" y="20" fontSize="8" fill="currentColor">3</text>
+      </svg>
+    ),
+  },
+  // Q&A blocks
   insertQuestion(editor),
   insertAnswer(editor),
   insertNote(editor),
 ];
+
