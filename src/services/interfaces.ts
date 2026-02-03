@@ -10,7 +10,11 @@ import type {
   AgentTask,
   AgentCapability,
   AgentResponse,
-  AgentFeatureType
+  AgentFeatureType,
+  UserProfile,
+  Resume,
+  Story,
+  InterviewResponse
 } from '../types';
 
 /**
@@ -162,6 +166,82 @@ export interface IAgentService {
 }
 
 /**
+ * User Profile service interface
+ * Handles user profile, onboarding, resumes, and stories
+ */
+export interface IUserService {
+  /**
+   * Get current user profile
+   */
+  getUserProfile(): Promise<UserProfile | null>;
+  
+  /**
+   * Create or update user profile
+   */
+  saveUserProfile(profile: Partial<UserProfile>): Promise<UserProfile>;
+  
+  /**
+   * Complete onboarding
+   */
+  completeOnboarding(): Promise<void>;
+  
+  /**
+   * Get user resume
+   */
+  getResume(): Promise<Resume | null>;
+  
+  /**
+   * Save or update resume
+   */
+  saveResume(resume: Partial<Resume>): Promise<Resume>;
+  
+  /**
+   * Get all stories
+   */
+  getStories(): Promise<Story[]>;
+  
+  /**
+   * Get a single story
+   */
+  getStory(id: string): Promise<Story | null>;
+  
+  /**
+   * Create a new story
+   */
+  createStory(story: Omit<Story, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Story>;
+  
+  /**
+   * Update an existing story
+   */
+  updateStory(id: string, story: Partial<Story>): Promise<Story>;
+  
+  /**
+   * Delete a story
+   */
+  deleteStory(id: string): Promise<void>;
+  
+  /**
+   * Get all interview responses
+   */
+  getInterviewResponses(): Promise<InterviewResponse[]>;
+  
+  /**
+   * Create interview response
+   */
+  createInterviewResponse(response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<InterviewResponse>;
+  
+  /**
+   * Update interview response
+   */
+  updateInterviewResponse(id: string, response: Partial<InterviewResponse>): Promise<InterviewResponse>;
+  
+  /**
+   * Delete interview response
+   */
+  deleteInterviewResponse(id: string): Promise<void>;
+}
+
+/**
  * Combined services interface
  */
 export interface IAppServices {
@@ -169,5 +249,6 @@ export interface IAppServices {
   files: IFileService;
   notifications: INotificationService;
   agent: IAgentService;
+  user: IUserService;
 }
 

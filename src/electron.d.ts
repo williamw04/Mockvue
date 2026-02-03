@@ -1,4 +1,11 @@
-import type { Document, DocumentData } from './types';
+import type { 
+  Document, 
+  DocumentData, 
+  UserProfile, 
+  Resume, 
+  Story, 
+  InterviewResponse 
+} from './types';
 
 export interface FileDialogResult {
   canceled: boolean;
@@ -21,6 +28,28 @@ export interface ElectronAPI {
   updateDocument: (documentId: string, documentData: Partial<DocumentData>) => Promise<Document>;
   deleteDocument: (documentId: string) => Promise<{ success: boolean }>;
   searchDocuments: (query: string) => Promise<Document[]>;
+  
+  // User profile operations
+  getUserProfile: () => Promise<UserProfile | null>;
+  saveUserProfile: (profile: Partial<UserProfile>) => Promise<UserProfile>;
+  completeOnboarding: () => Promise<void>;
+  
+  // Resume operations
+  getResume: () => Promise<Resume | null>;
+  saveResume: (resume: Partial<Resume>) => Promise<Resume>;
+  
+  // Story operations
+  getStories: () => Promise<Story[]>;
+  getStory: (id: string) => Promise<Story | null>;
+  createStory: (story: Omit<Story, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<Story>;
+  updateStory: (id: string, story: Partial<Story>) => Promise<Story>;
+  deleteStory: (id: string) => Promise<void>;
+  
+  // Interview response operations
+  getInterviewResponses: () => Promise<InterviewResponse[]>;
+  createInterviewResponse: (response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<InterviewResponse>;
+  updateInterviewResponse: (id: string, response: Partial<InterviewResponse>) => Promise<InterviewResponse>;
+  deleteInterviewResponse: (id: string) => Promise<void>;
   
   // File dialogs
   showOpenDialog: (options?: {

@@ -82,3 +82,11 @@ export function useAgent() {
   return agent;
 }
 
+
+/**
+ * Hook to access user service
+ */
+export function useUser() {
+  const { user } = useServices();
+  return user;
+}

@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { DocumentStorage } from './storage';
+import { DocumentStorage, UserDataStorage } from './storage';
 
 let mainWindow: BrowserWindow | null = null;
 let storage: DocumentStorage;
+let userDataStorage: UserDataStorage;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -40,6 +41,7 @@ function createWindow() {
 app.whenReady().then(() => {
   // Initialize storage
   storage = new DocumentStorage();
+  userDataStorage = new UserDataStorage();
   
   createWindow();
 
@@ -199,3 +201,144 @@ ipcMain.handle('get-storage-stats', async () => {
   }
 });
 
+// ============================================
+// User Profile Operations IPC Handlers
+// ============================================
+
+ipcMain.handle('get-user-profile', async () => {
+  try {
+    return await userDataStorage.getUserProfile();
+  } catch (error) {
+    console.error('Error in get-user-profile:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('save-user-profile', async (_event, profile) => {
+  try {
+    return await userDataStorage.saveUserProfile(profile);
+  } catch (error) {
+    console.error('Error in save-user-profile:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('complete-onboarding', async () => {
+  try {
+    await userDataStorage.completeOnboarding();
+  } catch (error) {
+    console.error('Error in complete-onboarding:', error);
+    throw error;
+  }
+});
+
+// ============================================
+// Resume Operations IPC Handlers
+// ============================================
+
+ipcMain.handle('get-resume', async () => {
+  try {
+    return await userDataStorage.getResume();
+  } catch (error) {
+    console.error('Error in get-resume:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('save-resume', async (_event, resume) => {
+  try {
+    return await userDataStorage.saveResume(resume);
+  } catch (error) {
+    console.error('Error in save-resume:', error);
+    throw error;
+  }
+});
+
+// ============================================
+// Story Operations IPC Handlers
+// ============================================
+
+ipcMain.handle('get-stories', async () => {
+  try {
+    return await userDataStorage.getStories();
+  } catch (error) {
+    console.error('Error in get-stories:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('get-story', async (_event, id: string) => {
+  try {
+    return await userDataStorage.getStory(id);
+  } catch (error) {
+    console.error('Error in get-story:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('create-story', async (_event, story) => {
+  try {
+    return await userDataStorage.createStory(story);
+  } catch (error) {
+    console.error('Error in create-story:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('update-story', async (_event, id: string, story) => {
+  try {
+    return await userDataStorage.updateStory(id, story);
+  } catch (error) {
+    console.error('Error in update-story:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('delete-story', async (_event, id: string) => {
+  try {
+    await userDataStorage.deleteStory(id);
+  } catch (error) {
+    console.error('Error in delete-story:', error);
+    throw error;
+  }
+});
+
+// ============================================
+// Interview Response Operations IPC Handlers
+// ============================================
+
+ipcMain.handle('get-interview-responses', async () => {
+  try {
+    return await userDataStorage.getInterviewResponses();
+  } catch (error) {
+    console.error('Error in get-interview-responses:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('create-interview-response', async (_event, response) => {
+  try {
+    return await userDataStorage.createInterviewResponse(response);
+  } catch (error) {
+    console.error('Error in create-interview-response:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('update-interview-response', async (_event, id: string, response) => {
+  try {
+    return await userDataStorage.updateInterviewResponse(id, response);
+  } catch (error) {
+    console.error('Error in update-interview-response:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('delete-interview-response', async (_event, id: string) => {
+  try {
+    await userDataStorage.deleteInterviewResponse(id);
+  } catch (error) {
+    console.error('Error in delete-interview-response:', error);
+    throw error;
+  }
+});

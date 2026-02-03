@@ -21,6 +21,7 @@ export {
   useStorage,
   useFiles,
   useNotifications,
+  useUser,
 } from './context';
 
 // Individual service implementations (for advanced usage)
