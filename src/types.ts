@@ -1,21 +1,3 @@
-export interface Document {
-  id: string;
-  title: string;
-  description: string;
-  content?: string;
-  tags: string[];
-  wordCount: number;
-  lastModified: string;
-  createdAt: string;
-}
-
-export interface DocumentData {
-  title: string;
-  description?: string;
-  content?: string;
-  tags?: string[];
-}
-
 export interface CalendarEvent {
   id: string;
   time: string;

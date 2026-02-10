@@ -1,10 +1,9 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { DocumentStorage, UserDataStorage } from './storage';
+import { UserDataStorage } from './storage';
 
 let mainWindow: BrowserWindow | null = null;
-let storage: DocumentStorage;
 let userDataStorage: UserDataStorage;
 
 function createWindow() {
@@ -40,7 +39,6 @@ function createWindow() {
 // App lifecycle
 app.whenReady().then(() => {
   // Initialize storage
-  storage = new DocumentStorage();
   userDataStorage = new UserDataStorage();
   
   createWindow();
@@ -55,67 +53,6 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
-  }
-});
-
-// ============================================
-// Document Operations IPC Handlers
-// ============================================
-
-ipcMain.handle('get-documents', async () => {
-  try {
-    return await storage.getDocuments();
-  } catch (error) {
-    console.error('Error in get-documents:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('get-document', async (_event, documentId: string) => {
-  try {
-    return await storage.getDocument(documentId);
-  } catch (error) {
-    console.error('Error in get-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('create-document', async (_event, documentData) => {
-  try {
-    const document = await storage.createDocument(documentData);
-    return document;
-  } catch (error) {
-    console.error('Error in create-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('update-document', async (_event, documentId: string, documentData) => {
-  try {
-    const document = await storage.updateDocument(documentId, documentData);
-    return document;
-  } catch (error) {
-    console.error('Error in update-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('delete-document', async (_event, documentId: string) => {
-  try {
-    await storage.deleteDocument(documentId);
-    return { success: true };
-  } catch (error) {
-    console.error('Error in delete-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('search-documents', async (_event, query: string) => {
-  try {
-    return await storage.searchDocuments(query);
-  } catch (error) {
-    console.error('Error in search-documents:', error);
-    throw error;
   }
 });
 
@@ -184,19 +121,6 @@ ipcMain.handle('show-save-dialog', async (_event, content: string, options) => {
     };
   } catch (error) {
     console.error('Error in show-save-dialog:', error);
-    throw error;
-  }
-});
-
-// ============================================
-// Storage Stats IPC Handler
-// ============================================
-
-ipcMain.handle('get-storage-stats', async () => {
-  try {
-    return await storage.getStats();
-  } catch (error) {
-    console.error('Error in get-storage-stats:', error);
     throw error;
   }
 });

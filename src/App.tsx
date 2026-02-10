@@ -1,7 +1,6 @@
 import { HashRouter, BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Dashboard } from "./components/Dashboard";
-import DocumentPage from "./components/DocumentPage";
 import { AIAssistant } from "./components/AIAssistant";
 import OnboardingFlow from "./components/onboarding/OnboardingFlow";
 import StoriesPage from "./components/StoriesPage";
@@ -60,22 +59,6 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/document"
-          element={
-            <ProtectedRoute>
-              <DocumentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/document/:id"
-          element={
-            <ProtectedRoute>
-              <DocumentPage />
             </ProtectedRoute>
           }
         />

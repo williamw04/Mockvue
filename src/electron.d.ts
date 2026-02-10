@@ -1,6 +1,4 @@
 import type { 
-  Document, 
-  DocumentData, 
   UserProfile, 
   Resume, 
   Story, 
@@ -14,21 +12,7 @@ export interface FileDialogResult {
   content?: string;
 }
 
-export interface StorageStats {
-  totalDocuments: number;
-  totalWords: number;
-  storageSize: number;
-}
-
 export interface ElectronAPI {
-  // Document operations
-  getDocuments: () => Promise<Document[]>;
-  getDocument: (id: string) => Promise<Document | null>;
-  createDocument: (documentData: DocumentData) => Promise<Document>;
-  updateDocument: (documentId: string, documentData: Partial<DocumentData>) => Promise<Document>;
-  deleteDocument: (documentId: string) => Promise<{ success: boolean }>;
-  searchDocuments: (query: string) => Promise<Document[]>;
-  
   // User profile operations
   getUserProfile: () => Promise<UserProfile | null>;
   saveUserProfile: (profile: Partial<UserProfile>) => Promise<UserProfile>;
@@ -60,9 +44,6 @@ export interface ElectronAPI {
     defaultPath?: string;
     filters?: Array<{ name: string; extensions: string[] }>;
   }) => Promise<FileDialogResult>;
-  
-  // Storage stats
-  getStorageStats: () => Promise<StorageStats>;
   
   // Platform info
   platform: string;

@@ -3,8 +3,6 @@
  */
 
 import type { 
-  Document, 
-  DocumentData, 
   NotificationOptions, 
   FilePickerOptions,
   AgentTask,
@@ -16,73 +14,6 @@ import type {
   Story,
   InterviewResponse
 } from '../types';
-
-/**
- * Storage service interface
- * Handles document persistence across platforms
- */
-export interface IStorageService {
-  /**
-   * Retrieve all documents
-   */
-  getDocuments(): Promise<Document[]>;
-  
-  /**
-   * Retrieve a single document by ID
-   */
-  getDocument(id: string): Promise<Document | null>;
-  
-  /**
-   * Create a new document
-   */
-  createDocument(data: DocumentData): Promise<Document>;
-  
-  /**
-   * Update an existing document
-   */
-  updateDocument(id: string, data: Partial<DocumentData>): Promise<Document>;
-  
-  /**
-   * Delete a document
-   */
-  deleteDocument(id: string): Promise<void>;
-  
-  /**
-   * Search documents by query
-   */
-  searchDocuments(query: string): Promise<Document[]>;
-}
-
-/**
- * File service interface
- * Handles file system operations across platforms
- */
-export interface IFileService {
-  /**
-   * Open a file picker dialog
-   */
-  pickFile(options?: FilePickerOptions): Promise<File | File[] | null>;
-  
-  /**
-   * Save content to a file
-   */
-  saveFile(content: string, filename?: string): Promise<boolean>;
-  
-  /**
-   * Read file content
-   */
-  readFile(file: File | string): Promise<string>;
-  
-  /**
-   * Export document to file
-   */
-  exportDocument(document: Document, format: 'json' | 'txt' | 'html'): Promise<boolean>;
-  
-  /**
-   * Import document from file
-   */
-  importDocument(file: File): Promise<DocumentData>;
-}
 
 /**
  * Notification service interface
@@ -245,8 +176,6 @@ export interface IUserService {
  * Combined services interface
  */
 export interface IAppServices {
-  storage: IStorageService;
-  files: IFileService;
   notifications: INotificationService;
   agent: IAgentService;
   user: IUserService;

@@ -8,8 +8,6 @@ import type { IAppServices } from './interfaces';
 
 // Electron services
 import {
-  ElectronStorageService,
-  ElectronFileService,
   ElectronNotificationService,
   ElectronAgentService,
   ElectronUserService,
@@ -17,8 +15,6 @@ import {
 
 // Web services
 import {
-  WebStorageService,
-  WebFileService,
   WebNotificationService,
   WebAgentService,
   WebUserService,
@@ -32,8 +28,6 @@ export function createServices(): IAppServices {
 
   if (platform === 'electron') {
     return {
-      storage: new ElectronStorageService(),
-      files: new ElectronFileService(),
       notifications: new ElectronNotificationService(),
       agent: new ElectronAgentService(),
       user: new ElectronUserService(),
@@ -42,8 +36,6 @@ export function createServices(): IAppServices {
 
   // Web platform
   return {
-    storage: new WebStorageService(),
-    files: new WebFileService(),
     notifications: new WebNotificationService(),
     agent: new WebAgentService(),
     user: new WebUserService(),

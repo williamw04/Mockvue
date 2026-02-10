@@ -51,22 +51,6 @@ export function useServices(): IAppServices {
 }
 
 /**
- * Hook to access storage service
- */
-export function useStorage() {
-  const { storage } = useServices();
-  return storage;
-}
-
-/**
- * Hook to access file service
- */
-export function useFiles() {
-  const { files } = useServices();
-  return files;
-}
-
-/**
  * Hook to access notification service
  */
 export function useNotifications() {
