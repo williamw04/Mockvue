@@ -16,7 +16,7 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
   const [workExperiences, setWorkExperiences] = useState<Partial<WorkExperience>[]>([
     { company: '', position: '', startDate: '', endDate: '', description: '', achievements: [''] }
   ]);
-  const [education, setEducation] = useState<Partial<Education>[]>([
+  const [education] = useState<Partial<Education>[]>([
     { school: '', degree: '', field: '', startDate: '', endDate: '' }
   ]);
   const [skills, setSkills] = useState<string>('');

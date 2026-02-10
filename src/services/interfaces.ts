@@ -4,7 +4,6 @@
 
 import type { 
   NotificationOptions, 
-  FilePickerOptions,
   AgentTask,
   AgentCapability,
   AgentResponse,

@@ -5,10 +5,10 @@
 
 // Interfaces
 export type {
-  IStorageService,
-  IFileService,
   INotificationService,
   IAppServices,
+  IAgentService,
+  IUserService,
 } from './interfaces';
 
 // Factory
@@ -18,22 +18,21 @@ export { createServices, getServices, resetServices } from './factory';
 export {
   ServicesProvider,
   useServices,
-  useStorage,
-  useFiles,
   useNotifications,
+  useAgent,
   useUser,
 } from './context';
 
 // Individual service implementations (for advanced usage)
 export {
-  ElectronStorageService,
-  ElectronFileService,
   ElectronNotificationService,
+  ElectronAgentService,
+  ElectronUserService,
 } from './electron';
 
 export {
-  WebStorageService,
-  WebFileService,
   WebNotificationService,
+  WebAgentService,
+  WebUserService,
 } from './web';
 
