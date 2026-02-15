@@ -22,7 +22,26 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const checkOnboarding = async () => {
     try {
-      const profile = await userService.getUserProfile();
+      let profile = await userService.getUserProfile();
+      
+      // DEV: Auto-complete onboarding if not done
+      if (!profile || !profile.onboardingCompleted) {
+        console.log('🚀 DEV MODE: Auto-completing onboarding');
+        if (!profile) {
+          // Create a default profile
+          profile = await userService.saveUserProfile({
+            name: 'Dev User',
+            onboardingCompleted: true,
+          });
+        } else {
+          // Mark existing profile as completed
+          profile = await userService.saveUserProfile({
+            ...profile,
+            onboardingCompleted: true,
+          });
+        }
+      }
+      
       setOnboardingComplete(profile?.onboardingCompleted || false);
     } catch (error) {
       console.error('Error checking onboarding:', error);
