@@ -9,6 +9,7 @@ export type {
   IAppServices,
   IAgentService,
   IUserService,
+  IDocumentService,
 } from './interfaces';
 
 // Factory
@@ -21,6 +22,7 @@ export {
   useNotifications,
   useAgent,
   useUser,
+  useDocuments,
 } from './context';
 
 // Individual service implementations (for advanced usage)
@@ -28,11 +30,13 @@ export {
   ElectronNotificationService,
   ElectronAgentService,
   ElectronUserService,
+  ElectronDocumentService,
 } from './electron';
 
 export {
   WebNotificationService,
   WebAgentService,
   WebUserService,
+  WebDocumentService,
 } from './web';
 

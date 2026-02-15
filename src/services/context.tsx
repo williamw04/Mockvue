@@ -66,11 +66,18 @@ export function useAgent() {
   return agent;
 }
 
-
 /**
  * Hook to access user service
  */
 export function useUser() {
   const { user } = useServices();
   return user;
+}
+
+/**
+ * Hook to access document service
+ */
+export function useDocuments() {
+  const { documents } = useServices();
+  return documents;
 }

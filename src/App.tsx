@@ -4,6 +4,7 @@ import { Dashboard } from "./components/Dashboard";
 import { AIAssistant } from "./components/AIAssistant";
 import OnboardingFlow from "./components/onboarding/OnboardingFlow";
 import StoriesPage from "./components/StoriesPage";
+import DocumentPage from "./components/documents/DocumentPage";
 import { isElectron } from "./utils/platform";
 import { useUser } from "./services";
 
@@ -75,6 +76,22 @@ function App() {
           element={
             <ProtectedRoute>
               <StoriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/document"
+          element={
+            <ProtectedRoute>
+              <DocumentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/document/:id"
+          element={
+            <ProtectedRoute>
+              <DocumentPage />
             </ProtectedRoute>
           }
         />

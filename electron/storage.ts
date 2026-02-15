@@ -349,3 +349,161 @@ export class UserDataStorage {
     }
   }
 }
+
+export interface DocumentQuestion {
+  id: string;
+  text: string;
+  response: string;
+  isExpanded: boolean;
+}
+
+export interface Document {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  questions: DocumentQuestion[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  lastModified: string;
+}
+
+/**
+ * Document Storage Manager for Electron
+ * Handles Q&A document persistence
+ */
+export class DocumentStorage {
+  private documentsDir: string;
+  private documentsFile: string;
+
+  constructor() {
+    const userDataPath = app.getPath('userData');
+    this.documentsDir = path.join(userDataPath, 'documents');
+    this.documentsFile = path.join(this.documentsDir, 'documents.json');
+
+    this.ensureDirectories();
+  }
+
+  private ensureDirectories(): void {
+    if (!fs.existsSync(this.documentsDir)) {
+      fs.mkdirSync(this.documentsDir, { recursive: true });
+    }
+  }
+
+  private generateId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  async getDocuments(): Promise<Document[]> {
+    try {
+      if (fs.existsSync(this.documentsFile)) {
+        const data = fs.readFileSync(this.documentsFile, 'utf-8');
+        const documents = JSON.parse(data);
+        // Sort by last modified (most recent first)
+        return documents.sort((a: Document, b: Document) => 
+          new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+        );
+      }
+      return [];
+    } catch (error) {
+      console.error('Error getting documents:', error);
+      return [];
+    }
+  }
+
+  async getDocument(id: string): Promise<Document | null> {
+    try {
+      const documents = await this.getDocuments();
+      return documents.find(d => d.id === id) || null;
+    } catch (error) {
+      console.error('Error getting document:', error);
+      return null;
+    }
+  }
+
+  async createDocument(data: { title: string; description?: string; questions?: DocumentQuestion[]; tags?: string[] }): Promise<Document> {
+    try {
+      const documents = await this.getDocuments();
+      const now = new Date().toISOString();
+
+      const newDocument: Document = {
+        id: this.generateId(),
+        userId: 'user-1', // Will be updated with actual user ID
+        title: data.title,
+        description: data.description,
+        questions: data.questions || [],
+        tags: data.tags || [],
+        createdAt: now,
+        updatedAt: now,
+        lastModified: now,
+      };
+
+      documents.push(newDocument);
+      fs.writeFileSync(this.documentsFile, JSON.stringify(documents, null, 2), 'utf-8');
+      return newDocument;
+    } catch (error) {
+      console.error('Error creating document:', error);
+      throw error;
+    }
+  }
+
+  async updateDocument(id: string, data: Partial<Document>): Promise<Document> {
+    try {
+      const documents = await this.getDocuments();
+      const index = documents.findIndex(d => d.id === id);
+
+      if (index === -1) {
+        throw new Error('Document not found');
+      }
+
+      const updated: Document = {
+        ...documents[index],
+        ...data,
+        id: documents[index].id,
+        userId: documents[index].userId,
+        createdAt: documents[index].createdAt,
+        updatedAt: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+      };
+
+      documents[index] = updated;
+      fs.writeFileSync(this.documentsFile, JSON.stringify(documents, null, 2), 'utf-8');
+      return updated;
+    } catch (error) {
+      console.error('Error updating document:', error);
+      throw error;
+    }
+  }
+
+  async deleteDocument(id: string): Promise<void> {
+    try {
+      const documents = await this.getDocuments();
+      const filtered = documents.filter(d => d.id !== id);
+      fs.writeFileSync(this.documentsFile, JSON.stringify(filtered, null, 2), 'utf-8');
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      throw error;
+    }
+  }
+
+  async searchDocuments(query: string): Promise<Document[]> {
+    try {
+      const documents = await this.getDocuments();
+      const lowerQuery = query.toLowerCase();
+
+      return documents.filter(doc =>
+        doc.title.toLowerCase().includes(lowerQuery) ||
+        doc.description?.toLowerCase().includes(lowerQuery) ||
+        doc.tags.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
+        doc.questions.some(q => 
+          q.text.toLowerCase().includes(lowerQuery) ||
+          q.response.toLowerCase().includes(lowerQuery)
+        )
+      );
+    } catch (error) {
+      console.error('Error searching documents:', error);
+      return [];
+    }
+  }
+}

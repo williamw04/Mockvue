@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import ProgressChart from './ProgressChart';
 import { DailyTasks } from './DailyTasks';
-import { ProgressStats, Story } from '../types';
-import { useUser } from '../services';
+import { DocumentGrid } from './documents/DocumentGrid';
+import { ProgressStats, Story, Document } from '../types';
+import { useUser, useDocuments, useNotifications } from '../services';
 import { getPlatformInfo } from '../utils/platform';
 import { useTheme } from '../services/ThemeContext';
 
@@ -19,27 +20,47 @@ const progressStats: ProgressStats = {
 
 export function Dashboard() {
   const userService = useUser();
+  const documentService = useDocuments();
+  const notifications = useNotifications();
   const { theme } = useTheme();
   const [stories, setStories] = useState<Story[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load stories on mount
+  // Load stories and documents on mount
   useEffect(() => {
-    loadStories();
+    loadData();
     
     // Log platform info
     const platformInfo = getPlatformInfo();
     console.log('Running on:', platformInfo.platform, '|', platformInfo.os);
   }, []);
 
-  const loadStories = async () => {
+  const loadData = async () => {
     try {
-      const userStories = await userService.getStories();
+      const [userStories, userDocuments] = await Promise.all([
+        userService.getStories(),
+        documentService.getDocuments(),
+      ]);
       setStories(userStories);
+      setDocuments(userDocuments);
     } catch (err) {
-      console.error('Error loading stories:', err);
+      console.error('Error loading data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    try {
+      await documentService.deleteDocument(id);
+      await notifications.showSuccess('Document deleted');
+      // Reload documents
+      const userDocuments = await documentService.getDocuments();
+      setDocuments(userDocuments);
+    } catch (err) {
+      console.error('Error deleting document:', err);
+      await notifications.showError('Failed to delete document');
     }
   };
 
@@ -156,6 +177,12 @@ export function Dashboard() {
             <ProgressChart stats={progressStats} title="Interview Progress" />
             <DailyTasks />
           </div>
+
+          {/* Documents Grid */}
+          <DocumentGrid 
+            documents={documents}
+            onDelete={handleDeleteDocument}
+          />
         </div>
       </main>
     </div>

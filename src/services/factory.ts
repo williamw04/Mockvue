@@ -11,6 +11,7 @@ import {
   ElectronNotificationService,
   ElectronAgentService,
   ElectronUserService,
+  ElectronDocumentService,
 } from './electron';
 
 // Web services
@@ -18,6 +19,7 @@ import {
   WebNotificationService,
   WebAgentService,
   WebUserService,
+  WebDocumentService,
 } from './web';
 
 /**
@@ -31,6 +33,7 @@ export function createServices(): IAppServices {
       notifications: new ElectronNotificationService(),
       agent: new ElectronAgentService(),
       user: new ElectronUserService(),
+      documents: new ElectronDocumentService(),
     };
   }
 
@@ -39,6 +42,7 @@ export function createServices(): IAppServices {
     notifications: new WebNotificationService(),
     agent: new WebAgentService(),
     user: new WebUserService(),
+    documents: new WebDocumentService(),
   };
 }
 

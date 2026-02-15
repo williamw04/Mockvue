@@ -2,7 +2,9 @@ import type {
   UserProfile, 
   Resume, 
   Story, 
-  InterviewResponse 
+  InterviewResponse,
+  Document,
+  DocumentQuestion
 } from './types';
 
 export interface FileDialogResult {
@@ -34,6 +36,14 @@ export interface ElectronAPI {
   createInterviewResponse: (response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<InterviewResponse>;
   updateInterviewResponse: (id: string, response: Partial<InterviewResponse>) => Promise<InterviewResponse>;
   deleteInterviewResponse: (id: string) => Promise<void>;
+  
+  // Document operations
+  getDocuments: () => Promise<Document[]>;
+  getDocument: (id: string) => Promise<Document | null>;
+  createDocument: (data: { title: string; description?: string; questions?: DocumentQuestion[]; tags?: string[] }) => Promise<Document>;
+  updateDocument: (id: string, data: Partial<Document>) => Promise<Document>;
+  deleteDocument: (id: string) => Promise<void>;
+  searchDocuments: (query: string) => Promise<Document[]>;
   
   // File dialogs
   showOpenDialog: (options?: {

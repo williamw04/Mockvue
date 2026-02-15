@@ -11,7 +11,9 @@ import type {
   UserProfile,
   Resume,
   Story,
-  InterviewResponse
+  InterviewResponse,
+  Document,
+  DocumentData
 } from '../types';
 
 /**
@@ -172,11 +174,48 @@ export interface IUserService {
 }
 
 /**
+ * Document Storage service interface
+ * Handles document persistence across platforms
+ */
+export interface IDocumentService {
+  /**
+   * Get all documents
+   */
+  getDocuments(): Promise<Document[]>;
+  
+  /**
+   * Get a single document by ID
+   */
+  getDocument(id: string): Promise<Document | null>;
+  
+  /**
+   * Create a new document
+   */
+  createDocument(data: DocumentData): Promise<Document>;
+  
+  /**
+   * Update an existing document
+   */
+  updateDocument(id: string, data: Partial<Document>): Promise<Document>;
+  
+  /**
+   * Delete a document
+   */
+  deleteDocument(id: string): Promise<void>;
+  
+  /**
+   * Search documents by query
+   */
+  searchDocuments(query: string): Promise<Document[]>;
+}
+
+/**
  * Combined services interface
  */
 export interface IAppServices {
   notifications: INotificationService;
   agent: IAgentService;
   user: IUserService;
+  documents: IDocumentService;
 }
 

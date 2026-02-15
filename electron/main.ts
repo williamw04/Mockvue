@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { UserDataStorage } from './storage';
+import { UserDataStorage, DocumentStorage } from './storage';
 
 let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
+let documentStorage: DocumentStorage;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -40,6 +41,7 @@ function createWindow() {
 app.whenReady().then(() => {
   // Initialize storage
   userDataStorage = new UserDataStorage();
+  documentStorage = new DocumentStorage();
   
   createWindow();
 
@@ -263,6 +265,64 @@ ipcMain.handle('delete-interview-response', async (_event, id: string) => {
     await userDataStorage.deleteInterviewResponse(id);
   } catch (error) {
     console.error('Error in delete-interview-response:', error);
+    throw error;
+  }
+});
+
+// ============================================
+// Document Operations IPC Handlers
+// ============================================
+
+ipcMain.handle('get-documents', async () => {
+  try {
+    return await documentStorage.getDocuments();
+  } catch (error) {
+    console.error('Error in get-documents:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('get-document', async (_event, id: string) => {
+  try {
+    return await documentStorage.getDocument(id);
+  } catch (error) {
+    console.error('Error in get-document:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('create-document', async (_event, data) => {
+  try {
+    return await documentStorage.createDocument(data);
+  } catch (error) {
+    console.error('Error in create-document:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('update-document', async (_event, id: string, data) => {
+  try {
+    return await documentStorage.updateDocument(id, data);
+  } catch (error) {
+    console.error('Error in update-document:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('delete-document', async (_event, id: string) => {
+  try {
+    await documentStorage.deleteDocument(id);
+  } catch (error) {
+    console.error('Error in delete-document:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('search-documents', async (_event, query: string) => {
+  try {
+    return await documentStorage.searchDocuments(query);
+  } catch (error) {
+    console.error('Error in search-documents:', error);
     throw error;
   }
 });

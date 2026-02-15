@@ -79,6 +79,25 @@ export interface InterviewResponse {
   updatedAt: string;
 }
 
+export interface DocumentQuestion {
+  id: string;
+  text: string;
+  response: string;
+  isExpanded: boolean;
+}
+
+export interface Document {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  questions: DocumentQuestion[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  lastModified: string;
+}
+
 export interface ElectronAPI {
   // User profile operations
   getUserProfile: () => Promise<UserProfile | null>;
@@ -101,6 +120,14 @@ export interface ElectronAPI {
   createInterviewResponse: (response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<InterviewResponse>;
   updateInterviewResponse: (id: string, response: Partial<InterviewResponse>) => Promise<InterviewResponse>;
   deleteInterviewResponse: (id: string) => Promise<void>;
+  
+  // Document operations
+  getDocuments: () => Promise<Document[]>;
+  getDocument: (id: string) => Promise<Document | null>;
+  createDocument: (data: { title: string; description?: string; questions?: DocumentQuestion[]; tags?: string[] }) => Promise<Document>;
+  updateDocument: (id: string, data: Partial<Document>) => Promise<Document>;
+  deleteDocument: (id: string) => Promise<void>;
+  searchDocuments: (query: string) => Promise<Document[]>;
   
   // File dialogs
   showOpenDialog: (options?: {
@@ -140,6 +167,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   createInterviewResponse: (response: any) => ipcRenderer.invoke('create-interview-response', response),
   updateInterviewResponse: (id: string, response: any) => ipcRenderer.invoke('update-interview-response', id, response),
   deleteInterviewResponse: (id: string) => ipcRenderer.invoke('delete-interview-response', id),
+  
+  // Document operations
+  getDocuments: () => ipcRenderer.invoke('get-documents'),
+  getDocument: (id: string) => ipcRenderer.invoke('get-document', id),
+  createDocument: (data: any) => ipcRenderer.invoke('create-document', data),
+  updateDocument: (id: string, data: any) => ipcRenderer.invoke('update-document', id, data),
+  deleteDocument: (id: string) => ipcRenderer.invoke('delete-document', id),
+  searchDocuments: (query: string) => ipcRenderer.invoke('search-documents', query),
   
   // File dialogs
   showOpenDialog: (options?: any) => ipcRenderer.invoke('show-open-dialog', options),

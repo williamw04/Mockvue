@@ -144,3 +144,30 @@ export interface InterviewResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+// Document Types (Q&A Document)
+export interface DocumentQuestion {
+  id: string;
+  text: string;
+  response: string;
+  isExpanded: boolean;
+}
+
+export interface Document {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  questions: DocumentQuestion[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  lastModified: string;
+}
+
+export interface DocumentData {
+  title: string;
+  description?: string;
+  questions?: DocumentQuestion[];
+  tags?: string[];
+}
