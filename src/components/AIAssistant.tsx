@@ -90,10 +90,10 @@ export function AIAssistant() {
   const selectedCapability = capabilities.find(c => c.feature === selectedFeature);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-50 p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div className="bg-surface rounded-2xl shadow-xl p-8 mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
             🤖 AI Assistant Demo
           </h1>
@@ -112,7 +112,7 @@ export function AIAssistant() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Panel - Feature Selection */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-xl p-6">
+            <div className="bg-surface rounded-2xl shadow-xl p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 AI Features
               </h2>
@@ -157,7 +157,7 @@ export function AIAssistant() {
           {/* Right Panel - Input & Results */}
           <div className="lg:col-span-2 space-y-6">
             {/* Input Section */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
+            <div className="bg-surface rounded-2xl shadow-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-gray-900">
                   {selectedCapability?.icon} {selectedCapability?.name}
@@ -248,7 +248,7 @@ export function AIAssistant() {
 
             {/* Results Section */}
             {(result || streamingText || isLoading) && (
-              <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="bg-surface rounded-2xl shadow-xl p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   📤 Result
                 </h2>
@@ -271,7 +271,7 @@ export function AIAssistant() {
 
             {/* History Section */}
             {showHistory && (
-              <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="bg-surface rounded-2xl shadow-xl p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   📜 Task History
                 </h2>
@@ -321,7 +321,7 @@ export function AIAssistant() {
         </div>
 
         {/* Architecture Info */}
-        <div className="mt-8 bg-white rounded-2xl shadow-xl p-8">
+        <div className="mt-8 bg-surface rounded-2xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             🏗️ Architecture Overview
           </h2>

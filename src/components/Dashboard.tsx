@@ -7,7 +7,6 @@ import { DocumentGrid } from './documents/DocumentGrid';
 import { ProgressStats, Story, Document } from '../types';
 import { useUser, useDocuments, useNotifications } from '../services';
 import { getPlatformInfo } from '../utils/platform';
-import { useTheme } from '../services/ThemeContext';
 
 // Mock data for widgets (can be made dynamic later)
 const progressStats: ProgressStats = {
@@ -22,7 +21,6 @@ export function Dashboard() {
   const userService = useUser();
   const documentService = useDocuments();
   const notifications = useNotifications();
-  const { theme } = useTheme();
   const [stories, setStories] = useState<Story[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +28,7 @@ export function Dashboard() {
   // Load stories and documents on mount
   useEffect(() => {
     loadData();
-    
+
     // Log platform info
     const platformInfo = getPlatformInfo();
     console.log('Running on:', platformInfo.platform, '|', platformInfo.os);
@@ -70,17 +68,17 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className={`flex h-screen items-center justify-center transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="flex h-screen items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Loading...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`flex h-screen overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* Sidebar */}
       <Sidebar onNavigate={handleNavigation} />
 
@@ -103,15 +101,15 @@ export function Dashboard() {
           </div>
 
           {/* Stories Quick Access */}
-          <div className={`mb-6 rounded-2xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
+          <div className="mb-6 rounded-2xl p-6 bg-surface shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="text-3xl">📚</div>
                 <div>
-                  <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  <h2 className="text-xl font-bold text-gray-900">
                     Your Stories
                   </h2>
-                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <p className="text-sm text-gray-600">
                     {stories.length} {stories.length === 1 ? 'story' : 'stories'} ready for interviews
                   </p>
                 </div>
@@ -125,9 +123,9 @@ export function Dashboard() {
             </div>
 
             {stories.length === 0 ? (
-              <div className={`text-center py-8 border-2 border-dashed rounded-lg ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className="text-center py-8 border-2 border-dashed rounded-lg border-gray-200">
                 <div className="text-4xl mb-3">✍️</div>
-                <p className={`text-sm mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className="text-sm mb-4 text-gray-600">
                   You haven't created any stories yet
                 </p>
                 <Link
@@ -143,24 +141,16 @@ export function Dashboard() {
                   <Link
                     key={story.id}
                     to="/stories"
-                    className={`p-4 rounded-lg transition-all hover:shadow-md ${
-                      theme === 'dark'
-                        ? 'bg-gray-700 hover:bg-gray-600'
-                        : 'bg-gray-50 hover:bg-gray-100'
-                    }`}
+                    className="p-4 rounded-lg transition-all hover:shadow-md bg-gray-50 hover:bg-gray-100"
                   >
-                    <h3 className={`font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    <h3 className="font-semibold mb-2 text-gray-900">
                       {story.title}
                     </h3>
                     <div className="flex flex-wrap gap-1">
                       {story.tags.slice(0, 2).map(tag => (
                         <span
                           key={tag}
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            theme === 'dark'
-                              ? 'bg-blue-900/30 text-blue-400'
-                              : 'bg-blue-100 text-blue-700'
-                          }`}
+                          className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700"
                         >
                           {tag}
                         </span>
@@ -179,7 +169,7 @@ export function Dashboard() {
           </div>
 
           {/* Documents Grid */}
-          <DocumentGrid 
+          <DocumentGrid
             documents={documents}
             onDelete={handleDeleteDocument}
           />
@@ -187,4 +177,4 @@ export function Dashboard() {
       </main>
     </div>
   );
-};
+}

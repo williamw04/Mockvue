@@ -5,16 +5,14 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { QuestionItem } from './QuestionItem';
 import { Plus, ChevronsDown, ChevronsUp, Save, ArrowLeft } from 'lucide-react';
 import { DocumentQuestion, Document } from '../../types';
-import { useTheme } from '../../services/ThemeContext';
 import { useNotifications, useDocuments } from '../../services';
 
 export default function DocumentPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const notifications = useNotifications();
   const documentService = useDocuments();
-  
+
   const [document, setDocument] = useState<Document | null>(null);
   const [questions, setQuestions] = useState<DocumentQuestion[]>([]);
   const [title, setTitle] = useState('Untitled Document');
@@ -38,7 +36,6 @@ export default function DocumentPage() {
           setQuestions(doc.questions);
         }
       } else {
-        // New document
         const defaultQuestions: DocumentQuestion[] = [
           { id: '1', text: 'What is your primary goal for this project?', response: '', isExpanded: false },
           { id: '2', text: 'Who is your target audience?', response: '', isExpanded: false },
@@ -127,10 +124,10 @@ export default function DocumentPage() {
 
   if (loading) {
     return (
-      <div className={`flex h-screen items-center justify-center ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="flex h-screen items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Loading document...</p>
+          <p className="text-gray-600">Loading document...</p>
         </div>
       </div>
     );
@@ -138,17 +135,12 @@ export default function DocumentPage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} py-8 px-4`}>
+      <div className="min-h-screen bg-gray-100 py-8 px-4">
         <div className="max-w-3xl mx-auto">
-          {/* Header with Back Button and Save */}
           <div className="mb-6 flex items-center justify-between">
             <button
               onClick={() => navigate('/')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                theme === 'dark'
-                  ? 'hover:bg-gray-800 text-gray-300'
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 text-gray-600"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Dashboard
@@ -164,38 +156,28 @@ export default function DocumentPage() {
             </button>
           </div>
 
-          {/* Title and Description */}
           <div className="mb-8">
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className={`w-full text-3xl font-bold mb-3 bg-transparent border-none focus:outline-none focus:ring-0 p-0 ${
-                theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
-              }`}
+              className="w-full text-3xl font-bold mb-3 bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-gray-900"
               placeholder="Document Title"
             />
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className={`w-full bg-transparent border-none focus:outline-none focus:ring-0 p-0 ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-              }`}
+              className="w-full bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-gray-600"
               placeholder="Add a description..."
             />
           </div>
 
-          {/* Expand/Collapse All Button */}
           {questions.length > 0 && (
             <div className="mb-4 flex justify-end">
               <button
                 onClick={toggleExpandAll}
-                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-gray-800 border-gray-700 hover:bg-gray-700 text-gray-300'
-                    : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
-                }`}
+                className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors bg-surface border-gray-200 hover:bg-gray-50 text-gray-700"
               >
                 {allExpanded ? (
                   <>
@@ -212,7 +194,6 @@ export default function DocumentPage() {
             </div>
           )}
 
-          {/* Questions List */}
           <div className="mb-4">
             <div className="rounded-lg overflow-hidden shadow-sm">
               {questions.map((question, index) => (
@@ -228,24 +209,15 @@ export default function DocumentPage() {
                 />
               ))}
             </div>
-            
+
             {questions.length > 0 && (
-              <div className={`h-2 rounded-b-lg -mt-1 ${
-                theme === 'dark'
-                  ? 'bg-gradient-to-b from-gray-700/50 to-transparent'
-                  : 'bg-gradient-to-b from-gray-200/50 to-transparent'
-              }`}></div>
+              <div className="h-2 rounded-b-lg -mt-1 bg-gradient-to-b from-gray-200/50 to-transparent"></div>
             )}
           </div>
 
-          {/* Add Question Button */}
           <button
             onClick={addQuestion}
-            className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
-              theme === 'dark'
-                ? 'bg-gray-800 border-gray-700 hover:bg-gray-700 text-gray-300'
-                : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
-            }`}
+            className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors bg-surface border-gray-200 hover:bg-gray-50 text-gray-700"
           >
             <Plus className="w-4 h-4" />
             Add Question

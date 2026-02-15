@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useTheme } from '../../services/ThemeContext';
 import { useUser, useNotifications } from '../../services';
 import { Story } from '../../types';
 
@@ -38,10 +37,9 @@ const storyPrompts = [
 ];
 
 export default function StoryCreationStep({ onComplete }: StoryCreationStepProps) {
-  const { theme } = useTheme();
   const userService = useUser();
   const notifications = useNotifications();
-  
+
   const [stories, setStories] = useState<StoryForm[]>([
     { title: '', situation: '', task: '', action: '', result: '', tags: [] }
   ]);
@@ -99,10 +97,10 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
         result: currentStory.result,
         tags: currentStory.tags,
       });
-      
+
       setSavedStories([...savedStories, saved]);
       await notifications.showSuccess('Story saved! ✓');
-      
+
       // Clear current story
       const updated = [...stories];
       updated[currentStoryIndex] = { title: '', situation: '', task: '', action: '', result: '', tags: [] };
@@ -116,8 +114,8 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
   };
 
   const isStoryComplete = (story: StoryForm) => {
-    return story.title.trim() && story.situation.trim() && story.task.trim() && 
-           story.action.trim() && story.result.trim();
+    return story.title.trim() && story.situation.trim() && story.task.trim() &&
+      story.action.trim() && story.result.trim();
   };
 
   const canProceed = savedStories.length >= 3;
@@ -132,16 +130,16 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
         <div className="text-5xl mb-4">📚</div>
-        <h1 className={`text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+        <h1 className="text-3xl font-bold mb-2 text-gray-900">
           Create Your Stories
         </h1>
-        <p className={`text-lg mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className="text-lg mb-4 text-gray-600">
           Build a library of experiences using the STAR method
         </p>
         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
           canProceed
-            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+            ? 'bg-green-100 text-green-800'
+            : 'bg-yellow-100 text-yellow-800'
         }`}>
           <span className="font-semibold">{savedStories.length} / 3</span>
           <span className="text-sm">stories completed</span>
@@ -151,9 +149,9 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Story Editor */}
         <div className="lg:col-span-2">
-          <div className={`rounded-2xl p-8 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-xl`}>
+          <div className="rounded-2xl p-8 bg-surface shadow-xl">
             <div className="mb-6">
-              <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 Story Title *
               </label>
               <input
@@ -161,11 +159,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                 value={currentStory.title}
                 onChange={(e) => updateStory('title', e.target.value)}
                 placeholder="Give your story a memorable title"
-                className={`w-full px-4 py-3 rounded-lg border text-lg font-medium ${
-                  theme === 'dark'
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                className="w-full px-4 py-3 rounded-lg border bg-surface border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
@@ -177,7 +171,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
                     S
                   </div>
-                  <label className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label className="text-sm font-semibold text-gray-700">
                     Situation - Set the context *
                   </label>
                 </div>
@@ -186,11 +180,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   onChange={(e) => updateStory('situation', e.target.value)}
                   placeholder="Describe the situation or challenge you faced. Where were you? What was happening?"
                   rows={3}
-                  className={`w-full px-4 py-3 rounded-lg border ${
-                    theme === 'dark'
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                  className="w-full px-4 py-3 rounded-lg border bg-surface border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
@@ -200,7 +190,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-sm">
                     T
                   </div>
-                  <label className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label className="text-sm font-semibold text-gray-700">
                     Task - What was your responsibility? *
                   </label>
                 </div>
@@ -209,11 +199,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   onChange={(e) => updateStory('task', e.target.value)}
                   placeholder="What was your specific role or responsibility in this situation?"
                   rows={3}
-                  className={`w-full px-4 py-3 rounded-lg border ${
-                    theme === 'dark'
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                  className="w-full px-4 py-3 rounded-lg border bg-surface border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
@@ -223,7 +209,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-sm">
                     A
                   </div>
-                  <label className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label className="text-sm font-semibold text-gray-700">
                     Action - What did you do? *
                   </label>
                 </div>
@@ -232,11 +218,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   onChange={(e) => updateStory('action', e.target.value)}
                   placeholder="Describe the specific actions you took. Focus on YOUR contributions."
                   rows={4}
-                  className={`w-full px-4 py-3 rounded-lg border ${
-                    theme === 'dark'
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                  className="w-full px-4 py-3 rounded-lg border bg-surface border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
@@ -246,7 +228,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-sm">
                     R
                   </div>
-                  <label className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label className="text-sm font-semibold text-gray-700">
                     Result - What was the outcome? *
                   </label>
                 </div>
@@ -255,17 +237,13 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                   onChange={(e) => updateStory('result', e.target.value)}
                   placeholder="What happened as a result? Include metrics and quantifiable impact if possible."
                   rows={3}
-                  className={`w-full px-4 py-3 rounded-lg border ${
-                    theme === 'dark'
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                  className="w-full px-4 py-3 rounded-lg border bg-surface border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
               {/* Tags */}
               <div>
-                <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
                   Tags (select all that apply)
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -276,8 +254,6 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                         currentStory.tags.includes(tag)
                           ? 'bg-blue-600 text-white'
-                          : theme === 'dark'
-                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -300,11 +276,7 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
               {savedStories.length > 0 && (
                 <button
                   onClick={addNewStory}
-                  className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                    theme === 'dark'
-                      ? 'bg-gray-700 text-white hover:bg-gray-600'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
+                  className="px-6 py-3 rounded-lg font-semibold transition-colors bg-gray-100 text-gray-900 hover:bg-gray-200"
                 >
                   + New Story
                 </button>
@@ -316,11 +288,11 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Tips */}
-          <div className={`rounded-xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-            <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          <div className="rounded-xl p-6 bg-surface shadow-lg">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">
               💡 Tips
             </h3>
-            <ul className={`space-y-3 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+            <ul className="space-y-3 text-sm text-gray-600">
               <li>• Be specific and use numbers when possible</li>
               <li>• Focus on YOUR actions, not the team's</li>
               <li>• Include the impact of your work</li>
@@ -329,12 +301,12 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
           </div>
 
           {/* Saved Stories */}
-          <div className={`rounded-xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-            <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          <div className="rounded-xl p-6 bg-surface shadow-lg">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">
               ✓ Saved Stories ({savedStories.length})
             </h3>
             {savedStories.length === 0 ? (
-              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className="text-sm text-gray-500">
                 No stories saved yet
               </p>
             ) : (
@@ -342,20 +314,16 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
                 {savedStories.map((story) => (
                   <div
                     key={story.id}
-                    className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}`}
+                    className="p-3 rounded-lg bg-gray-50"
                   >
-                    <div className={`font-medium text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    <div className="font-medium text-sm text-gray-900">
                       {story.title}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {story.tags.slice(0, 2).map(tag => (
                         <span
                           key={tag}
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            theme === 'dark'
-                              ? 'bg-blue-900/30 text-blue-400'
-                              : 'bg-blue-100 text-blue-700'
-                          }`}
+                          className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700"
                         >
                           {tag}
                         </span>
@@ -368,11 +336,11 @@ export default function StoryCreationStep({ onComplete }: StoryCreationStepProps
           </div>
 
           {/* Common Questions */}
-          <div className={`rounded-xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-            <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          <div className="rounded-xl p-6 bg-surface shadow-lg">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">
               🎯 Story Ideas
             </h3>
-            <ul className={`space-y-2 text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+            <ul className="space-y-2 text-xs text-gray-600">
               {storyPrompts.map((prompt, i) => (
                 <li key={i}>• {prompt}</li>
               ))}

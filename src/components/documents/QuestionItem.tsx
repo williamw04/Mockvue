@@ -37,34 +37,17 @@ export function QuestionItem({
   const [{ isOver }, drop] = useDrop({
     accept: ITEM_TYPE,
     hover: (item: { index: number }, monitor) => {
-      if (!ref.current) {
-        return;
-      }
+      if (!ref.current) return;
       const dragIndex = item.index;
       const hoverIndex = index;
-
-      if (dragIndex === hoverIndex) {
-        return;
-      }
-
+      if (dragIndex === hoverIndex) return;
       const hoverBoundingRect = ref.current.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
-      
-      if (!clientOffset) {
-        return;
-      }
-
+      if (!clientOffset) return;
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return;
-      }
-
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return;
-      }
-
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
       moveQuestion(dragIndex, hoverIndex);
       item.index = hoverIndex;
     },
@@ -78,43 +61,32 @@ export function QuestionItem({
   return (
     <div
       ref={ref}
-      className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all ${
+      className={`bg-surface border border-gray-200 transition-all ${
         isDragging ? 'opacity-40' : 'opacity-100'
-      } ${isOver ? 'border-blue-400 dark:border-blue-500' : ''} ${
+      } ${isOver ? 'border-blue-400' : ''} ${
         index === 0 ? 'rounded-t-lg' : '-mt-px'
       }`}
-      style={{
-        cursor: 'move',
-      }}
+      style={{ cursor: 'move' }}
     >
       <div
-        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div ref={drag} className="cursor-grab active:cursor-grabbing">
-          <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+          <GripVertical className="w-5 h-5 text-gray-400" />
         </div>
-        
         <button
-          className="flex-shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsExpanded(!isExpanded);
-          }}
+          className="flex-shrink-0 text-gray-500 hover:text-gray-700"
+          onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
         >
-          {isExpanded ? (
-            <ChevronDown className="w-5 h-5" />
-          ) : (
-            <ChevronRight className="w-5 h-5" />
-          )}
+          {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
         </button>
-
         <div className="flex-1">
           <input
             type="text"
             value={question.text}
             onChange={(e) => updateQuestionText(question.id, e.target.value)}
-            className="w-full bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 border-none p-0"
+            className="w-full bg-transparent text-gray-900 focus:outline-none focus:ring-0 border-none p-0"
             onClick={(e) => e.stopPropagation()}
             placeholder="Enter question..."
           />
@@ -122,12 +94,12 @@ export function QuestionItem({
       </div>
 
       {isExpanded && (
-        <div className="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
+        <div className="px-4 pb-4 pt-2 border-t border-gray-100">
           <textarea
             value={question.response}
             onChange={(e) => updateResponse(question.id, e.target.value)}
             placeholder="Type your response here..."
-            className="w-full min-h-[120px] p-3 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            className="w-full min-h-[120px] p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y bg-white text-gray-900"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
