@@ -21,6 +21,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
   }, []);
 
   const handleNavigation = (section: string) => {
+    if (section === 'search') {
+      if (onNavigate) onNavigate(section);
+      return;
+    }
     setActiveSection(section);
     if (onNavigate) {
       onNavigate(section);
@@ -47,15 +51,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
       ),
     },
     {
-      id: 'documents',
-      label: 'All Documents',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-    },
-    {
       id: 'resources',
       label: 'Resources',
       icon: (
@@ -76,23 +71,23 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <aside className="w-60 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <aside className="w-60 border-r flex flex-col h-screen bg-surface border-gray-200">
       {/* User Profile Section */}
       <div className="p-4 relative" ref={dropdownRef}>
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-gray-50"
         >
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
             W
           </div>
           <div className="flex-1 text-left min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">William Wu</p>
+            <p className="text-sm font-semibold truncate text-gray-900">William Wu</p>
           </div>
-          <svg 
+          <svg
             className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-            fill="none" 
-            stroke="currentColor" 
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -101,41 +96,29 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
 
         {/* Dropdown Menu */}
         {isDropdownOpen && (
-          <div className="absolute top-full left-4 right-4 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+          <div className="absolute top-full left-4 right-4 mt-2 rounded-lg shadow-xl border z-50 overflow-hidden bg-surface border-gray-200">
             {/* User Info Section */}
             <div className="p-4 text-center border-b border-gray-100">
-              <div className="relative w-16 h-16 mx-auto mb-3 group cursor-pointer">
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-semibold">
-                  W
-                </div>
-                {/* Pencil icon on hover */}
-                <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center">
-                  <svg 
-                    className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </div>
+              <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-semibold">
+                W
               </div>
-              <p className="text-sm font-semibold text-gray-900">William Wu</p>
+              <p className="text-sm font-semibold mb-1 text-gray-900">William Wu</p>
+              <button className="text-xs text-gray-500 hover:text-gray-700">Change photo</button>
             </div>
 
             {/* Menu Options */}
             <div className="py-2">
-              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors">
+              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 transition-colors hover:bg-gray-50">
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                 </svg>
-                <span className="text-sm text-gray-700 flex-1">Theme</span>
+                <span className="text-sm flex-1 text-gray-700">Theme</span>
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
 
-              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors">
+              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 transition-colors hover:bg-gray-50">
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
@@ -143,16 +126,29 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
               </button>
             </div>
 
+            {/* Community Profile Section */}
+            <div className="border-t p-3 border-gray-100">
+              <button className="w-full flex items-start gap-3 px-2 py-2 rounded-lg transition-colors hover:bg-gray-50">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                  W
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-xs font-medium text-gray-900">Create a community profile</p>
+                  <p className="text-xs text-gray-500">williamwu120@gmail.com</p>
+                </div>
+              </button>
+            </div>
+
             {/* Bottom Actions */}
-            <div className="border-t border-gray-100 py-2">
-              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors">
+            <div className="border-t py-2 border-gray-100">
+              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 transition-colors hover:bg-gray-50">
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="text-sm text-gray-700">Add account</span>
               </button>
 
-              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors text-red-600">
+              <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 transition-colors text-red-600 hover:bg-gray-50">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
@@ -170,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
             <li key={item.id}>
               <button
                 onClick={() => handleNavigation(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   activeSection === item.id
                     ? 'bg-blue-50 text-blue-600 font-medium'
                     : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
@@ -190,4 +186,3 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
 };
 
 export default Sidebar;
-

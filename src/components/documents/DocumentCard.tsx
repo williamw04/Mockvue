@@ -1,0 +1,69 @@
+import { Link } from 'react-router-dom';
+import { FileText, Calendar, Trash2 } from 'lucide-react';
+import { Document } from '../../types';
+
+interface DocumentCardProps {
+  document: Document;
+  onDelete: (id: string) => void;
+}
+
+export function DocumentCard({ document, onDelete }: DocumentCardProps) {
+  const questionCount = document.questions.length;
+  const answeredCount = document.questions.filter(q => q.response.trim().length > 0).length;
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-surface transition-all hover:shadow-md hover:border-gray-300">
+      <Link to={`/document/${document.id}`} className="block p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-600" />
+            <h3 className="font-semibold text-gray-900">
+              {document.title}
+            </h3>
+          </div>
+        </div>
+        {document.description && (
+          <p className="text-sm mb-3 line-clamp-2 text-gray-600">
+            {document.description}
+          </p>
+        )}
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-4">
+            <span>{questionCount} questions</span>
+            <span>{answeredCount}/{questionCount} answered</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            {formatDate(document.lastModified)}
+          </div>
+        </div>
+      </Link>
+      <div className="border-t border-gray-200 px-4 py-2 flex justify-end">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            if (confirm('Are you sure you want to delete this document?')) {
+              onDelete(document.id);
+            }
+          }}
+          className="p-1 rounded hover:bg-red-50 text-red-600 transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}

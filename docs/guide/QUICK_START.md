@@ -32,11 +32,7 @@ This will:
 - ✅ Launch the Electron desktop app
 - ✅ Enable hot-reload for React components
 
-#### Web-Only Development
-```bash
-npm run dev
-```
-Opens the React app in browser at http://localhost:5173 (without Electron)
+
 
 ### Building for Production
 
