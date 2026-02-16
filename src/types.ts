@@ -27,7 +27,7 @@ export interface FilePickerOptions {
 }
 
 // AI Agent Types
-export type AgentFeatureType = 
+export type AgentFeatureType =
   | 'summarize'
   | 'rewrite'
   | 'expand'
@@ -80,8 +80,20 @@ export interface UserProfile {
   targetRole?: string;
   targetCompany?: string;
   onboardingCompleted: boolean;
+  projects: Project[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  role: string;
+  technologies: string[];
+  url?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface WorkExperience {
@@ -110,8 +122,10 @@ export interface Resume {
   workExperiences: WorkExperience[];
   education: Education[];
   skills: string[];
+  projects: Project[];
   summary?: string;
   rawText?: string; // For uploaded resumes
+  resumePdfPath?: string; // Path to stored PDF
   createdAt: string;
   updatedAt: string;
 }

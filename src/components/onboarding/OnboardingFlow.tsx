@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useUser, useNotifications } from '../../services';
 import WelcomeStep from './WelcomeStep';
 import ResumeUploadStep from './ResumeUploadStep';
-import StoryCreationStep from './StoryCreationStep';
 import CompletionStep from './CompletionStep';
 
-type OnboardingStep = 'welcome' | 'resume' | 'stories' | 'completion';
+type OnboardingStep = 'welcome' | 'resume' | 'completion';
 
 export default function OnboardingFlow() {
   const navigate = useNavigate();
@@ -39,12 +38,8 @@ export default function OnboardingFlow() {
   };
 
   const handleResumeComplete = async () => {
-    setCurrentStep('stories');
-  };
-
-  const handleStoriesComplete = async () => {
     try {
-      // Save user profile with onboarding completed
+      // Save user profile and move to completion
       await userService.saveUserProfile({
         name: userName,
         targetRole: targetRole,
@@ -71,8 +66,7 @@ export default function OnboardingFlow() {
   const steps = [
     { id: 'welcome', label: 'Welcome', number: 1 },
     { id: 'resume', label: 'Resume', number: 2 },
-    { id: 'stories', label: 'Stories', number: 3 },
-    { id: 'completion', label: 'Complete', number: 4 },
+    { id: 'completion', label: 'Complete', number: 3 },
   ];
 
   const currentStepNumber = steps.find(s => s.id === currentStep)?.number || 1;
@@ -95,20 +89,18 @@ export default function OnboardingFlow() {
               <div key={step.id} className="flex items-center flex-1">
                 <div className="flex items-center gap-2 flex-1">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                      step.number <= currentStepNumber
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${step.number <= currentStepNumber
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-500'
-                    }`}
+                      }`}
                   >
                     {step.number}
                   </div>
                   <span
-                    className={`text-sm font-medium ${
-                      step.number <= currentStepNumber
+                    className={`text-sm font-medium ${step.number <= currentStepNumber
                         ? 'text-gray-900'
                         : 'text-gray-500'
-                    }`}
+                      }`}
                   >
                     {step.label}
                   </span>
@@ -116,11 +108,10 @@ export default function OnboardingFlow() {
 
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-2 rounded transition-colors ${
-                      step.number < currentStepNumber
+                    className={`flex-1 h-1 mx-2 rounded transition-colors ${step.number < currentStepNumber
                         ? 'bg-blue-600'
                         : 'bg-gray-200'
-                    }`}
+                      }`}
                   />
                 )}
               </div>
@@ -138,10 +129,6 @@ export default function OnboardingFlow() {
 
           {currentStep === 'resume' && (
             <ResumeUploadStep onComplete={handleResumeComplete} />
-          )}
-
-          {currentStep === 'stories' && (
-            <StoryCreationStep onComplete={handleStoriesComplete} />
           )}
 
           {currentStep === 'completion' && (

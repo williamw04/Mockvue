@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { UserDataStorage, DocumentStorage } from './storage';
+import { extractText, parseResumeWithGemini } from './parser';
 
 let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
@@ -42,7 +43,7 @@ app.whenReady().then(() => {
   // Initialize storage
   userDataStorage = new UserDataStorage();
   documentStorage = new DocumentStorage();
-  
+
   createWindow();
 
   app.on('activate', () => {
@@ -65,7 +66,7 @@ app.on('window-all-closed', () => {
 ipcMain.handle('show-open-dialog', async (_event, options) => {
   try {
     if (!mainWindow) return { canceled: true };
-    
+
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile'],
       filters: options?.filters || [
@@ -73,16 +74,16 @@ ipcMain.handle('show-open-dialog', async (_event, options) => {
       ],
       ...options,
     });
-    
+
     if (result.canceled || !result.filePaths.length) {
       return { canceled: true };
     }
-    
+
     // Read file content
     const filePath = result.filePaths[0];
     const content = fs.readFileSync(filePath, 'utf-8');
     const fileName = path.basename(filePath);
-    
+
     return {
       canceled: false,
       filePath,
@@ -98,7 +99,7 @@ ipcMain.handle('show-open-dialog', async (_event, options) => {
 ipcMain.handle('show-save-dialog', async (_event, content: string, options) => {
   try {
     if (!mainWindow) return { canceled: true };
-    
+
     const result = await dialog.showSaveDialog(mainWindow, {
       defaultPath: options?.defaultPath || 'document.txt',
       filters: options?.filters || [
@@ -109,14 +110,14 @@ ipcMain.handle('show-save-dialog', async (_event, content: string, options) => {
       ],
       ...options,
     });
-    
+
     if (result.canceled || !result.filePath) {
       return { canceled: true };
     }
-    
+
     // Write file
     fs.writeFileSync(result.filePath, content, 'utf-8');
-    
+
     return {
       canceled: false,
       filePath: result.filePath,
@@ -162,6 +163,28 @@ ipcMain.handle('complete-onboarding', async () => {
 // Resume Operations IPC Handlers
 // ============================================
 
+ipcMain.handle('resume:parse', async (_, { filePath, apiKey }: { filePath: string; apiKey: string }) => {
+  try {
+    const text = await extractText(filePath);
+    const parsedData = await parseResumeWithGemini(text, apiKey);
+
+    // Copy PDF to app data directory for later viewing
+    const userDataPath = app.getPath('userData');
+    const resumesDir = path.join(userDataPath, 'user-data', 'resumes');
+    if (!fs.existsSync(resumesDir)) {
+      fs.mkdirSync(resumesDir, { recursive: true });
+    }
+    const pdfFileName = `resume-${Date.now()}.pdf`;
+    const storedPdfPath = path.join(resumesDir, pdfFileName);
+    fs.copyFileSync(filePath, storedPdfPath);
+
+    return { success: true, data: parsedData, rawText: text, pdfPath: storedPdfPath };
+  } catch (error) {
+    console.error('Resume parsing failed:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
 ipcMain.handle('get-resume', async () => {
   try {
     return await userDataStorage.getResume();
@@ -176,6 +199,16 @@ ipcMain.handle('save-resume', async (_event, resume) => {
     return await userDataStorage.saveResume(resume);
   } catch (error) {
     console.error('Error in save-resume:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('open-resume-pdf', async (_, pdfPath: string) => {
+  try {
+    const { shell } = require('electron');
+    await shell.openPath(pdfPath);
+  } catch (error) {
+    console.error('Error opening PDF:', error);
     throw error;
   }
 });

@@ -1,7 +1,7 @@
-import type { 
-  UserProfile, 
-  Resume, 
-  Story, 
+import type {
+  UserProfile,
+  Resume,
+  Story,
   InterviewResponse,
   Document,
   DocumentQuestion
@@ -19,24 +19,26 @@ export interface ElectronAPI {
   getUserProfile: () => Promise<UserProfile | null>;
   saveUserProfile: (profile: Partial<UserProfile>) => Promise<UserProfile>;
   completeOnboarding: () => Promise<void>;
-  
+
   // Resume operations
   getResume: () => Promise<Resume | null>;
   saveResume: (resume: Partial<Resume>) => Promise<Resume>;
-  
+  parseResume: (filePath: string, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string; rawText?: string; pdfPath?: string }>;
+  openResumePdf: (pdfPath: string) => Promise<void>;
+
   // Story operations
   getStories: () => Promise<Story[]>;
   getStory: (id: string) => Promise<Story | null>;
   createStory: (story: Omit<Story, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<Story>;
   updateStory: (id: string, story: Partial<Story>) => Promise<Story>;
   deleteStory: (id: string) => Promise<void>;
-  
+
   // Interview response operations
   getInterviewResponses: () => Promise<InterviewResponse[]>;
   createInterviewResponse: (response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<InterviewResponse>;
   updateInterviewResponse: (id: string, response: Partial<InterviewResponse>) => Promise<InterviewResponse>;
   deleteInterviewResponse: (id: string) => Promise<void>;
-  
+
   // Document operations
   getDocuments: () => Promise<Document[]>;
   getDocument: (id: string) => Promise<Document | null>;
@@ -44,7 +46,7 @@ export interface ElectronAPI {
   updateDocument: (id: string, data: Partial<Document>) => Promise<Document>;
   deleteDocument: (id: string) => Promise<void>;
   searchDocuments: (query: string) => Promise<Document[]>;
-  
+
   // File dialogs
   showOpenDialog: (options?: {
     filters?: Array<{ name: string; extensions: string[] }>;
@@ -54,7 +56,7 @@ export interface ElectronAPI {
     defaultPath?: string;
     filters?: Array<{ name: string; extensions: string[] }>;
   }) => Promise<FileDialogResult>;
-  
+
   // Platform info
   platform: string;
 }
@@ -65,5 +67,5 @@ declare global {
   }
 }
 
-export {};
+export { };
 

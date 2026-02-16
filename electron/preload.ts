@@ -103,24 +103,24 @@ export interface ElectronAPI {
   getUserProfile: () => Promise<UserProfile | null>;
   saveUserProfile: (profile: Partial<UserProfile>) => Promise<UserProfile>;
   completeOnboarding: () => Promise<void>;
-  
+
   // Resume operations
   getResume: () => Promise<Resume | null>;
   saveResume: (resume: Partial<Resume>) => Promise<Resume>;
-  
+
   // Story operations
   getStories: () => Promise<Story[]>;
   getStory: (id: string) => Promise<Story | null>;
   createStory: (story: Omit<Story, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<Story>;
   updateStory: (id: string, story: Partial<Story>) => Promise<Story>;
   deleteStory: (id: string) => Promise<void>;
-  
+
   // Interview response operations
   getInterviewResponses: () => Promise<InterviewResponse[]>;
   createInterviewResponse: (response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<InterviewResponse>;
   updateInterviewResponse: (id: string, response: Partial<InterviewResponse>) => Promise<InterviewResponse>;
   deleteInterviewResponse: (id: string) => Promise<void>;
-  
+
   // Document operations
   getDocuments: () => Promise<Document[]>;
   getDocument: (id: string) => Promise<Document | null>;
@@ -128,7 +128,7 @@ export interface ElectronAPI {
   updateDocument: (id: string, data: Partial<Document>) => Promise<Document>;
   deleteDocument: (id: string) => Promise<void>;
   searchDocuments: (query: string) => Promise<Document[]>;
-  
+
   // File dialogs
   showOpenDialog: (options?: {
     filters?: Array<{ name: string; extensions: string[] }>;
@@ -138,9 +138,12 @@ export interface ElectronAPI {
     defaultPath?: string;
     filters?: Array<{ name: string; extensions: string[] }>;
   }) => Promise<FileDialogResult>;
-  
+
   // Platform info
   platform: string;
+
+  // AI/Agent operations
+  parseResume: (filePath: string, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
 }
 
 // Expose protected methods that allow the renderer process to use
@@ -150,24 +153,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getUserProfile: () => ipcRenderer.invoke('get-user-profile'),
   saveUserProfile: (profile: any) => ipcRenderer.invoke('save-user-profile', profile),
   completeOnboarding: () => ipcRenderer.invoke('complete-onboarding'),
-  
+
   // Resume operations
   getResume: () => ipcRenderer.invoke('get-resume'),
   saveResume: (resume: any) => ipcRenderer.invoke('save-resume', resume),
-  
+
   // Story operations
   getStories: () => ipcRenderer.invoke('get-stories'),
   getStory: (id: string) => ipcRenderer.invoke('get-story', id),
   createStory: (story: any) => ipcRenderer.invoke('create-story', story),
   updateStory: (id: string, story: any) => ipcRenderer.invoke('update-story', id, story),
   deleteStory: (id: string) => ipcRenderer.invoke('delete-story', id),
-  
+
   // Interview response operations
   getInterviewResponses: () => ipcRenderer.invoke('get-interview-responses'),
   createInterviewResponse: (response: any) => ipcRenderer.invoke('create-interview-response', response),
   updateInterviewResponse: (id: string, response: any) => ipcRenderer.invoke('update-interview-response', id, response),
   deleteInterviewResponse: (id: string) => ipcRenderer.invoke('delete-interview-response', id),
-  
+
   // Document operations
   getDocuments: () => ipcRenderer.invoke('get-documents'),
   getDocument: (id: string) => ipcRenderer.invoke('get-document', id),
@@ -175,13 +178,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateDocument: (id: string, data: any) => ipcRenderer.invoke('update-document', id, data),
   deleteDocument: (id: string) => ipcRenderer.invoke('delete-document', id),
   searchDocuments: (query: string) => ipcRenderer.invoke('search-documents', query),
-  
+
   // File dialogs
   showOpenDialog: (options?: any) => ipcRenderer.invoke('show-open-dialog', options),
   showSaveDialog: (content: string, options?: any) => ipcRenderer.invoke('show-save-dialog', content, options),
-  
+
   // Platform info
   platform: process.platform,
+
+  // AI/Agent operations
+  parseResume: (filePath: string, apiKey: string) =>
+    ipcRenderer.invoke('resume:parse', { filePath, apiKey }),
+
+  openResumePdf: (pdfPath: string) =>
+    ipcRenderer.invoke('open-resume-pdf', pdfPath),
 });
 
 declare global {

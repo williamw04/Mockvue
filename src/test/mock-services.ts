@@ -67,6 +67,7 @@ export function createMockAgentService(): IAgentService {
     getTaskHistory: vi.fn().mockResolvedValue([]),
     getTask: vi.fn().mockResolvedValue(null),
     cancelTask: vi.fn().mockResolvedValue(true),
+    parseResume: vi.fn().mockResolvedValue({ success: true, data: {} }),
   };
 }
 

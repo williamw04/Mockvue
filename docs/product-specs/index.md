@@ -4,31 +4,27 @@
 
 This directory contains specifications for all Mockvue features. Each spec includes user stories, acceptance criteria, and success metrics.
 
-## Complete Features
+## Stable / Core Features
 
 - [Document Editor](./document-editor.md) — Q&A document editing with drag-and-drop and auto-save
 - [Document Management](./document-management.md) — Browse, search, sort, and organize documents
-- [User Onboarding](./user-onboarding.md) — Multi-step first-time setup flow
-- [Story Management](./story-management.md) — STAR-method behavioral interview stories
 - [Platform Architecture](./platform-architecture.md) — Electron desktop architecture
 
 ## In Progress
 
-- [AI Assistant](./ai-assistant.md) — AI-powered writing features (UI complete, LLM integration pending)
-- [Resume Management](./resume-management.md) — Resume data entry (onboarding form exists, standalone page planned)
-- [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks (UI exists, real data pending)
+- [Resume Parsing & Import](./user-onboarding.md) — **Redefined**. Upload resume to auto-populate profile.
 
-## Planned
+## Deferred / Blocked
 
-- [Interview Response Builder](./interview-response-builder.md) — Build and practice responses from stories (types/services exist, no UI)
+- [AI Assistant](./ai-assistant.md) — ⛔️ **Deferred**. Context-aware editing tools planned for future.
+- [Story Management](./story-management.md) — ⛔️ **Blocked**. Waiting for Resume Parsing data model.
 
-## Future Considerations
+## Planned / Future
 
-_Features under consideration or in early planning:_
-- Cloud sync between devices
-- Collaborative editing
-- Mobile support (React Native)
-- Plugin system
+- [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks
+- [Resume Management](./resume-management.md) — Standalone resume editor (post-import)
+- [Interview Response Builder](./interview-response-builder.md) — Build responses from stories
+
 
 ## Spec Template
 

@@ -5,6 +5,7 @@ import { AIAssistant } from "./components/AIAssistant";
 import OnboardingFlow from "./components/onboarding/OnboardingFlow";
 import StoriesPage from "./components/StoriesPage";
 import DocumentPage from "./components/documents/DocumentPage";
+import ProfilePage from "./components/ProfilePage";
 import { useUser } from "./services";
 
 // Use HashRouter for Electron compatibility
@@ -22,24 +23,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const checkOnboarding = async () => {
     try {
       let profile = await userService.getUserProfile();
-
-      // DEV: Auto-complete onboarding if not done
-      if (!profile || !profile.onboardingCompleted) {
-        console.log('🚀 DEV MODE: Auto-completing onboarding');
-        if (!profile) {
-          // Create a default profile
-          profile = await userService.saveUserProfile({
-            name: 'Dev User',
-            onboardingCompleted: true,
-          });
-        } else {
-          // Mark existing profile as completed
-          profile = await userService.saveUserProfile({
-            ...profile,
-            onboardingCompleted: true,
-          });
-        }
-      }
 
       setOnboardingComplete(profile?.onboardingCompleted || false);
     } catch (error) {
@@ -110,6 +93,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DocumentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

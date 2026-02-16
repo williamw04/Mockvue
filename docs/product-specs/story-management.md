@@ -1,7 +1,11 @@
 # Feature: Story Management
 
-**Status**: Complete  
-**Last Updated**: 2026-02-14
+**Status**: ⛔️ BLOCKED (Waiting for Resume Parsing)  
+**Last Updated**: 2026-02-16
+
+> [!WARNING]
+> This feature is **blocked** until the Resume Parsing & Import feature is fully implemented. We will redefine "Story Management" based on the data extracted from resumes.
+
 
 ## User Story
 

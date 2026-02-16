@@ -1,7 +1,11 @@
 # Feature: AI Assistant
 
-**Status**: In Progress (UI complete, backend integration pending)  
-**Last Updated**: 2026-02-14
+**Status**: ⛔️ DEFERRED (Future Editor Feature)  
+**Last Updated**: 2026-02-16
+
+> [!CAUTION]
+> This feature is currently **deferred**. It will be reimagined as a set of context-aware writing tools within the Document Editor in a future phase.
+
 
 ## User Story
 

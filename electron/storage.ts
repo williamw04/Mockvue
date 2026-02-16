@@ -38,14 +38,27 @@ export interface Education {
   gpa?: string;
 }
 
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  role: string;
+  technologies: string[];
+  url?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface Resume {
   id: string;
   userId: string;
   workExperiences: WorkExperience[];
   education: Education[];
   skills: string[];
+  projects: Project[];
   summary?: string;
   rawText?: string;
+  resumePdfPath?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -180,8 +193,10 @@ export class UserDataStorage {
         workExperiences: resume.workExperiences || existing?.workExperiences || [],
         education: resume.education || existing?.education || [],
         skills: resume.skills || existing?.skills || [],
+        projects: resume.projects || existing?.projects || [],
         summary: resume.summary || existing?.summary,
         rawText: resume.rawText || existing?.rawText,
+        resumePdfPath: resume.resumePdfPath || existing?.resumePdfPath,
         createdAt: existing?.createdAt || now,
         updatedAt: now,
       };
@@ -401,7 +416,7 @@ export class DocumentStorage {
         const data = fs.readFileSync(this.documentsFile, 'utf-8');
         const documents = JSON.parse(data);
         // Sort by last modified (most recent first)
-        return documents.sort((a: Document, b: Document) => 
+        return documents.sort((a: Document, b: Document) =>
           new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
         );
       }
@@ -496,7 +511,7 @@ export class DocumentStorage {
         doc.title.toLowerCase().includes(lowerQuery) ||
         doc.description?.toLowerCase().includes(lowerQuery) ||
         doc.tags.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
-        doc.questions.some(q => 
+        doc.questions.some(q =>
           q.text.toLowerCase().includes(lowerQuery) ||
           q.response.toLowerCase().includes(lowerQuery)
         )

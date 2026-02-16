@@ -225,4 +225,26 @@ export class ElectronAgentService implements IAgentService {
       console.log(`Caching task ${taskId} with ${result.length} characters to file system`);
     }
   }
+
+  /**
+   * Parse a resume by sending file path to Electron backend
+   */
+  async parseResume(filePath: string, apiKey: string): Promise<any> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      // @ts-ignore - We will update preload.ts to include parseResume
+      const result = await window.electronAPI.parseResume(filePath, apiKey);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
+    } catch (error) {
+      console.error('Error parsing resume:', error);
+      throw error;
+    }
+  }
 }
