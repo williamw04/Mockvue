@@ -4,21 +4,27 @@
 
 This directory contains specifications for all Mockvue features. Each spec includes user stories, acceptance criteria, and success metrics.
 
-## Core Features
+## Complete Features
 
-- [Document Editor](./document-editor.md) - Rich text document editing with auto-save
-- [Document Management](./document-management.md) - Create, organize, search, and export documents
-- [User Onboarding](./user-onboarding.md) - First-time user setup flow
-- [AI Assistant](./ai-assistant.md) - AI-powered writing features
-- [Story Management](./story-management.md) - Interview stories and STAR format responses
+- [Document Editor](./document-editor.md) — Q&A document editing with drag-and-drop and auto-save
+- [Document Management](./document-management.md) — Browse, search, sort, and organize documents
+- [User Onboarding](./user-onboarding.md) — Multi-step first-time setup flow
+- [Story Management](./story-management.md) — STAR-method behavioral interview stories
+- [Cross-Platform Support](./cross-platform.md) — Electron desktop + Web browser via service abstraction
 
-## Cross-Platform
+## In Progress
 
-- [Cross-Platform Support](./cross-platform.md) - Electron desktop + Web browser support
+- [AI Assistant](./ai-assistant.md) — AI-powered writing features (UI complete, LLM integration pending)
+- [Resume Management](./resume-management.md) — Resume data entry (onboarding form exists, standalone page planned)
+- [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks (UI exists, real data pending)
 
-## Planned Features
+## Planned
 
-_Features under consideration or in planning:_
+- [Interview Response Builder](./interview-response-builder.md) — Build and practice responses from stories (types/services exist, no UI)
+
+## Future Considerations
+
+_Features under consideration or in early planning:_
 - Cloud sync between devices
 - Collaborative editing
 - Mobile support (React Native)

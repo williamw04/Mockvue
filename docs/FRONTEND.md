@@ -1,9 +1,9 @@
 # Frontend Patterns & Conventions
 
-**Version**: 1.1.0  
+**Version**: 2.0.0  
 **Last Updated**: 2026-02-14
 
-This document covers frontend-specific patterns, UI conventions, and component guidelines for Mockvue. **The document editor components define the canonical style, theme, and text patterns for the entire project** — all new UI should match their look and feel.
+This document covers frontend-specific patterns, UI conventions, and component guidelines for Mockvue. **The document editor components define the canonical style and text patterns for the entire project** — all new UI should match their look and feel.
 
 ## Tech Stack
 
@@ -23,71 +23,60 @@ This document covers frontend-specific patterns, UI conventions, and component g
 
 The document editor (`src/components/documents/`) is the **reference implementation** for Mockvue's visual identity. All components should follow these patterns.
 
-### Theme System
+### Color Mode
 
-Theme is managed via React Context (`src/services/ThemeContext.tsx`), NOT Tailwind's `dark:` class strategy (though some components use both — see note below).
-
-```typescript
-import { useTheme } from '../services/ThemeContext';
-
-const { theme } = useTheme();  // Returns 'light' | 'dark'
-```
-
-The `ThemeProvider` persists the user's preference in `localStorage` and respects `prefers-color-scheme`. It adds `'light'` or `'dark'` as a class on `<html>`.
-
-**Important**: The codebase uses **two theming approaches** side by side:
-1. **Conditional classes via `theme` variable** (primary pattern, used in DocumentPage, Dashboard, Sidebar, DocumentCard, DocumentGrid)
-2. **Tailwind `dark:` prefix** (used in QuestionItem, some UI primitives)
-
-When writing new components, **use the `theme` variable approach** for consistency with page-level components. Use `dark:` only in low-level UI primitives that don't have access to the theme context.
+**Light-mode only.** There is no dark mode. Do not use `dark:` Tailwind prefixes, `useTheme()`, or conditional theme logic. All components use a single set of colors.
 
 ### Color Palette
 
 #### Backgrounds
-| Role | Light | Dark |
-|------|-------|------|
-| Page background | `bg-gray-50` | `bg-gray-900` |
-| Card / Panel | `bg-white` | `bg-gray-800` |
-| Card nested / hover | `bg-gray-50` / `hover:bg-gray-100` | `bg-gray-700` / `hover:bg-gray-600` |
-| Input background | `bg-white` | `bg-gray-900` |
-| Elevated dropdown | `bg-white` | `bg-gray-800` |
+| Role | Class |
+|------|-------|
+| Page background | `bg-gray-100` |
+| Card / Panel | `bg-surface` (#fafbfc) |
+| Card nested / hover | `bg-gray-50` / `hover:bg-gray-100` |
+| Input background | `bg-surface` |
+| Elevated dropdown | `bg-surface` |
 
 #### Text
-| Role | Light | Dark |
-|------|-------|------|
-| Heading / Primary | `text-gray-900` | `text-gray-100` or `text-white` |
-| Body / Secondary | `text-gray-600` | `text-gray-400` |
-| Muted / Tertiary | `text-gray-500` | `text-gray-500` |
-| Placeholder | `text-gray-400` (via placeholder attr) | `text-gray-500` |
+| Role | Class |
+|------|-------|
+| Heading / Primary | `text-gray-900` |
+| Body / Secondary | `text-gray-600` |
+| Muted / Tertiary | `text-gray-500` |
+| Placeholder | `placeholder-gray-400` |
 
 #### Borders
-| Role | Light | Dark |
-|------|-------|------|
-| Card border | `border-gray-200` | `border-gray-700` |
-| Divider / separator | `border-gray-100` or `border-gray-200` | `border-gray-700` |
-| Input border | `border-gray-200` | `border-gray-600` |
-| Active / focus | `border-blue-400` or `ring-blue-500` | `border-blue-500` or `ring-blue-500` |
+| Role | Class |
+|------|-------|
+| Card border | `border-gray-200` |
+| Divider / separator | `border-gray-100` or `border-gray-200` |
+| Input border | `border-gray-200` or `border-gray-300` |
+| Active / focus | `border-blue-400` or `ring-blue-500` |
 
 #### Accent Colors
 | Role | Value |
 |------|-------|
 | Primary action | `bg-blue-600 hover:bg-blue-700 text-white` |
-| Primary icon | `text-blue-600` (light) / `text-blue-400` (dark) |
-| Active nav | `bg-blue-50 text-blue-600` (light) / `bg-blue-900/20 text-blue-400` (dark) |
-| Tag / Badge | `bg-blue-100 text-blue-700` (light) / `bg-blue-900/30 text-blue-400` (dark) |
-| Destructive | `text-red-600` (light) / `text-red-400` (dark) |
+| Primary icon | `text-blue-600` |
+| Active nav | `bg-blue-50 text-blue-600` |
+| Tag / Badge | `bg-blue-100 text-blue-700` |
+| Destructive | `text-red-600` |
 | Banner gradient | `bg-gradient-to-r from-blue-500 to-purple-600 text-white` |
 | Avatar gradient | `bg-gradient-to-br from-blue-500 to-purple-600 text-white` |
 
 #### Custom Tailwind Colors
 Defined in `tailwind.config.js`:
 ```javascript
-primary: {
-  50: '#f0f9ff',
-  100: '#e0f2fe',
-  500: '#3b82f6',
-  600: '#2563eb',
-  700: '#1d4ed8',
+colors: {
+  primary: {
+    50: '#f0f9ff',
+    100: '#e0f2fe',
+    500: '#3b82f6',
+    600: '#2563eb',
+    700: '#1d4ed8',
+  },
+  surface: '#fafbfc',  // Soft white for cards, panels, sidebars
 }
 ```
 
@@ -115,14 +104,14 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
 #### Page Layout
 ```tsx
 // Full-screen page with centered content (DocumentPage pattern)
-<div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} py-8 px-4`}>
+<div className="min-h-screen bg-gray-100 py-8 px-4">
   <div className="max-w-3xl mx-auto">
     {/* Content */}
   </div>
 </div>
 
 // Dashboard layout with sidebar
-<div className={`flex h-screen overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+<div className="flex h-screen overflow-hidden bg-gray-100">
   <Sidebar />
   <main className="flex-1 overflow-y-auto">
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -135,14 +124,10 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
 #### Card Pattern (from DocumentGrid / DocumentCard)
 ```tsx
 // Container card
-<div className={`rounded-2xl p-6 shadow-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+<div className="rounded-2xl p-6 shadow-lg bg-surface">
 
 // Item card within a grid
-<div className={`rounded-lg border transition-all hover:shadow-md ${
-  theme === 'dark'
-    ? 'bg-gray-800 border-gray-700 hover:border-gray-600'
-    : 'bg-white border-gray-200 hover:border-gray-300'
-}`}>
+<div className="rounded-lg border transition-all hover:shadow-md bg-surface border-gray-200 hover:border-gray-300">
 ```
 
 #### Common Spacing
@@ -158,7 +143,7 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
 | Page-level cards | `rounded-2xl` |
 | Item cards | `rounded-lg` |
 | Buttons | `rounded-lg` |
-| Inputs | `rounded-md` |
+| Inputs | `rounded-md` or `rounded-lg` |
 | Tags / Badges | `rounded-full` |
 | Avatar | `rounded-full` |
 
@@ -171,10 +156,9 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
 ### Transitions
 All interactive elements use `transition-colors` or `transition-all`:
 ```tsx
-className="transition-colors"      // for color-only changes
-className="transition-all"         // for hover effects with shadow/border
+className="transition-colors"      // for color-only changes (buttons, links)
+className="transition-all"         // for hover effects with shadow/border (cards)
 className="transition-all duration-200"  // for navigation state changes
-className="transition-colors duration-200"  // for theme transitions
 ```
 
 ## Component Architecture
@@ -204,7 +188,7 @@ src/components/
 - Fetch data from services via hooks
 - Manage page-level state with `useState` + `useEffect`
 - Handle loading and error states
-- Get theme via `useTheme()` and apply conditional classes
+- Use static class strings (no theme conditionals)
 - Compose feature and UI components
 
 ### Feature Components
@@ -219,7 +203,6 @@ src/components/
 - Styled with Tailwind CSS via `cn()` utility from `src/components/ui/utils.ts`
 - Use `class-variance-authority` (CVA) for variants
 - Accept `className` prop for customization
-- Use `dark:` prefix (since they don't depend on ThemeContext)
 
 ## Key UI Patterns (from Document Editor)
 
@@ -230,9 +213,7 @@ Document titles and descriptions are plain `<input>` elements styled to look lik
   type="text"
   value={title}
   onChange={(e) => setTitle(e.target.value)}
-  className={`w-full text-3xl font-bold mb-3 bg-transparent border-none focus:outline-none focus:ring-0 p-0 ${
-    theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
-  }`}
+  className="w-full text-3xl font-bold mb-3 bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-gray-900"
   placeholder="Document Title"
 />
 ```
@@ -269,22 +250,14 @@ Drag handles use `GripVertical` icon with `cursor-grab active:cursor-grabbing`.
   {saving ? 'Saving...' : 'Save Document'}
 </button>
 
-// Secondary action (themed border)
-<button className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
-  theme === 'dark'
-    ? 'bg-gray-800 border-gray-700 hover:bg-gray-700 text-gray-300'
-    : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
-}`}>
+// Secondary action (soft white border)
+<button className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors bg-surface border-gray-200 hover:bg-gray-50 text-gray-700">
   <Plus className="w-4 h-4" />
   Add Question
 </button>
 
 // Ghost / navigation button
-<button className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-  theme === 'dark'
-    ? 'hover:bg-gray-800 text-gray-300'
-    : 'hover:bg-gray-100 text-gray-600'
-}`}>
+<button className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 text-gray-600">
   <ArrowLeft className="w-5 h-5" />
   Back to Dashboard
 </button>
@@ -293,26 +266,22 @@ Drag handles use `GripVertical` icon with `cursor-grab active:cursor-grabbing`.
 ### Loading Spinner
 Consistent across all pages:
 ```tsx
-<div className={`flex h-screen items-center justify-center ${
-  theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
-}`}>
+<div className="flex h-screen items-center justify-center bg-gray-100">
   <div className="text-center">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-    <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Loading...</p>
+    <p className="text-gray-600">Loading...</p>
   </div>
 </div>
 ```
 
 ### Empty State
 ```tsx
-<div className={`text-center py-12 border-2 border-dashed rounded-lg ${
-  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-}`}>
-  <FileText className={`w-16 h-16 mx-auto mb-4 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`} />
-  <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+<div className="text-center py-12 border-2 border-dashed rounded-lg border-gray-200">
+  <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+  <h3 className="text-lg font-semibold mb-2 text-gray-700">
     No documents yet
   </h3>
-  <p className={`text-sm mb-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+  <p className="text-sm mb-4 text-gray-500">
     Create your first Q&A document to get started
   </p>
   <Link className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
@@ -375,18 +344,16 @@ import { FileText, Plus, Search, Save, ArrowLeft, GripVertical, ChevronDown, Che
 
 ```css
 body {
-  background-color: #f9fafb;  /* gray-50 — overridden by theme classes */
+  background-color: #f3f4f6;  /* gray-100 */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', ...;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbar (dark theme) */
+/* Light scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: #111827; }  /* gray-900 */
-::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }  /* gray-700 */
+::-webkit-scrollbar-track { background: #f3f4f6; }  /* gray-100 */
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }  /* gray-300 */
 ```
-
-**Note**: The scrollbar styles are always dark regardless of theme. This should ideally be theme-aware.
 
 ## Performance
 
@@ -403,10 +370,30 @@ body {
 
 ## Testing
 
-### Target Setup (Not yet configured)
-- **Framework**: Vitest (recommended for Vite projects)
-- **Component Testing**: React Testing Library
+### Setup
+- **Framework**: Vitest 4 (configured in `vite.config.ts`)
+- **DOM Environment**: jsdom
+- **Component Testing**: React Testing Library + @testing-library/user-event
+- **Coverage**: @vitest/coverage-v8 (`npm run test:coverage`)
 - **Coverage Target**: 70% for components
+
+### Test Files
+- `src/services/web/documents.test.ts` — WebDocumentService (18 tests)
+- `src/services/web/user.test.ts` — WebUserService (21 tests)
+- `src/services/context.test.tsx` — ServicesProvider hooks (6 tests)
+- `src/components/documents/DocumentCard.test.tsx` — DocumentCard (8 tests)
+
+### Test Utilities
+- `src/test/setup.ts` — Global setup (localStorage mock, cleanup, crypto.randomUUID)
+- `src/test/test-utils.tsx` — `renderWithProviders()` wraps components with Router + ServicesProvider
+- `src/test/mock-services.ts` — `createMockServices()` and individual service mocks
+
+### Commands
+```bash
+npm test              # Run all tests once
+npm run test:watch    # Watch mode
+npm run test:coverage # Coverage report
+```
 
 ## References
 

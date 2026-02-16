@@ -1,25 +1,25 @@
 # Tech Debt Tracker
 
 **Last Updated**: 2026-02-14  
-**Review Frequency**: Monthly
+**Review Frequency**: Monthly  
 
 This document tracks known technical debt, prioritization, and remediation plans.
 
 ## Critical (P0)
 
-### No Test Infrastructure
+### ~~No Test Infrastructure~~ → Resolved
 - **Description**: No test framework configured. Zero test coverage across all domains.
 - **Impact**: Cannot verify correctness of service implementations, risk of regressions
 - **Remediation**: Set up Vitest + React Testing Library
 - **Effort**: Medium (1-2 days)
-- **Status**: Not started
+- **Status**: Resolved (2026-02-14) — Vitest + RTL configured, 53 tests passing
 
-### No CI/CD Pipeline
+### ~~No CI/CD Pipeline~~ → Resolved
 - **Description**: No automated checks on pull requests (lint, type check, tests)
 - **Impact**: Quality regressions can merge uncaught
 - **Remediation**: Set up GitHub Actions with lint + typecheck + test jobs
 - **Effort**: Small (half day)
-- **Status**: Not started
+- **Status**: Resolved (2026-02-14) — `.github/workflows/ci.yml` with lint, typecheck, test, build jobs
 
 ## High Priority (P1)
 
@@ -30,12 +30,12 @@ This document tracks known technical debt, prioritization, and remediation plans
 - **Remediation**: Move behind `import.meta.env.DEV` or `VITE_SKIP_ONBOARDING` env variable
 - **Effort**: Small
 
-### Missing Product Specifications
+### ~~Missing Product Specifications~~ → Resolved
 - **Description**: No formal product specs exist for any feature
 - **Impact**: Agents and developers lack clear requirements; features may drift
 - **Remediation**: Create specs in `docs/product-specs/` for each domain
 - **Effort**: Medium (1-2 hours per spec)
-- **Status**: Not started
+- **Status**: Resolved (2026-02-14) — 9 product specs created in `docs/product-specs/`
 
 ### No Prettier Configuration
 - **Description**: No code formatter configured. Inconsistent formatting possible across contributors.
@@ -82,7 +82,22 @@ This document tracks known technical debt, prioritization, and remediation plans
 
 ## Resolved
 
-_No items resolved yet._
+### CI/CD Pipeline (2026-02-14)
+- Created `.github/workflows/ci.yml` with 3 parallel jobs: lint & type check, test + coverage, build
+- Runs on push to `main` and all PRs targeting `main`
+- Uses concurrency groups to cancel stale runs
+- Uploads coverage report as artifact (14-day retention)
+
+### Test Infrastructure (2026-02-14)
+- Installed Vitest 4, React Testing Library, jsdom, @vitest/coverage-v8
+- Configured in `vite.config.ts` with jsdom environment and v8 coverage
+- Created test setup (`src/test/setup.ts`), test utilities (`src/test/test-utils.tsx`), and mock services (`src/test/mock-services.ts`)
+- Added `npm test`, `npm run test:watch`, `npm run test:coverage` scripts
+- 53 tests passing: WebDocumentService (18), WebUserService (21), ServicesContext hooks (6), DocumentCard component (8)
+
+### Product Specifications (2026-02-14)
+- Created 9 product specs in `docs/product-specs/` covering all feature domains
+- Updated index with status grouping (Complete, In Progress, Planned)
 
 ## Process
 

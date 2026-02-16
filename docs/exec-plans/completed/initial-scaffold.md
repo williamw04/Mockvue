@@ -57,7 +57,7 @@ Set up the agent-driven repository structure and documentation scaffolding to em
 
 ## Next Steps
 
-1. Create detailed product specs for each feature domain
-2. Set up test infrastructure (P0 tech debt)
-3. Set up CI/CD pipeline (P0 tech debt)
+1. ~~Create detailed product specs for each feature domain~~ Done (9 specs created)
+2. ~~Set up test infrastructure (P0 tech debt)~~ Done (Vitest + RTL, 53 tests)
+3. ~~Set up CI/CD pipeline (P0 tech debt)~~ Done (GitHub Actions: lint, typecheck, test, build)
 4. Create LLM-optimized reference docs in `docs/references/`

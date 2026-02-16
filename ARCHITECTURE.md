@@ -101,7 +101,7 @@ Mockvue is a cross-platform document editor that runs as both an **Electron desk
 │   │   ├── AIAssistant.tsx         # AI assistant interface
 │   │   ├── StoriesPage.tsx         # Story management
 │   │   ├── Sidebar.tsx             # Navigation sidebar
-│   │   ├── ThemeToggle.tsx         # Dark/light mode toggle
+│   │   ├── ThemeToggle.tsx         # (deprecated — dark mode removed)
 │   │   ├── ProgressChart.tsx       # Progress visualization
 │   │   ├── DailyTasks.tsx          # Task management
 │   │   ├── documents/              # Document editor components

@@ -181,7 +181,6 @@ userData/
 
 **Components**:
 - Responsive, modern UI
-- Dark mode support throughout
 - Accessibility considerations
 - Loading and error states
 
@@ -235,7 +234,6 @@ userData/
 - [ ] Protected route redirects
 - [ ] localStorage persistence (Web)
 - [ ] File system persistence (Electron)
-- [ ] Dark mode compatibility
 - [ ] Responsive design (mobile, tablet, desktop)
 - [ ] Error handling and validation
 
