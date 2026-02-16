@@ -1,12 +1,6 @@
-# Testing Guide - Dual Platform App
+# Testing Guide
 
 ## 🚀 Quick Start
-
-### Test Web Version
-```bash
-npm run dev
-```
-Then open: http://localhost:5173
 
 ### Test Electron Version
 ```bash
@@ -15,13 +9,15 @@ npm run electron:dev
 
 ## ✅ Testing Checklist
 
-Use this checklist to verify everything works on **both platforms**.
+## ✅ Testing Checklist
+
+Use this checklist to verify the application works correctly.
 
 ### Basic Document Operations
 
 #### Create Document
 - [ ] Click "New Document" button on Dashboard
-- [ ] Should navigate to `/document` (or `#/document` in Electron)
+- [ ] Should navigate to `/document`
 - [ ] Enter title and description
 - [ ] Type some content in editor
 - [ ] Click "Save Document"
@@ -73,8 +69,8 @@ Use this checklist to verify everything works on **both platforms**.
 - [ ] Open a document in editor
 - [ ] Hover over "Export" button in sidebar
 - [ ] Click "Export as HTML"
-- [ ] **Web**: File should download
-- [ ] **Electron**: Save dialog should appear (once implemented)
+- [ ] Save dialog should appear
+- [ ] Save the file
 - [ ] Open exported file - should be nicely formatted HTML
 
 #### Export as JSON
@@ -109,16 +105,11 @@ Use this checklist to verify everything works on **both platforms**.
 #### Data Persistence Test
 - [ ] Create a new document with recognizable content
 - [ ] Save it
-- [ ] **Web**: Close browser tab, reopen http://localhost:5173
-- [ ] **Electron**: Quit app (Cmd+Q / Alt+F4), restart
+- [ ] Quit app (Cmd+Q / Alt+F4), restart
 - [ ] Your document should still be there
 - [ ] Content should be intact
 
-#### Multiple Sessions (Web Only)
-- [ ] Open app in two browser tabs
-- [ ] Create document in Tab 1
-- [ ] Refresh Tab 2
-- [ ] Document should appear in Tab 2
+
 
 ### Error Handling
 
@@ -133,16 +124,7 @@ Use this checklist to verify everything works on **both platforms**.
 - [ ] When saving, "Save Document" button should show "Saving..."
 - [ ] When searching, should see loading spinner in search box
 
-### Platform-Specific Tests
-
-#### Web-Specific
-- [ ] Open DevTools → Application → IndexedDB
-- [ ] Should see `mockvue-db` database
-- [ ] Should see `documents` object store
-- [ ] Your documents should be stored there
-- [ ] Notifications should appear (or toast if permission denied)
-
-#### Electron-Specific
+### Application Environment
 - [ ] Window should be titled "Mockvue"
 - [ ] Check console: Should log "Running on: electron"
 - [ ] Close window → Quit app
@@ -152,46 +134,24 @@ Use this checklist to verify everything works on **both platforms**.
 
 ### Issue: Documents Not Persisting
 
-**Web:**
-- Check browser console for IndexedDB errors
-- Try different browser (some restrict IndexedDB)
-- Check if in private/incognito mode (may disable IndexedDB)
-
-**Electron:**
 - Check that IPC handlers are implemented in `electron/main.ts`
-- Currently using placeholder handlers - data won't persist until fully implemented
+- Check storage location permissions
 
 ### Issue: Search Not Working
 - Check browser console for errors
 - Ensure documents have content to search
 - Try clearing cache and reloading
 
-### Issue: Router Not Working in Electron
+### Issue: Router Not Working
 - Should use HashRouter (URLs like `#/document`)
-- Check that `window.electronAPI` is detected
-- Check `App.tsx` router selection logic
+- Check `App.tsx` router configuration
 
 ### Issue: Notifications Not Showing
 
-**Web:**
-- Browser might need permission
-- Check browser notification settings
-- Should fall back to toast notifications if blocked
-
-**Electron:**
-- Should work without permission
 - Check console for errors
+- Should work via native OS notifications
 
-## 🎯 Platform Comparison
 
-| Feature | Web | Electron | Notes |
-|---------|-----|----------|-------|
-| Storage | IndexedDB | IPC/File System | Both work offline |
-| Search | Client-side | Client-side | Fast, local |
-| Export | Download | Save Dialog | Web uses download link |
-| Notifications | Web API + Toast | Native | Electron more reliable |
-| Routing | BrowserRouter | HashRouter | Different URL formats |
-| Offline | Yes (PWA ready) | Yes | Both fully offline capable |
 
 ## 📊 Performance Benchmarks
 
@@ -212,15 +172,11 @@ Test these for acceptable performance:
 - [ ] No layout shift when loading
 - [ ] Responsive design works on different screen sizes
 
-## 🔒 Security Checks (Production Only)
+## 🔒 Security Checks
 
-For web deployment:
-
-- [ ] HTTPS enabled
-- [ ] CSP headers configured
-- [ ] No sensitive data in localStorage
-- [ ] Proper error handling (no stack traces to user)
-- [ ] Input validation
+- [ ] Check console for security warnings
+- [ ] Verify no external resources are loaded without protection
+- [ ] Confirm context isolation is active
 
 ## ✅ Sign-Off Checklist
 
@@ -238,17 +194,16 @@ Before considering Phase 2 complete:
 
 ## 🎉 Success!
 
-If all tests pass on **both web and Electron**, Phase 2 is successfully complete!
+If all tests pass, the Electron application is working correctly!
 
-You now have a truly dual-platform application that shares the same codebase but works natively on both web and desktop.
+You now have a fully functional desktop application.
 
 ## 📝 Reporting Issues
 
 If you find issues:
 
-1. Note which platform (Web/Electron)
-2. Note which browser (if Web)
-3. Describe steps to reproduce
+1. Describe steps to reproduce
+2. Check console for errors
 4. Check browser/electron console for errors
 5. Include any error messages
 
@@ -259,5 +214,4 @@ Once testing is complete:
 1. Review `PHASE_2_COMPLETE.md` for summary
 2. Check `MIGRATION_CHECKLIST.md` for remaining work
 3. Consider Phase 3: Electron main process implementation
-4. Consider Phase 4: Web deployment preparation
 

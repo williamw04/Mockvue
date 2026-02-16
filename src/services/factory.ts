@@ -3,7 +3,7 @@
  * Creates the appropriate service implementations based on the platform
  */
 
-import { getPlatform } from '../utils/platform';
+
 import type { IAppServices } from './interfaces';
 
 // Electron services
@@ -14,35 +14,16 @@ import {
   ElectronDocumentService,
 } from './electron';
 
-// Web services
-import {
-  WebNotificationService,
-  WebAgentService,
-  WebUserService,
-  WebDocumentService,
-} from './web';
-
 /**
  * Creates and returns the appropriate services for the current platform
+ * Note: Returns Electron services.
  */
 export function createServices(): IAppServices {
-  const platform = getPlatform();
-
-  if (platform === 'electron') {
-    return {
-      notifications: new ElectronNotificationService(),
-      agent: new ElectronAgentService(),
-      user: new ElectronUserService(),
-      documents: new ElectronDocumentService(),
-    };
-  }
-
-  // Web platform
   return {
-    notifications: new WebNotificationService(),
-    agent: new WebAgentService(),
-    user: new WebUserService(),
-    documents: new WebDocumentService(),
+    notifications: new ElectronNotificationService(),
+    agent: new ElectronAgentService(),
+    user: new ElectronUserService(),
+    documents: new ElectronDocumentService(),
   };
 }
 

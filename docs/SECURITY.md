@@ -41,8 +41,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 ### Local Storage
 - **Electron**: Documents stored in app data directory (`~/Library/Application Support/Mockvue/`)
-- **Web**: Documents stored in IndexedDB (browser-sandboxed)
-- No sensitive data in `localStorage` (5MB limit, synchronous, no encryption)
+- Avoid sensitive data in `localStorage` (5MB limit, synchronous, no encryption)
 
 ### Data Validation
 - TypeScript types enforce data shapes at compile time
@@ -95,7 +94,7 @@ await window.electronAPI.createDocument(data); // Bypasses abstraction
 - Document content is stored as structured data, not raw HTML
 
 ### Future: Content Security Policy (CSP)
-When deploying the web version, add CSP headers:
+Add CSP headers to production builds:
 ```
 Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'
 ```

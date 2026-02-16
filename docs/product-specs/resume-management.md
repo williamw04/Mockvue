@@ -19,7 +19,7 @@ Resume Management currently exists as part of the onboarding flow where users ma
 - [x] Manual entry of skills
 - [x] Resume summary text
 - [x] Data persisted across sessions
-- [x] Works on both Electron and Web
+- [x] Works on Electron platform
 
 ### Planned — Standalone Resume Page
 - [ ] Dedicated `/resume` route for viewing/editing resume

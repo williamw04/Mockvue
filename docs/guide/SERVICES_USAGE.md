@@ -1,14 +1,14 @@
 # Services Abstraction Layer - Usage Guide
 
-This guide explains how to use the services abstraction layer to build features that work in both Electron and Web environments.
+This guide explains how to use the services abstraction layer to build features for the Electron environment.
 
 ## Overview
 
 The services abstraction layer provides a unified API for platform-specific functionality:
 
-- **Storage Service**: Document persistence (Electron: IPC/File System, Web: IndexedDB)
-- **File Service**: File operations (Electron: Native dialogs, Web: File System Access API)
-- **Notification Service**: System notifications (Electron: Native, Web: Web Notifications API)
+- **Storage Service**: Document persistence (Electron: IPC/File System)
+- **File Service**: File operations (Electron: Native dialogs)
+- **Notification Service**: System notifications (Electron: Native)
 
 ## Quick Start
 
@@ -228,44 +228,7 @@ function SearchBar() {
 }
 ```
 
-## Platform Detection
 
-Use the platform utilities when you need platform-specific behavior:
-
-```typescript
-import { isElectron, isWeb, hasFeature, getPlatformInfo } from './utils/platform';
-
-function PlatformSpecificFeature() {
-  if (isElectron()) {
-    // Electron-specific UI/behavior
-    return <ElectronControls />;
-  }
-
-  if (isWeb()) {
-    // Web-specific UI/behavior
-    return <WebControls />;
-  }
-}
-
-function FeatureGate() {
-  if (hasFeature('file-system')) {
-    return <FileSystemFeature />;
-  }
-
-  return <div>File system not available</div>;
-}
-
-function PlatformInfo() {
-  const info = getPlatformInfo();
-  
-  return (
-    <div>
-      <p>Platform: {info.platform}</p>
-      <p>OS: {info.os}</p>
-    </div>
-  );
-}
-```
 
 ## Service Interface Reference
 
@@ -310,10 +273,8 @@ interface INotificationService {
 ## Best Practices
 
 1. **Always use the service hooks** instead of directly accessing Electron APIs
-2. **Handle errors gracefully** - both platforms can fail in different ways
+2. **Handle errors gracefully**
 3. **Show user feedback** - use notifications for important operations
-4. **Test on both platforms** - ensure features work in Electron and Web
-5. **Use platform detection sparingly** - prefer service abstraction over platform checks
 
 ## Testing
 
@@ -351,11 +312,5 @@ To complete the Electron implementation:
 4. Implement auto-update for Electron
 5. Add more platform-specific features as needed
 
-For web deployment:
 
-1. Set up a backend API if needed (for shared documents, etc.)
-2. Configure PWA features (service workers, manifest)
-3. Set up proper routing with `BrowserRouter`
-4. Add authentication if needed
-5. Deploy to a hosting service (Vercel, Netlify, etc.)
 

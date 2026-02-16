@@ -22,7 +22,7 @@ The onboarding flow is a multi-step wizard that collects essential user informat
 - [x] Cannot skip steps or proceed without required data
 - [x] Onboarding completion persisted across sessions
 - [x] Protected routes redirect to `/onboarding` if not completed
-- [x] Works on both Electron and Web platforms
+- [x] Works on Electron platform
 
 ## Key Components
 

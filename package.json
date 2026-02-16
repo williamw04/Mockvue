@@ -5,7 +5,7 @@
   "main": "dist-electron/main.cjs",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run electron:dev",
     "build": "tsc && vite build && npm run build:electron",
     "build:electron": "tsc -p tsconfig.electron.json && npm run rename:electron && npm run fix:electron",
     "rename:electron": "node -e \"const fs=require('fs');fs.renameSync('dist-electron/main.js','dist-electron/main.cjs');fs.renameSync('dist-electron/preload.js','dist-electron/preload.cjs');fs.renameSync('dist-electron/storage.js','dist-electron/storage.cjs');\"",
@@ -14,7 +14,6 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "preview": "vite preview",
     "electron:dev": "npm run build:electron && concurrently \"vite\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "electron:build": "npm run build && electron-builder",
     "electron:build:mac": "npm run build && electron-builder --mac",

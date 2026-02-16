@@ -11,14 +11,14 @@ The foundational pattern in Mockvue is the **Service Abstraction Layer**. See `d
 
 ### The Pattern
 ```
-Interface (contract) → Factory (platform switch) → Context (React hook) → Component
+Interface (contract) → Factory (creates Electron service) → Context (React hook) → Component
 ```
 
 ### Rules
-1. **All platform operations go through service interfaces** — Never call `window.electronAPI` or `IndexedDB` directly from components
-2. **Factory handles platform detection** — Done once at app startup in `src/services/factory.ts`
+1. **All platform operations go through service interfaces** — Never call `window.electronAPI` directly from components
+2. **Factory creates Electron services** — Done at app startup in `src/services/factory.ts`
 3. **Context provides services** — Components access services via hooks from `src/services/context.tsx`
-4. **Implementations are isolated** — Electron code in `services/electron/`, Web code in `services/web/`
+4. **Implementations are isolated** — Electron code in `services/electron/`
 
 ## State Management
 
@@ -49,12 +49,11 @@ Consider adding a state management library when:
 
 ## Routing
 
-### Pattern: Platform-Adaptive Router
+### Pattern: HashRouter
 ```typescript
-const Router = isElectron() ? HashRouter : BrowserRouter;
+const Router = HashRouter;
 ```
 
-- **Web**: `BrowserRouter` (clean URLs like `/document/123`)
 - **Electron**: `HashRouter` (works with `file://` protocol: `/#/document/123`)
 
 ### Route Protection
@@ -182,7 +181,6 @@ npm run electron:build           # Full build + electron-builder
 ```
 
 ### Output
-- `dist/` — Web build output
 - `dist-electron/` — Electron main process output
 - `release/` — Electron installers
 

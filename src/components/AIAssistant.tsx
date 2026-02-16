@@ -28,7 +28,7 @@ export function AIAssistant() {
     // Load capabilities
     const caps = agent.getCapabilities();
     setCapabilities(caps);
-    
+
     // Load task history
     loadHistory();
   }, [agent]);
@@ -102,8 +102,8 @@ export function AIAssistant() {
           </p>
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> This demo shows how to integrate a LangGraph-based agentic system 
-              with your application's service architecture. The responses are simulated - in production, 
+              <strong>Note:</strong> This demo shows how to integrate a LangGraph-based agentic system
+              with your application's service architecture. The responses are simulated - in production,
               these would connect to actual LangGraph agents with LLMs.
             </p>
           </div>
@@ -121,21 +121,19 @@ export function AIAssistant() {
                   <button
                     key={capability.feature}
                     onClick={() => setSelectedFeature(capability.feature)}
-                    className={`w-full text-left p-4 rounded-lg transition-all ${
-                      selectedFeature === capability.feature
+                    className={`w-full text-left p-4 rounded-lg transition-all ${selectedFeature === capability.feature
                         ? 'bg-blue-500 text-white shadow-lg scale-105'
                         : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{capability.icon}</span>
                       <div>
                         <div className="font-semibold">{capability.name}</div>
-                        <div className={`text-sm ${
-                          selectedFeature === capability.feature 
-                            ? 'text-blue-100' 
+                        <div className={`text-sm ${selectedFeature === capability.feature
+                            ? 'text-blue-100'
                             : 'text-gray-500'
-                        }`}>
+                          }`}>
                           {capability.description}
                         </div>
                       </div>
@@ -184,7 +182,7 @@ export function AIAssistant() {
               {selectedCapability?.requiresContext && (
                 <div className="mt-4 space-y-3">
                   <h3 className="font-semibold text-gray-700">Options</h3>
-                  
+
                   {selectedFeature === 'rewrite' && (
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Tone</label>
@@ -236,11 +234,10 @@ export function AIAssistant() {
               <button
                 onClick={handleExecute}
                 disabled={isLoading}
-                className={`w-full mt-4 p-4 rounded-lg font-semibold text-white transition-all ${
-                  isLoading
+                className={`w-full mt-4 p-4 rounded-lg font-semibold text-white transition-all ${isLoading
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg active:scale-95'
-                }`}
+                  }`}
               >
                 {isLoading ? '⏳ Processing...' : '✨ Execute AI Task'}
               </button>
@@ -289,12 +286,11 @@ export function AIAssistant() {
                             {capabilities.find(c => c.feature === task.feature)?.icon}{' '}
                             {task.feature}
                           </span>
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                            task.status === 'failed' ? 'bg-red-100 text-red-800' :
-                            task.status === 'running' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              task.status === 'failed' ? 'bg-red-100 text-red-800' :
+                                task.status === 'running' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-gray-100 text-gray-800'
+                            }`}>
                             {task.status}
                           </span>
                         </div>
@@ -331,9 +327,9 @@ export function AIAssistant() {
                 Service Integration
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                The AI Assistant uses the same service abstraction pattern as the rest of the 
-                application. The <code className="bg-gray-100 px-1 py-0.5 rounded">IAgentService</code> interface 
-                defines the contract, and implementations can use LangGraph, LangChain, or any other 
+                The AI Assistant uses the same service abstraction pattern as the rest of the
+                application. The <code className="bg-gray-100 px-1 py-0.5 rounded">IAgentService</code> interface
+                defines the contract, and implementations can use LangGraph, LangChain, or any other
                 agentic framework.
               </p>
             </div>
@@ -342,8 +338,8 @@ export function AIAssistant() {
                 LangGraph Integration
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Each AI feature can be powered by a different LangGraph state graph. For example, 
-                the summarization feature could use a multi-step graph that first analyzes content, 
+                Each AI feature can be powered by a different LangGraph state graph. For example,
+                the summarization feature could use a multi-step graph that first analyzes content,
                 then extracts key points, and finally generates a coherent summary.
               </p>
             </div>
@@ -352,9 +348,8 @@ export function AIAssistant() {
                 Platform Support
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Both web and Electron implementations are supported. Electron can additionally 
-                support local models (like Ollama) for offline AI capabilities, while the web 
-                version can connect to cloud-based LangGraph APIs.
+                Only Electron implementation is supported. Electron can additionally
+                support local models (like Ollama) for offline AI capabilities.
               </p>
             </div>
             <div>
@@ -362,8 +357,8 @@ export function AIAssistant() {
                 Document Context
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                The agent service can access document content through the storage service, 
-                enabling context-aware AI features. This allows agents to work with your 
+                The agent service can access document content through the storage service,
+                enabling context-aware AI features. This allows agents to work with your
                 existing documents and incorporate them into their reasoning.
               </p>
             </div>

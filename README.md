@@ -1,32 +1,22 @@
-# Mockvue - Cross-Platform Document Editor
+# Mockvue - Electron Document Editor
 
-A beautiful, modern document editor that works as both a **desktop application** (Electron) and a **web application** (browser) using the same codebase.
+A beautiful, modern document editor built as a **desktop application** using Electron and React.
 
 ## ✨ Features
 
 - 📝 **Rich Text Editor** - Powered by BlockNote
-- 💾 **Data Persistence** - IndexedDB (web) / File System (Electron)
+- 💾 **Data Persistence** - File System (Electron)
 - 🔍 **Full-Text Search** - Find documents instantly
 - 📤 **Export** - HTML, JSON, and plain text formats
-- 🖥️ **Native Desktop** - True desktop experience with Electron
-- 🌐 **Web Deployment** - Works in any modern browser
+- 🖥️ **Native Desktop** - True desktop experience
 - 💨 **Auto-Save** - Changes saved automatically
 - 🎨 **Modern UI** - Beautiful, responsive design
 - 🔒 **Secure** - Context isolation and sandboxing
-- ⚡ **Fast** - Optimized performance on both platforms
+- ⚡ **Fast** - Optimized performance
 
 ## 🚀 Quick Start
 
-### Web Version
-
-```bash
-npm install
-npm run dev
-```
-
-Open http://localhost:5173
-
-### Electron Version
+## 🚀 Quick Start
 
 ```bash
 npm install
@@ -35,14 +25,7 @@ npm run electron:dev
 
 ## 📦 Build for Production
 
-### Web Build
-
-```bash
-npm run build:web
-# Output in dist/ folder
-```
-
-### Electron Build
+## 📦 Build for Production
 
 ```bash
 npm run electron:build          # All platforms
@@ -55,17 +38,16 @@ npm run electron:build:linux    # Linux
 
 ## 🏗️ Architecture
 
-### Cross-Platform Service Layer
+### Service Layer
 
 ```
 React Components (Platform Agnostic)
          ↓
 Service Abstraction Layer
-    ↙          ↘
-Electron     Web
-Services   Services
-    ↓          ↓
-File System  IndexedDB
+         ↓
+   Electron Services
+         ↓
+    File System
 ```
 
 ### Project Structure
@@ -75,7 +57,6 @@ src/
 ├── components/         # React components
 ├── services/          # Platform abstraction ⭐
 │   ├── electron/      # Electron implementations
-│   ├── web/           # Web implementations
 │   ├── interfaces.ts  # Service contracts
 │   ├── factory.ts     # Service creation
 │   └── context.tsx    # React hooks
@@ -96,16 +77,9 @@ electron/
 Components use platform-agnostic services:
 
 ```typescript
-// Works on both Electron and Web!
+// Components remain clean and testable
 const storage = useStorage();
 const docs = await storage.getDocuments();
-```
-
-### Automatic Platform Detection
-
-```typescript
-const platform = isElectron() ? 'electron' : 'web';
-// App automatically adapts
 ```
 
 ### Type-Safe APIs
@@ -118,32 +92,7 @@ const doc: Document = await storage.createDocument({
 });
 ```
 
-## 📊 Platform Comparison
 
-| Feature | Electron | Web |
-|---------|----------|-----|
-| **Storage** | File System | IndexedDB |
-| **Offline** | ✅ Always | ✅ With PWA |
-| **File Dialogs** | ✅ Native | Browser/API |
-| **Auto-Update** | ✅ Available | Service Worker |
-| **Performance** | ⚡ Native | ⚡ Fast |
-| **Distribution** | Installers | URL |
-
-## 🎯 Use Cases
-
-### Desktop App (Electron)
-- Offline-first document editing
-- Native file system integration
-- Desktop notifications
-- System tray integration
-- Auto-updates
-
-### Web App
-- Access from anywhere
-- No installation required
-- Cross-device sync (with backend)
-- Easy sharing
-- PWA support
 
 ## 🔧 Development
 
@@ -172,8 +121,8 @@ npm run lint
 - **Desktop**: Electron 28
 - **Editor**: BlockNote
 - **Styling**: Tailwind CSS
-- **Storage**: IndexedDB (web) / File System (Electron)
-- **Routing**: React Router v7
+- **Storage**: File System (Electron)
+- **Routing**: React Router v6 (HashRouter)
 
 ## 📚 Documentation
 
@@ -188,13 +137,7 @@ npm run lint
 
 ## 🧪 Testing
 
-### Test Web Version
-
-```bash
-npm run dev
-```
-
-Create, edit, delete documents. They persist in IndexedDB!
+## 🧪 Testing
 
 ### Test Electron Version
 
@@ -210,9 +153,6 @@ Create documents, **quit completely**, relaunch - documents are still there!
 ```bash
 open ~/Library/Application\ Support/Mockvue/documents/
 ```
-
-**Web:**
-Open DevTools → Application → IndexedDB → mockvue-db
 
 ## 🎨 Features in Detail
 
@@ -270,12 +210,6 @@ Check storage location:
 ls ~/Library/Application\ Support/Mockvue/
 ```
 
-### IndexedDB Errors (Web)
-
-- Check browser compatibility
-- Disable private/incognito mode
-- Clear IndexedDB in DevTools
-
 ### Build Errors
 
 ```bash
@@ -289,37 +223,32 @@ npm run build:electron
 
 ## 🚀 Deployment
 
-### Web (Vercel/Netlify)
-
-```bash
-npm run build:web
-# Deploy dist/ folder
-```
+## 🚀 Deployment
 
 ### Electron
 
 ```bash
 npm run electron:build
 # Installers in release/ folder
-# Distribute via website or app store
+# Distribute via app store
 ```
 
 ## 🎓 Learn More
 
+## 🎓 Learn More
+
 This project demonstrates:
-- **Cross-platform architecture** with service abstraction
+- **Service Abstraction Architecture**
 - **Type-safe IPC** communication in Electron
 - **Modern React** patterns (hooks, context)
 - **File system operations** in Electron
-- **IndexedDB** for web storage
-- **Progressive enhancement** for features
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test on both platforms
+4. Test functionality
 5. Submit a pull request
 
 ## 📝 License
@@ -346,8 +275,7 @@ MIT License - feel free to use this project as a template!
 - ✅ **Phase 3**: Electron main process - COMPLETE
 - ✅ **Phase 4**: Router configuration - COMPLETE
 - ⏳ **Phase 5**: Build optimization - In Progress
-- ⏳ **Phase 6**: Web deployment - Pending
-- ⏳ **Phase 7**: Polish & features - Ongoing
+- ⏳ **Phase 6**: Polish & features - Ongoing
 
 ## 💪 What Makes This Special
 
@@ -360,6 +288,6 @@ MIT License - feel free to use this project as a template!
 
 ---
 
-**Built with ❤️ for cross-platform development**
+**Built with ❤️ for desktop development**
 
-Start building: `npm run dev` or `npm run electron:dev`
+Start building: `npm run electron:dev`

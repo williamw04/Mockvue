@@ -1,15 +1,14 @@
-import { HashRouter, BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Dashboard } from "./components/Dashboard";
 import { AIAssistant } from "./components/AIAssistant";
 import OnboardingFlow from "./components/onboarding/OnboardingFlow";
 import StoriesPage from "./components/StoriesPage";
 import DocumentPage from "./components/documents/DocumentPage";
-import { isElectron } from "./utils/platform";
 import { useUser } from "./services";
 
-// Use HashRouter for Electron, BrowserRouter for Web
-const Router = isElectron() ? HashRouter : BrowserRouter;
+// Use HashRouter for Electron compatibility
+const Router = HashRouter;
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const userService = useUser();

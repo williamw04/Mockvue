@@ -25,8 +25,6 @@ This document tracks quality metrics across all domains. Grades reflect test cov
 |--------|--------|-------|
 | Service Interface | Fully typed (`IDocumentService`) | A |
 | Electron Implementation | Implements interface | B |
-| Web Implementation | Implements interface (localStorage) | B |
-| Test Coverage | 18 tests for WebDocumentService (CRUD + search) | B |
 | Documentation | Product spec + usage guide exist | B |
 | UI Components | DocumentPage, DocumentCard, DocumentGrid functional | B |
 
@@ -34,7 +32,6 @@ This document tracks quality metrics across all domains. Grades reflect test cov
 - Clean service interface with full TypeScript typing
 - Both platform implementations working
 - Auto-save and search functionality implemented
-- Web service fully tested (18 tests)
 - Product spec complete (`docs/product-specs/document-editor.md`, `document-management.md`)
 
 **Remaining Gaps**:
@@ -52,14 +49,11 @@ This document tracks quality metrics across all domains. Grades reflect test cov
 |--------|--------|-------|
 | Service Interface | Fully typed (`IUserService`) | A |
 | Electron Implementation | Implements interface | B |
-| Web Implementation | Implements interface | B |
-| Test Coverage | 21 tests for WebUserService (profiles, stories, resume, responses) | B |
 | Documentation | Product specs + onboarding doc exist | B |
 | UI Components | Onboarding + Stories pages | B |
 
 **Strengths**:
 - Comprehensive interface covering profiles, stories, resumes, interviews
-- Full CRUD test coverage for web implementation (21 tests)
 - Product specs complete (`user-onboarding.md`, `story-management.md`, `resume-management.md`)
 - Onboarding flow documented in `docs/ONBOARDING_FEATURE.md`
 
@@ -77,7 +71,6 @@ This document tracks quality metrics across all domains. Grades reflect test cov
 |--------|--------|-------|
 | Service Interface | Fully typed (`IAgentService`) | A |
 | Electron Implementation | Basic implementation | C |
-| Web Implementation | Basic implementation (simulated) | C |
 | Test Coverage | No tests yet | D |
 | Documentation | Product spec exists | B |
 | UI Components | AIAssistant component | B |
@@ -102,7 +95,6 @@ This document tracks quality metrics across all domains. Grades reflect test cov
 |--------|--------|-------|
 | Service Interface | Fully typed (`INotificationService`) | A |
 | Electron Implementation | Native notifications | B+ |
-| Web Implementation | Web Notifications API | B |
 | Test Coverage | No tests yet | D |
 | Documentation | Cross-platform spec covers it | C |
 | UI Components | N/A (system-level) | N/A |
@@ -152,7 +144,7 @@ This document tracks quality metrics across all domains. Grades reflect test cov
 1. ~~No test infrastructure~~ — Resolved
 2. ~~No product specs~~ — Resolved
 3. ~~No CI pipeline~~ — Resolved (`.github/workflows/ci.yml`)
-4. **Electron service tests missing** — Only web services tested
+4. **Service tests missing** — Electron implementations need testing
 
 ## Action Priorities
 

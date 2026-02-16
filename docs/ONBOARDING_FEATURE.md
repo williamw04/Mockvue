@@ -46,8 +46,7 @@ InterviewResponse {
 - Story CRUD operations
 - Interview response management
 
-Implemented for both:
-- **Web**: Uses localStorage
+Implemented for:
 - **Electron**: Uses file system storage
 
 ### Components
@@ -135,15 +134,6 @@ Users must create at least **3 stories** during onboarding to ensure they have f
 
 ## Storage
 
-### Web (localStorage)
-
-```javascript
-mockvue_user_profile - User profile JSON
-mockvue_resume - Resume data
-mockvue_stories - Array of stories
-mockvue_interview_responses - Array of responses
-```
-
 ### Electron (File System)
 
 ```
@@ -176,7 +166,6 @@ userData/
 
 **Services**:
 - `ElectronUserService` - Electron implementation
-- `WebUserService` - Web implementation
 - Integrated into service factory and context
 
 **Components**:
@@ -232,7 +221,6 @@ userData/
 - [ ] Story editing and deletion
 - [ ] Dashboard story display
 - [ ] Protected route redirects
-- [ ] localStorage persistence (Web)
 - [ ] File system persistence (Electron)
 - [ ] Responsive design (mobile, tablet, desktop)
 - [ ] Error handling and validation
@@ -242,9 +230,6 @@ userData/
 To work on onboarding features:
 
 ```bash
-# Run in web mode
-npm run dev
-
 # Run in Electron mode
 npm run electron:dev
 

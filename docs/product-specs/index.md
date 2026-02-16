@@ -10,7 +10,7 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 - [Document Management](./document-management.md) — Browse, search, sort, and organize documents
 - [User Onboarding](./user-onboarding.md) — Multi-step first-time setup flow
 - [Story Management](./story-management.md) — STAR-method behavioral interview stories
-- [Cross-Platform Support](./cross-platform.md) — Electron desktop + Web browser via service abstraction
+- [Platform Architecture](./platform-architecture.md) — Electron desktop architecture
 
 ## In Progress
 

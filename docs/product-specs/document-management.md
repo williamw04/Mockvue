@@ -25,7 +25,7 @@ Document Management provides the primary document listing experience on the Dash
 - [x] Loading state while fetching documents
 - [x] Empty state when no documents exist
 - [x] Responsive grid (1 → 2 → 3 columns)
-- [x] Works on both Electron and Web platforms
+- [x] Works on Electron platform
 
 ## Key Components
 

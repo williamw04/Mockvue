@@ -319,9 +319,8 @@ const formatDate = (dateString: string) => {
 ### Protected Routes
 `ProtectedRoute` checks onboarding completion. Redirects to `/onboarding` if incomplete.
 
-### Platform-Adaptive Router
-- Web: `BrowserRouter` — clean URLs
-- Electron: `HashRouter` — `file://` protocol compatible
+### Router
+- **HashRouter**: Used for `file://` protocol compatibility in Electron.
 
 ## Icons
 
@@ -378,8 +377,6 @@ body {
 - **Coverage Target**: 70% for components
 
 ### Test Files
-- `src/services/web/documents.test.ts` — WebDocumentService (18 tests)
-- `src/services/web/user.test.ts` — WebUserService (21 tests)
 - `src/services/context.test.tsx` — ServicesProvider hooks (6 tests)
 - `src/components/documents/DocumentCard.test.tsx` — DocumentCard (8 tests)
 

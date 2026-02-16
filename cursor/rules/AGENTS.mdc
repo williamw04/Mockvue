@@ -2,10 +2,11 @@
 alwaysApply: true
 ---
 
+
 # Agent Operating Guide
 
 **Version:** 1.0.0  
-**Last Updated:** 2026-02-14
+**Last Updated:** 2026-02-16
 
 ## Purpose
 
@@ -84,7 +85,7 @@ Located in `docs/references/`:
 
 ### Key Technology
 - **React 18** + **TypeScript** with **Vite** build system
-- **Electron 28** for desktop, **browser** for web
+- **Electron 28** for desktop
 - **Tailwind CSS** + **Radix UI** for styling and components
 - **Service Abstraction Layer** for cross-platform code reuse
 
@@ -103,7 +104,7 @@ Key style rules:
 ### When Implementation Fails
 If you're stuck:
 1. Check if required service methods exist in `src/services/interfaces.ts`
-2. Verify platform-specific implementations exist in `src/services/electron/` and `src/services/web/`
+2. Verify platform-specific implementations exist in `src/services/electron/`
 3. Look for similar patterns in completed work
 4. If capability is missing: document the gap, implement the service method first
 
@@ -115,9 +116,8 @@ Cross-platform through service abstraction:
 React Components (Platform Agnostic)
          ↓
 Service Abstraction Layer (interfaces.ts)
-    ↙          ↘
-Electron      Web
-Services    Services
+         ↓
+Electron Services
 ```
 
 ### Service Domains
@@ -128,7 +128,6 @@ Services    Services
 
 ### Code Quality
 - All service contracts defined in `src/services/interfaces.ts`
-- Both Electron and Web implementations must satisfy the same interface
 - TypeScript strict mode enabled
 - ESLint with zero warnings policy (`--max-warnings 0`)
 
@@ -150,3 +149,4 @@ Services    Services
 ---
 
 **Remember**: This file is your starting point. Navigate to specific documentation as needed for your task. Don't try to hold everything in context—use the structured docs to find what you need.
+

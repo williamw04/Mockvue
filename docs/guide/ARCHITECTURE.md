@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mockvue is designed to run as both an **Electron desktop application** and a **web application** using a shared codebase. This is achieved through a service abstraction layer that provides a unified API regardless of the platform.
+Mockvue is designed as an **Electron desktop application**. This is achieved through a service abstraction layer that provides a unified API.
 
 ## Architecture Diagram
 
@@ -22,19 +22,18 @@ Mockvue is designed to run as both an **Electron desktop application** and a **w
 │  └───────────────┴──────────────────┴──────────────────┘   │
 └──────────────────────────┬──────────────────────────────────┘
                            │
-                 ┌─────────┴──────────┐
-                 ▼                    ▼
-     ┌──────────────────┐   ┌──────────────────┐
-     │ Electron Platform│   │   Web Platform   │
-     │   Implementation │   │  Implementation  │
-     └──────────────────┘   └──────────────────┘
-              │                       │
-              ▼                       ▼
-     ┌──────────────────┐   ┌──────────────────┐
-     │  IPC + Node.js   │   │  Browser APIs    │
-     │  File System     │   │  IndexedDB       │
-     │  Native Dialogs  │   │  File System API │
-     └──────────────────┘   └──────────────────┘
+                           ▼
+               ┌─────────────────────┐
+               │  Electron Platform  │
+               │   Implementation    │
+               └─────────────────────┘
+                          │
+                          ▼
+               ┌─────────────────────┐
+               │    IPC + Node.js    │
+               │    File System      │
+               │    Native Dialogs   │
+               └─────────────────────┘
 ```
 
 ## Directory Structure
@@ -54,7 +53,7 @@ src/
 │   │   ├── files.ts
 │   │   ├── notifications.ts
 │   │   └── index.ts
-│   └── web/             # Web implementations
+
 │       ├── storage.ts
 │       ├── files.ts
 │       ├── notifications.ts
@@ -94,10 +93,7 @@ The platform is automatically detected at runtime:
 ```typescript
 // src/utils/platform.ts
 export const getPlatform = (): Platform => {
-  if (typeof window !== 'undefined' && window.electronAPI) {
-    return 'electron';
-  }
-  return 'web';
+  return 'electron';
 };
 ```
 
@@ -117,11 +113,12 @@ export function createServices(): IAppServices {
       notifications: new ElectronNotificationService(),
     };
   }
-
+  
+  // Default to Electron
   return {
-    storage: new WebStorageService(),
-    files: new WebFileService(),
-    notifications: new WebNotificationService(),
+    storage: new ElectronStorageService(),
+    files: new ElectronFileService(),
+    notifications: new ElectronNotificationService(),
   };
 }
 ```
@@ -159,27 +156,13 @@ const { storage, files, notifications } = useServices();
 - Native OS notifications
 - Tray icon support available
 
-### Web Implementation
 
-**Storage**: Uses IndexedDB for browser-based persistence
-- Structured data storage
-- Works offline
-- No server required (but can be added)
-
-**Files**: Uses File System Access API with fallbacks
-- Modern browsers: File System Access API
-- Fallback: Traditional file input + download links
-- Limited to user-selected files
-
-**Notifications**: Uses Web Notifications API
-- Requires user permission
-- Fallback to toast notifications if not supported
-- Works across modern browsers
 
 ## Data Flow Examples
 
 ### Creating a Document
 
+```
 ```
 Component (Dashboard.tsx)
     │
@@ -187,15 +170,8 @@ Component (Dashboard.tsx)
     │
     ├─> storage.createDocument(data)
     │
-    ├─> Platform detected (Electron or Web)
-    │
-    ├─────┬─> Electron: IPC call to main process
-    │     │              └─> File system write
-    │     │
-    │     └─> Web: IndexedDB transaction
-    │              └─> Store in browser database
-    │
-    └─> Document returned to component
+    └─> Electron: IPC call to main process
+              └─> File system write
 ```
 
 ### Exporting a Document
@@ -210,8 +186,7 @@ Component
     ├─────┬─> Electron: Native save dialog
     │     │              └─> Write file to disk
     │     │
-    │     └─> Web: File System Access API or download
-    │              └─> Browser download
+
     │
     └─> Success/failure returned
 ```
@@ -248,9 +223,6 @@ Component
 ### Development
 
 ```bash
-# Web development
-npm run dev
-
 # Electron development
 npm run electron:dev
 ```
@@ -258,9 +230,6 @@ npm run electron:dev
 ### Production Builds
 
 ```bash
-# Web build (deploy to Vercel, Netlify, etc.)
-npm run build
-
 # Electron build (generates installers)
 npm run electron:build:mac    # macOS
 npm run electron:build:win    # Windows
@@ -283,16 +252,7 @@ const storage = useStorage();
 const docs = await storage.getDocuments(); // Works on both platforms!
 ```
 
-### From Browser-Only Code
 
-```typescript
-// Before
-const docs = JSON.parse(localStorage.getItem('docs') || '[]');
-
-// After
-const storage = useStorage();
-const docs = await storage.getDocuments(); // Uses IndexedDB on web, files on Electron
-```
 
 ## Future Enhancements
 
@@ -300,7 +260,7 @@ const docs = await storage.getDocuments(); // Uses IndexedDB on web, files on El
 1. Complete Electron file system implementation
 2. Add database integration (SQLite for Electron)
 3. Implement proper error boundaries
-4. Add offline sync for web version
+
 
 ### Long Term
 1. Add authentication service
@@ -320,7 +280,7 @@ const docs = await storage.getDocuments(); // Uses IndexedDB on web, files on El
 ### Why HashRouter for Electron?
 - File protocol doesn't support traditional routing
 - HashRouter works with `file://` URLs
-- Web version can use BrowserRouter
+
 
 ### Why Context over Props?
 - Services needed throughout the app
@@ -338,15 +298,10 @@ const docs = await storage.getDocuments(); // Uses IndexedDB on web, files on El
 - Check that `window.electronAPI` is properly exposed in `preload.ts`
 - Verify contextBridge is working correctly
 
-### IndexedDB errors in web version
-- Some browsers limit IndexedDB in private/incognito mode
-- Check browser console for quota errors
-- Ensure HTTPS in production (required for some browsers)
+
 
 ## Resources
 
 - [Electron Documentation](https://www.electronjs.org/docs)
-- [IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
-- [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API)
-- [Web Notifications API](https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API)
+
 

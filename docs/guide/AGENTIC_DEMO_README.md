@@ -10,7 +10,6 @@ This branch (`agentic-langgraph-demo`) demonstrates how to integrate a LangGraph
 A new `IAgentService` interface that follows the same abstraction pattern as other services in the application.
 
 ### 2. Agent Implementation
-- **Web**: `src/services/web/agent.ts` - Can connect to remote LangGraph APIs
 - **Electron**: `src/services/electron/agent.ts` - Can support local models (Ollama)
 
 ### 3. AI Assistant UI
@@ -23,7 +22,7 @@ A beautiful demo UI at `/ai-assistant` that showcases:
 ### 4. Service Integration
 The agent service is fully integrated into the existing service architecture:
 - Accessed via `useAgent()` hook
-- Works on both web and Electron platforms
+- Works on Electron platform
 - Can interact with document storage service
 
 ## Quick Start
@@ -32,7 +31,7 @@ The agent service is fully integrated into the existing service architecture:
 
 ```bash
 # Start the development server
-npm run dev
+npm run electron:dev
 
 # Open http://localhost:5173
 # Click on the "AI Assistant Demo" banner on the dashboard
@@ -77,7 +76,7 @@ VITE_LANGGRAPH_ENDPOINT=https://your-api-endpoint.com  # Optional
 
 ### Step 3: Update Implementation
 
-Edit `src/services/web/agent.ts` and replace the `runAgent` method with real LangGraph implementations. See `LANGGRAPH_INTEGRATION.md` for detailed examples.
+Edit `src/services/electron/agent.ts` and replace the `runAgent` method with real LangGraph implementations. See `LANGGRAPH_INTEGRATION.md` for detailed examples.
 
 Example for summarization:
 
@@ -98,8 +97,8 @@ private async runAgent(feature: AgentFeatureType, input: string, context?: any):
 
 ## Architecture Benefits
 
-### ✅ Platform Agnostic
-Works seamlessly on both web and Electron without changing component code.
+### ✅ Electron Optimized
+Works seamlessly on Electron.
 
 ### ✅ Type Safe
 Full TypeScript support with interfaces ensuring consistency.
@@ -122,10 +121,7 @@ src/
 │   ├── interfaces.ts                 # Added IAgentService
 │   ├── factory.ts                    # Updated to include agent service
 │   ├── context.tsx                   # Added useAgent() hook
-│   ├── web/
-│   │   ├── agent.ts                 # Web implementation (NEW)
-│   │   └── index.ts                 # Updated exports
-│   └── electron/
+│   ├── electron/
 │       ├── agent.ts                 # Electron implementation (NEW)
 │       └── index.ts                 # Updated exports
 ├── components/
@@ -238,11 +234,6 @@ const translated = await agent.executeTask('translate', content, {
 
 ## Platform-Specific Features
 
-### Web Platform
-- Connect to cloud-based LangGraph APIs
-- Use remote LLMs (OpenAI, Anthropic, etc.)
-- Suitable for most use cases
-
 ### Electron Platform
 - Support for local models (Ollama, LLaMA.cpp)
 - Offline capabilities
@@ -253,7 +244,7 @@ const translated = await agent.executeTask('translate', content, {
 ## Testing
 
 ### Manual Testing
-1. Start the app: `npm run dev`
+1. Start the app: `npm run electron:dev`
 2. Click the AI Assistant banner
 3. Try each feature type
 4. Test with different inputs
@@ -301,8 +292,7 @@ This demo shows the **architectural pattern** for integrating agentic systems. T
 The beauty of this architecture is that:
 1. Components don't need to know if they're using real or simulated agents
 2. You can swap implementations without changing UI code
-3. Works on both web and Electron
-4. Easy to test and maintain
+3. Easy to test and maintain
 
 ---
 

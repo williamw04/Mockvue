@@ -5,7 +5,7 @@
 
 ## Overview
 
-Mockvue is a cross-platform document editor that runs as both an **Electron desktop application** and a **web application** using a shared React codebase. The key architectural concept is a **Service Abstraction Layer** that provides a unified API regardless of the underlying platform.
+Mockvue is an **Electron desktop application** using a React codebase. The key architectural concept is a **Service Abstraction Layer** that provides a unified API for the underlying platform.
 
 ## Platform Architecture
 
@@ -25,20 +25,19 @@ Mockvue is a cross-platform document editor that runs as both an **Electron desk
 │  └────────────┴───────────┴──────────┴─────────────┘  │
 └─────────────────────────┬─────────────────────────────┘
                           │
-                ┌─────────┴──────────┐
-                ▼                    ▼
-    ┌──────────────────┐   ┌──────────────────┐
-    │ Electron Platform │   │   Web Platform   │
-    │  (services/      │   │  (services/      │
-    │   electron/)     │   │   web/)          │
-    └──────────────────┘   └──────────────────┘
-             │                       │
-             ▼                       ▼
-    ┌──────────────────┐   ┌──────────────────┐
-    │ IPC + Node.js    │   │ Browser APIs     │
-    │ File System      │   │ IndexedDB        │
-    │ Native Dialogs   │   │ Web APIs         │
-    └──────────────────┘   └──────────────────┘
+                          ▼
+               ┌─────────────────────┐
+               │  Electron Platform  │
+               │   (services/        │
+               │    electron/)       │
+               └─────────────────────┘
+                          │
+                          ▼
+               ┌─────────────────────┐
+               │  IPC + Node.js      │
+               │  File System        │
+               │  Native Dialogs     │
+               └─────────────────────┘
 ```
 
 ## Domain Map
@@ -47,14 +46,14 @@ Mockvue is a cross-platform document editor that runs as both an **Electron desk
 - **Purpose**: Document CRUD operations, full-text search, persistence
 - **Service Interface**: `IDocumentService`
 - **Key Operations**: create, read, update, delete, search
-- **Storage**: File system (Electron) / IndexedDB (Web)
+- **Storage**: File system (Electron)
 - **Dependencies**: None (foundational)
 
 ### Users Domain
 - **Purpose**: User profiles, onboarding flow, resume/story management, interview responses
 - **Service Interface**: `IUserService`
 - **Key Operations**: profile management, onboarding, CRUD for stories/resumes/interviews
-- **Storage**: File system (Electron) / IndexedDB (Web)
+- **Storage**: File system (Electron)
 - **Dependencies**: None
 
 ### Agent Domain (AI)
@@ -68,7 +67,7 @@ Mockvue is a cross-platform document editor that runs as both an **Electron desk
 - **Purpose**: Cross-platform user notifications
 - **Service Interface**: `INotificationService`
 - **Key Operations**: show, showSuccess, showError, showInfo, permission management
-- **Platform Behavior**: Native notifications (Electron) / Web Notifications API (Web)
+- **Platform Behavior**: Native notifications (Electron)
 - **Dependencies**: None
 
 ## Package Structure
@@ -124,12 +123,7 @@ Mockvue is a cross-platform document editor that runs as both an **Electron desk
 │   │   │   ├── agent.ts
 │   │   │   ├── notifications.ts
 │   │   │   └── index.ts
-│   │   └── web/                    # Web implementations
-│   │       ├── document.ts
-│   │       ├── user.ts
-│   │       ├── agent.ts
-│   │       ├── notifications.ts
-│   │       └── index.ts
+│   │   │   └── index.ts
 │   └── utils/
 │       └── platform.ts             # Platform detection utilities
 ├── electron/                       # Electron main process
@@ -142,22 +136,21 @@ Mockvue is a cross-platform document editor that runs as both an **Electron desk
 ## Service Abstraction Pattern
 
 ### Contract-First Design
-All service capabilities are defined as TypeScript interfaces in `src/services/interfaces.ts`. Both Electron and Web implementations must satisfy the same contract:
+All service capabilities are defined as TypeScript interfaces in `src/services/interfaces.ts`. Electron implementations satisfy this contract:
 
 ```typescript
 // Service contracts
-IDocumentService  → ElectronDocumentService / WebDocumentService
-IUserService      → ElectronUserService     / WebUserService
-IAgentService     → ElectronAgentService    / WebAgentService
-INotificationService → ElectronNotificationService / WebNotificationService
+IDocumentService  → ElectronDocumentService
+IUserService      → ElectronUserService
+IAgentService     → ElectronAgentService
+INotificationService → ElectronNotificationService
 ```
 
-### Platform Detection & Factory
-The `factory.ts` module detects the current platform and creates the appropriate service instances:
+### Service Factory
+The `factory.ts` module creates the Electron service instances:
 
 ```typescript
-const platform = getPlatform(); // 'electron' | 'web'
-const services = createServices(); // Returns IAppServices
+const services = createServices(); // Returns IAppServices (Electron implementations)
 ```
 
 ### React Integration
@@ -174,8 +167,7 @@ useNotifications()  // INotificationService
 
 ## Routing Architecture
 
-- **Web**: `BrowserRouter` for standard URL-based routing
-- **Electron**: `HashRouter` for `file://` protocol compatibility
+- **Router**: `HashRouter` for `file://` protocol compatibility (Electron standard)
 - **Routes**: `/` (Dashboard), `/document/:id`, `/stories`, `/ai-assistant`, `/onboarding`
 - **Protection**: `ProtectedRoute` wrapper checks onboarding completion
 
@@ -188,7 +180,7 @@ useNotifications()  // INotificationService
 - Cross-cutting utilities live in `src/utils/`
 
 ### Platform Boundary
-- Components NEVER import from `src/services/electron/` or `src/services/web/` directly
+- Components NEVER import from `src/services/electron/` directly
 - Components only interact with services via hooks from `src/services/context.tsx`
 - Platform-specific code is strictly isolated in `src/services/{platform}/`
 
@@ -198,11 +190,10 @@ useNotifications()  // INotificationService
 1. Define the interface in `src/services/interfaces.ts`
 2. Add to `IAppServices` combined interface
 3. Create `src/services/electron/{service}.ts` implementation
-4. Create `src/services/web/{service}.ts` implementation
-5. Register in `src/services/factory.ts`
-6. Add hook in `src/services/context.tsx`
-7. Export from `src/services/index.ts`
-8. Update this document
+4. Register in `src/services/factory.ts`
+5. Add hook in `src/services/context.tsx`
+6. Export from `src/services/index.ts`
+7. Update this document
 
 ### Adding a New Feature
 1. Check `docs/product-specs/` for requirements
@@ -221,7 +212,7 @@ npm run lint
 # Type check
 npx tsc --noEmit
 
-# Development (web)
+# Development (electron)
 npm run dev
 
 # Development (electron)

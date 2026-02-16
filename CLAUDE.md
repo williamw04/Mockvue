@@ -107,7 +107,7 @@ If you're stuck:
 ## Key Constraints
 
 ### Platform Architecture
-Cross-platform through service abstraction:
+Service abstraction layer:
 ```
 React Components (Platform Agnostic)
          ↓

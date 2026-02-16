@@ -24,11 +24,12 @@ The integration follows the same service abstraction pattern used throughout the
                            │
                  ┌─────────┴──────────┐
                  ▼                    ▼
-     ┌──────────────────┐   ┌──────────────────┐
-     │ Web Platform     │   │ Electron Platform│
-     │ - Remote API     │   │ - Local Models   │
-     │ - Cloud LLMs     │   │ - Ollama         │
-     └──────────────────┘   └──────────────────┘
+     ┌──────────────────┐
+     │ Electron Platform│
+     │ - Local Models   │
+     │ - Ollama         │
+     │ - Cloud API      │
+     └──────────────────┘
                  │                    │
                  ▼                    ▼
      ┌──────────────────┐   ┌──────────────────┐
@@ -64,12 +65,6 @@ Several types support the agent system:
 - **`AgentResponse`**: Result from an agent execution
 
 ### 3. Service Implementations
-
-#### Web Implementation (`src/services/web/agent.ts`)
-- Connects to remote LangGraph API
-- Supports cloud-based LLMs
-- Streaming support for real-time responses
-- Task history stored in memory (can be persisted to IndexedDB)
 
 #### Electron Implementation (`src/services/electron/agent.ts`)
 - Can support local models (Ollama, LLaMA.cpp)
@@ -226,7 +221,7 @@ async executeTaskWithDocument(
   additionalInput?: string
 ): Promise<AgentResponse> {
   // Get document from storage service
-  const storage = new WebStorageService();
+  const storage = new ElectronDocumentService();
   const document = await storage.getDocument(documentId);
   
   if (!document) {
@@ -284,10 +279,6 @@ async streamTask(
 Store configuration securely:
 
 ```typescript
-// For web: Use localStorage or secure storage
-localStorage.setItem('langgraph_api_key', 'your-api-key');
-localStorage.setItem('langgraph_endpoint', 'https://api.your-langgraph-service.com');
-
 // For Electron: Use electron-store or keytar for secure storage
 import Store from 'electron-store';
 const store = new Store({ encryptionKey: 'your-encryption-key' });
@@ -471,15 +462,7 @@ await agent.useLocalModel('llama2');
 const result = await agent.executeTask('summarize', text);
 ```
 
-### Web: Cloud Integration
 
-```typescript
-// Configure cloud API
-const agent = new WebAgentService(
-  process.env.VITE_LANGGRAPH_API_KEY,
-  'https://api.your-service.com'
-);
-```
 
 ## Testing
 
@@ -570,7 +553,7 @@ console.table(history.map(t => ({
 
 To see the integration in action:
 
-1. Start the application: `npm run dev`
+1. Start the application: `npm run electron:dev`
 2. Navigate to the AI Assistant page (click the banner on the dashboard)
 3. Try different AI features
 4. View task history
@@ -579,7 +562,7 @@ The demo uses simulated responses. To connect to real LangGraph:
 
 1. Install dependencies: `npm install @langchain/langgraph @langchain/core @langchain/openai`
 2. Set your API key: Create `.env.local` with `VITE_OPENAI_API_KEY=your-key`
-3. Update `src/services/web/agent.ts` to use real LangGraph graphs (see examples above)
+3. Update `src/services/electron/agent.ts` to use real LangGraph graphs (see examples above)
 4. Restart the application
 
 ---

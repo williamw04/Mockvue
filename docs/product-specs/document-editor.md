@@ -26,7 +26,7 @@ The Document Editor is a rich, single-document editing experience built around a
 - [x] Manual save via button with loading state
 - [x] Navigate back to dashboard
 - [x] Loading spinner during document fetch
-- [x] Works on both Electron and Web platforms
+- [x] Works on Electron platform
 
 ## Key Components
 

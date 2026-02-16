@@ -58,7 +58,7 @@ The AI Assistant provides a chat-like interface for AI-powered writing tasks. Us
 The `IAgentService` interface is fully defined and both platform implementations exist, but they currently return **simulated responses**. Real integration requires:
 
 1. **LLM Provider**: Connect to OpenAI, Anthropic, or local model via LangGraph
-2. **API Key Management**: Secure storage (Electron keychain / Web encrypted localStorage)
+2. **API Key Management**: Secure storage (Electron keychain)
 3. **Streaming Protocol**: Wire `streamTask()` to actual SSE or WebSocket stream
 4. **Document Context**: Pass current document content as context to the LLM
 5. **Rate Limiting**: Implement token counting and usage caps

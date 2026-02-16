@@ -22,7 +22,7 @@ Story Management provides a dedicated page for managing behavioral interview sto
 - [x] Color-coded STAR sections (S=Blue, T=Purple, A=Green, R=Orange)
 - [x] Character guidance and tips for each section
 - [x] Common question prompts to inspire story creation
-- [x] Works on both Electron and Web platforms
+- [x] Works on Electron platform
 
 ## Key Components
 

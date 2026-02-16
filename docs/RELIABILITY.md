@@ -57,10 +57,7 @@ Documents auto-save after a debounce period:
 - No network dependency for core features
 - AI features require network (graceful degradation)
 
-### Web
-- IndexedDB provides offline document storage
-- Core CRUD operations work offline
-- AI features require network (show appropriate messaging)
+
 
 ### Graceful Degradation
 When a capability is unavailable:
@@ -76,11 +73,7 @@ When a capability is unavailable:
 - **File System Errors**: Handle permission denied, disk full, file not found
 - **Process Crashes**: Electron auto-restarts renderer; main process should handle uncaught exceptions
 
-### Web
-- **IndexedDB Quota**: Handle storage quota exceeded
-- **Browser Compatibility**: Feature detection before use
-- **Private Browsing**: IndexedDB may be unavailable — detect and warn
-- **Network Failures**: Service worker for offline support (future)
+
 
 ## Notification Resilience
 
@@ -89,8 +82,6 @@ Notifications must degrade gracefully:
 ```
 Native Notifications (Electron)
        ↓ (if unavailable)
-Web Notifications API
-       ↓ (if permission denied)
 In-App Toast Notifications
        ↓ (if all else fails)
 Console logging (never silent)
@@ -130,7 +121,7 @@ Replace `console.error` with structured logging:
 - Stack traces for errors
 
 ### Health Checks
-For the web version with a backend:
+### Health Checks
 - Service health endpoint
 - Database connectivity check
 - External API availability check

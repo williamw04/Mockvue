@@ -4,7 +4,7 @@
 
 ## Problem Statement
 
-Mockvue needs to run as both an Electron desktop application and a web browser application using the same React codebase. Platform-specific APIs (file system, IPC, IndexedDB, Web APIs) must be abstracted so components remain platform-agnostic.
+Mockvue runs as an Electron desktop application using a React codebase. Platform-specific APIs (file system, IPC) must be abstracted so components remain clean.
 
 ## Decision
 
@@ -52,7 +52,6 @@ Interfaces (contracts) → Factory (platform detection) → Context (React hooks
 
 ### Platform Implementations
 - `src/services/electron/` — Uses IPC + Node.js via contextBridge
-- `src/services/web/` — Uses IndexedDB + Browser APIs
 
 ## Verification Status
 - [x] Implemented (Phase 1-3 complete)

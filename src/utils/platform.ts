@@ -6,53 +6,50 @@ export type Platform = 'electron' | 'web';
 
 /**
  * Detects the current platform
+ * Note: Hardcoded to 'electron' as web support has been removed.
  */
 export const getPlatform = (): Platform => {
-  if (typeof window !== 'undefined' && window.electronAPI) {
-    return 'electron';
-  }
-  return 'web';
+  return 'electron';
 };
 
 /**
  * Checks if the app is running in Electron
  */
 export const isElectron = (): boolean => {
-  return getPlatform() === 'electron';
+  return true;
 };
 
 /**
  * Checks if the app is running in a web browser
  */
 export const isWeb = (): boolean => {
-  return getPlatform() === 'web';
+  return false;
 };
 
 /**
  * Feature detection for various capabilities
  */
 export const hasFeature = (feature: string): boolean => {
-  const platform = getPlatform();
-  
+  // All features are now determined by the Electron platform
   const features: Record<string, boolean> = {
     // File system access
-    'file-system': platform === 'electron' || 'showOpenFilePicker' in window,
-    'native-dialogs': platform === 'electron',
-    
+    'file-system': true,
+    'native-dialogs': true,
+
     // Storage
-    'offline-first': platform === 'electron',
-    'indexeddb': 'indexedDB' in window,
-    'localstorage': 'localStorage' in window,
-    
+    'offline-first': true,
+    'indexeddb': false, // We use file system in Electron
+    'localstorage': true,
+
     // System features
-    'notifications': 'Notification' in window || platform === 'electron',
-    'auto-update': platform === 'electron',
-    'system-tray': platform === 'electron',
-    
+    'notifications': true,
+    'auto-update': true,
+    'system-tray': true,
+
     // Performance
-    'native-performance': platform === 'electron',
+    'native-performance': true,
   };
-  
+
   return features[feature] ?? false;
 };
 
@@ -61,7 +58,7 @@ export const hasFeature = (feature: string): boolean => {
  */
 export const getPlatformInfo = () => {
   const platform = getPlatform();
-  
+
   return {
     platform,
     isElectron: platform === 'electron',
