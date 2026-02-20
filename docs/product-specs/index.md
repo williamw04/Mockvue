@@ -1,6 +1,6 @@
 # Product Specifications Index
 
-**Last Updated**: 2026-02-14
+**Last Updated**: 2026-02-16
 
 This directory contains specifications for all Mockvue features. Each spec includes user stories, acceptance criteria, and success metrics.
 
@@ -9,15 +9,16 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 - [Document Editor](./document-editor.md) — Q&A document editing with drag-and-drop and auto-save
 - [Document Management](./document-management.md) — Browse, search, sort, and organize documents
 - [Platform Architecture](./platform-architecture.md) — Electron desktop architecture
+- [Resume Parsing & Import](./user-onboarding.md) — Upload resume PDF, AI-powered parsing, profile auto-fill
 
 ## In Progress
 
-- [Resume Parsing & Import](./user-onboarding.md) — **Redefined**. Upload resume to auto-populate profile.
+- [Story Management](./story-management.md) — STAR-format story management (unblocked by Resume Parsing)
+- Profile Page — View stored resume data, work experiences, projects, skills, and original PDF
 
 ## Deferred / Blocked
 
 - [AI Assistant](./ai-assistant.md) — ⛔️ **Deferred**. Context-aware editing tools planned for future.
-- [Story Management](./story-management.md) — ⛔️ **Blocked**. Waiting for Resume Parsing data model.
 
 ## Planned / Future
 
