@@ -3,6 +3,18 @@ import { TopNavBar } from './TopNavBar';
 import { useUser } from '../services';
 import type { UserProfile, Resume } from '../types';
 
+function formatDate(dateString?: string): string {
+    if (!dateString) return '';
+    try {
+        const [year, month] = dateString.split('-');
+        if (!year || !month) return dateString;
+        const date = new Date(parseInt(year), parseInt(month) - 1);
+        return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    } catch {
+        return dateString;
+    }
+}
+
 export default function ProfilePage() {
     const userService = useUser();
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -136,12 +148,9 @@ export default function ProfilePage() {
                                                     <p className="text-blue-600 font-medium">{exp.company}</p>
                                                 </div>
                                                 <span className="text-sm text-gray-400 whitespace-nowrap ml-4">
-                                                    {exp.startDate || '?'} — {exp.endDate || 'Present'}
+                                                    {exp.startDate ? formatDate(exp.startDate) : '?'} — {exp.endDate ? formatDate(exp.endDate) : 'Present'}
                                                 </span>
                                             </div>
-                                            {exp.description && (
-                                                <p className="text-sm text-gray-600 mt-2">{exp.description}</p>
-                                            )}
                                             {exp.achievements && exp.achievements.length > 0 && (
                                                 <ul className="mt-3 space-y-1.5">
                                                     {exp.achievements.map((ach, j) => (
@@ -173,7 +182,7 @@ export default function ProfilePage() {
                                                 {edu.gpa && <p className="text-xs text-gray-500 mt-1">GPA: {edu.gpa}</p>}
                                             </div>
                                             <span className="text-sm text-gray-400 whitespace-nowrap ml-4">
-                                                {edu.startDate || '?'} — {edu.endDate || 'Present'}
+                                                {edu.startDate ? formatDate(edu.startDate) : '?'} — {edu.endDate ? formatDate(edu.endDate) : 'Present'}
                                             </span>
                                         </div>
                                     ))}

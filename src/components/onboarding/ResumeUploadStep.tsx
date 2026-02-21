@@ -281,14 +281,6 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
                   />
                 </div>
 
-                <textarea
-                  placeholder="Brief description of your role"
-                  value={exp.description || ''}
-                  onChange={(e) => updateWorkExperience(expIndex, 'description', e.target.value)}
-                  rows={2}
-                  className="w-full px-4 py-2 rounded-lg border mb-4 bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                />
-
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Key Achievements</label>
                   {(exp.achievements || ['']).map((achievement, achIndex) => (
