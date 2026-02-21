@@ -22,7 +22,7 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
 
   // Parsing State
   const [file, setFile] = useState<{ path: string; name: string } | null>(null);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isParsing, setIsParsing] = useState(false);
   const [parseStatus, setParseStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [rawText, setRawText] = useState<string | undefined>(undefined);
