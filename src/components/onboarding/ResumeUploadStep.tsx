@@ -27,6 +27,7 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
   const [parseStatus, setParseStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [rawText, setRawText] = useState<string | undefined>(undefined);
   const [resumePdfPath, setResumePdfPath] = useState<string | undefined>(undefined);
+  const [coreStoryMatches, setCoreStoryMatches] = useState<any[]>([]);
 
   const handleFileSelect = async () => {
     if (!window.electronAPI) return;
@@ -62,6 +63,9 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
         }
         if (data.projects) {
           setProjects(data.projects);
+        }
+        if (data.coreStoryMatches) {
+          setCoreStoryMatches(data.coreStoryMatches);
         }
 
         setParseStatus('success');
@@ -150,6 +154,7 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
         projects: projects,
         rawText: rawText,
         resumePdfPath: resumePdfPath,
+        coreStoryMatches: coreStoryMatches,
       });
 
       await notifications.showSuccess('Resume saved successfully!');

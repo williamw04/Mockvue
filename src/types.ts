@@ -116,6 +116,24 @@ export interface Education {
   gpa?: string;
 }
 
+export type CoreStoryCategory =
+  | 'conflict'
+  | 'failure'
+  | 'leadership'
+  | 'adaptability'
+  | 'tight-deadline'
+  | 'difficult-customer'
+  | 'data-driven-decision'
+  | 'above-and-beyond'
+  | 'persuasion'
+  | 'proudest-accomplishment';
+
+export interface CoreStoryMatch {
+  category: CoreStoryCategory;
+  relatedExperienceId: string; // The ID (or company/position string if ID is not generated yet) of the matching experience
+  reasoning: string; // Why this experience is a good fit for this core story
+}
+
 export interface Resume {
   id: string;
   userId: string;
@@ -126,6 +144,7 @@ export interface Resume {
   summary?: string;
   rawText?: string; // For uploaded resumes
   resumePdfPath?: string; // Path to stored PDF
+  coreStoryMatches?: CoreStoryMatch[]; // AI suggested mapping to the 10 core stories
   createdAt: string;
   updatedAt: string;
 }
@@ -141,6 +160,7 @@ export interface Story {
   result: string;
   tags: string[]; // e.g., ['leadership', 'problem-solving', 'teamwork']
   relatedExperienceId?: string; // Link to work experience
+  coreCategory?: CoreStoryCategory; // Link to one of the 10 behavioral core categories
   createdAt: string;
   updatedAt: string;
 }
