@@ -9,7 +9,7 @@ As a user, I want to upload my resume (PDF) so that the application can extract 
 
 ## Overview
 
-The onboarding flow walks users through a 3-step wizard: Welcome → Resume → Completion. The Resume step combines **AI-powered PDF parsing** with **manual entry** on a single page. Uploading a PDF auto-fills the form fields, which the user can review and edit before saving.
+The onboarding flow walks users through a 4-step wizard: Welcome → Resume → Stories → Completion. The Resume step combines **AI-powered PDF parsing** with **manual entry** on a single page. After parsing, the Stories step suggests AI-generated behavioral story matches.Uploading a PDF auto-fills the form fields, which the user can review and edit before saving.
 
 ## Acceptance Criteria
 
@@ -19,8 +19,9 @@ The onboarding flow walks users through a 3-step wizard: Welcome → Resume → 
 - [x] Auto-fill manual entry form with parsed data
 - [x] User can edit parsed data before saving
 - [x] Store original PDF copy in app data directory
-- [x] Save all resume data (experiences, education, projects, skills, raw text, PDF path) to `IUserService`
+- [x] Save all resume data (experiences, education, projects, skills, raw text, PDF path, and AI core story matches) to `IUserService`
 - [x] Profile page displays all stored resume data
+- [x] New "Stories" step suggests top 3 AI matches to draft into the library
 - [x] "Open PDF" button on Profile page opens stored resume with OS default viewer
 - [x] Redirect to Dashboard upon onboarding completion
 
@@ -31,16 +32,20 @@ The onboarding flow walks users through a 3-step wizard: Welcome → Resume → 
    - **Top section**: "Quick Fill with AI" — file picker, Gemini API key input, Parse button
    - **Below**: Manual entry form (always visible) — auto-filled by parsing
    - User reviews, edits, and clicks Continue
-3. **Completion**: Profile saved, redirect to Dashboard
+3. **AI Stories Match Step**:
+   - Presents top 3 AI-suggested behavioral core stories based on parsed achievements.
+   - User can "Add Stories" or "Skip for now".
+4. **Completion**: Profile saved, redirect to Dashboard
 
 ## Key Components
 
 | Component | Responsibility |
 |-----------|----------------|
-| `OnboardingFlow.tsx` | 3-step wizard (Welcome → Resume → Completion) |
+| `OnboardingFlow.tsx` | 4-step wizard (Welcome → Resume → Stories → Completion) |
 | `ResumeUploadStep.tsx` | Combined upload + manual entry interface |
+| `CoreStoryMatchStep.tsx` | Presents top AI-matched behavioral stories |
 | `ProfilePage.tsx` | Displays stored profile, experiences, projects, skills |
-| `electron/parser.ts` | PDF text extraction + Gemini API parsing |
+| `electron/parser.ts` | PDF text extraction + Gemini API parsing, including behavioral story mapping |
 | `electron/main.ts` | IPC handlers for parse, save, open PDF |
 | `electron/preload.ts` | `parseResume`, `openResumePdf` bridges |
 
@@ -60,10 +65,11 @@ PDF File → pdf-parse (text extraction) → Gemini 2.0 Flash (structured JSON) 
 ```
 
 ### Data Stored
-- `workExperiences[]` — company, position, dates, description, achievements
+- `workExperiences[]` — company, position, dates, achievements
 - `education[]` — school, degree, field, dates, GPA
 - `projects[]` — title, description, role, technologies, URL
 - `skills[]` — flat string array
+- `coreStoryMatches[]` — AI generated mapping of experiences to behavioral traits
 - `rawText` — extracted plain text from PDF
 - `resumePdfPath` — path to copied PDF in app data
 

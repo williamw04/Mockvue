@@ -10,10 +10,10 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 - [Document Management](./document-management.md) — Browse, search, sort, and organize documents
 - [Platform Architecture](./platform-architecture.md) — Electron desktop architecture
 - [Resume Parsing & Import](./user-onboarding.md) — Upload resume PDF, AI-powered parsing, profile auto-fill
+- [Behavioral Core Stories](./story-management.md) — 10-category STAR format matrix with AI suggestions
 
 ## In Progress
 
-- [Story Management](./story-management.md) — STAR-format story management (unblocked by Resume Parsing)
 - Profile Page — View stored resume data, work experiences, projects, skills, and original PDF
 
 ## Deferred / Blocked
