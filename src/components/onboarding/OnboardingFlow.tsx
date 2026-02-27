@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useNotifications } from '../../services';
+import { SurveyResponse } from '../../types';
 import WelcomeStep from './WelcomeStep';
+import SurveyStep from './SurveyStep';
 import ResumeUploadStep from './ResumeUploadStep';
 import CoreStoryMatchStep from './CoreStoryMatchStep';
 import CompletionStep from './CompletionStep';
 
-type OnboardingStep = 'welcome' | 'resume' | 'stories' | 'completion';
+type OnboardingStep = 'welcome' | 'survey' | 'resume' | 'stories' | 'completion';
 
 export default function OnboardingFlow() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function OnboardingFlow() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
   const [userName, setUserName] = useState('');
   const [targetRole, setTargetRole] = useState('');
+  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
 
   useEffect(() => {
     // Check if user has already completed onboarding
@@ -35,6 +38,11 @@ export default function OnboardingFlow() {
   const handleWelcomeComplete = (name: string, role: string) => {
     setUserName(name);
     setTargetRole(role);
+    setCurrentStep('survey');
+  };
+
+  const handleSurveyComplete = (responses: SurveyResponse[]) => {
+    setSurveyResponses(responses);
     setCurrentStep('resume');
   };
 
@@ -44,6 +52,7 @@ export default function OnboardingFlow() {
       await userService.saveUserProfile({
         name: userName,
         targetRole: targetRole,
+        surveyResponses: surveyResponses,
         onboardingCompleted: false, // Not yet - show stories then completion
       });
       setCurrentStep('stories');
@@ -70,9 +79,10 @@ export default function OnboardingFlow() {
 
   const steps = [
     { id: 'welcome', label: 'Welcome', number: 1 },
-    { id: 'resume', label: 'Resume', number: 2 },
-    { id: 'stories', label: 'Stories', number: 3 },
-    { id: 'completion', label: 'Complete', number: 4 },
+    { id: 'survey', label: 'Survey', number: 2 },
+    { id: 'resume', label: 'Resume', number: 3 },
+    { id: 'stories', label: 'Stories', number: 4 },
+    { id: 'completion', label: 'Complete', number: 5 },
   ];
 
   const currentStepNumber = steps.find(s => s.id === currentStep)?.number || 1;
@@ -131,6 +141,10 @@ export default function OnboardingFlow() {
         <div className="max-w-4xl mx-auto">
           {currentStep === 'welcome' && (
             <WelcomeStep onComplete={handleWelcomeComplete} />
+          )}
+
+          {currentStep === 'survey' && (
+            <SurveyStep onComplete={handleSurveyComplete} />
           )}
 
           {currentStep === 'resume' && (

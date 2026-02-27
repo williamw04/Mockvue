@@ -73,6 +73,13 @@ export interface AgentResponse {
 
 // User Profile & Onboarding Types
 
+export type LikertValue = 'strongly-agree' | 'agree' | 'neutral' | 'disagree' | 'strongly-disagree';
+
+export interface SurveyResponse {
+  questionId: string;
+  value: LikertValue;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -80,6 +87,7 @@ export interface UserProfile {
   targetRole?: string;
   targetCompany?: string;
   onboardingCompleted: boolean;
+  surveyResponses?: SurveyResponse[];
   projects: Project[];
   createdAt: string;
   updatedAt: string;

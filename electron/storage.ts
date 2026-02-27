@@ -59,6 +59,7 @@ export interface Resume {
   summary?: string;
   rawText?: string;
   resumePdfPath?: string;
+  coreStoryMatches?: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +74,7 @@ export interface Story {
   result: string;
   tags: string[];
   relatedExperienceId?: string;
+  coreCategory?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -197,6 +199,7 @@ export class UserDataStorage {
         summary: resume.summary || existing?.summary,
         rawText: resume.rawText || existing?.rawText,
         resumePdfPath: resume.resumePdfPath || existing?.resumePdfPath,
+        coreStoryMatches: resume.coreStoryMatches || existing?.coreStoryMatches,
         createdAt: existing?.createdAt || now,
         updatedAt: now,
       };

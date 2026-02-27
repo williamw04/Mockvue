@@ -21,7 +21,8 @@ export async function parseResumeWithGemini(text: string, apiKey: string): Promi
 
   const prompt = `
     You are a resume parsing assistant. 
-    1. Extract the following information from the resume text below.
+    1. Extract the information from the resume text below. 
+       CRITICAL: For work experiences, do NOT dump the bullet points into the "description" field. You MUST extract the specific accomplishments and bullet points into the "achievements" array as individual strings. Keep "description" to a very brief 1-sentence summary or leave it empty.
     2. Analyze the candidate's work experiences and projects to suggest one strong match for each of the 10 "Behavioral Core Stories". 
 
     The 10 Behavioral Core Stories are:
@@ -90,6 +91,14 @@ export async function parseResumeWithGemini(text: string, apiKey: string): Promi
   const result = await model.generateContent(prompt);
   const response = await result.response;
   const textResponse = response.text();
+
+  console.log("====== GEMINI PARSER PROMPT ======");
+  console.log(prompt);
+  console.log("==================================");
+
+  console.log("====== GEMINI RAW RESPONSE ======");
+  console.log(textResponse);
+  console.log("=================================");
 
   // Clean up code blocks if present
   const jsonString = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
