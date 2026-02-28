@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useNotifications } from '../../services';
+import { SurveyResponse } from '../../types';
 import WelcomeStep from './WelcomeStep';
+import SurveyStep from './SurveyStep';
 import ResumeUploadStep from './ResumeUploadStep';
-import StoryCreationStep from './StoryCreationStep';
+import CoreStoryMatchStep from './CoreStoryMatchStep';
 import CompletionStep from './CompletionStep';
 
-type OnboardingStep = 'welcome' | 'resume' | 'stories' | 'completion';
+type OnboardingStep = 'welcome' | 'survey' | 'resume' | 'stories' | 'completion';
 
 export default function OnboardingFlow() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function OnboardingFlow() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
   const [userName, setUserName] = useState('');
   const [targetRole, setTargetRole] = useState('');
+  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
 
   useEffect(() => {
     // Check if user has already completed onboarding
@@ -35,22 +38,24 @@ export default function OnboardingFlow() {
   const handleWelcomeComplete = (name: string, role: string) => {
     setUserName(name);
     setTargetRole(role);
+    setCurrentStep('survey');
+  };
+
+  const handleSurveyComplete = (responses: SurveyResponse[]) => {
+    setSurveyResponses(responses);
     setCurrentStep('resume');
   };
 
   const handleResumeComplete = async () => {
-    setCurrentStep('stories');
-  };
-
-  const handleStoriesComplete = async () => {
     try {
-      // Save user profile with onboarding completed
+      // Save user profile and move to completion
       await userService.saveUserProfile({
         name: userName,
         targetRole: targetRole,
-        onboardingCompleted: false, // Not yet - show completion step first
+        surveyResponses: surveyResponses,
+        onboardingCompleted: false, // Not yet - show stories then completion
       });
-      setCurrentStep('completion');
+      setCurrentStep('stories');
     } catch (error) {
       console.error('Error saving profile:', error);
       await notifications.showError('Failed to save your progress');
@@ -68,11 +73,16 @@ export default function OnboardingFlow() {
     }
   };
 
+  const handleStoriesComplete = () => {
+    setCurrentStep('completion');
+  };
+
   const steps = [
     { id: 'welcome', label: 'Welcome', number: 1 },
-    { id: 'resume', label: 'Resume', number: 2 },
-    { id: 'stories', label: 'Stories', number: 3 },
-    { id: 'completion', label: 'Complete', number: 4 },
+    { id: 'survey', label: 'Survey', number: 2 },
+    { id: 'resume', label: 'Resume', number: 3 },
+    { id: 'stories', label: 'Stories', number: 4 },
+    { id: 'completion', label: 'Complete', number: 5 },
   ];
 
   const currentStepNumber = steps.find(s => s.id === currentStep)?.number || 1;
@@ -95,20 +105,18 @@ export default function OnboardingFlow() {
               <div key={step.id} className="flex items-center flex-1">
                 <div className="flex items-center gap-2 flex-1">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                      step.number <= currentStepNumber
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${step.number <= currentStepNumber
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-500'
+                      }`}
                   >
                     {step.number}
                   </div>
                   <span
-                    className={`text-sm font-medium ${
-                      step.number <= currentStepNumber
-                        ? 'text-gray-900'
-                        : 'text-gray-500'
-                    }`}
+                    className={`text-sm font-medium ${step.number <= currentStepNumber
+                      ? 'text-gray-900'
+                      : 'text-gray-500'
+                      }`}
                   >
                     {step.label}
                   </span>
@@ -116,11 +124,10 @@ export default function OnboardingFlow() {
 
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-2 rounded transition-colors ${
-                      step.number < currentStepNumber
-                        ? 'bg-blue-600'
-                        : 'bg-gray-200'
-                    }`}
+                    className={`flex-1 h-1 mx-2 rounded transition-colors ${step.number < currentStepNumber
+                      ? 'bg-blue-600'
+                      : 'bg-gray-200'
+                      }`}
                   />
                 )}
               </div>
@@ -136,12 +143,16 @@ export default function OnboardingFlow() {
             <WelcomeStep onComplete={handleWelcomeComplete} />
           )}
 
+          {currentStep === 'survey' && (
+            <SurveyStep onComplete={handleSurveyComplete} />
+          )}
+
           {currentStep === 'resume' && (
             <ResumeUploadStep onComplete={handleResumeComplete} />
           )}
 
           {currentStep === 'stories' && (
-            <StoryCreationStep onComplete={handleStoriesComplete} />
+            <CoreStoryMatchStep onComplete={handleStoriesComplete} />
           )}
 
           {currentStep === 'completion' && (

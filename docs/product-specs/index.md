@@ -1,34 +1,31 @@
 # Product Specifications Index
 
-**Last Updated**: 2026-02-14
+**Last Updated**: 2026-02-16
 
 This directory contains specifications for all Mockvue features. Each spec includes user stories, acceptance criteria, and success metrics.
 
-## Complete Features
+## Stable / Core Features
 
 - [Document Editor](./document-editor.md) — Q&A document editing with drag-and-drop and auto-save
 - [Document Management](./document-management.md) — Browse, search, sort, and organize documents
-- [User Onboarding](./user-onboarding.md) — Multi-step first-time setup flow
-- [Story Management](./story-management.md) — STAR-method behavioral interview stories
 - [Platform Architecture](./platform-architecture.md) — Electron desktop architecture
+- [Resume Parsing & Import](./user-onboarding.md) — Upload resume PDF, AI-powered parsing, profile auto-fill
+- [Behavioral Core Stories](./story-management.md) — 10-category STAR format matrix with AI suggestions
 
 ## In Progress
 
-- [AI Assistant](./ai-assistant.md) — AI-powered writing features (UI complete, LLM integration pending)
-- [Resume Management](./resume-management.md) — Resume data entry (onboarding form exists, standalone page planned)
-- [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks (UI exists, real data pending)
+- Profile Page — View stored resume data, work experiences, projects, skills, and original PDF
 
-## Planned
+## Deferred / Blocked
 
-- [Interview Response Builder](./interview-response-builder.md) — Build and practice responses from stories (types/services exist, no UI)
+- [AI Assistant](./ai-assistant.md) — ⛔️ **Deferred**. Context-aware editing tools planned for future.
 
-## Future Considerations
+## Planned / Future
 
-_Features under consideration or in early planning:_
-- Cloud sync between devices
-- Collaborative editing
-- Mobile support (React Native)
-- Plugin system
+- [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks
+- [Resume Management](./resume-management.md) — Standalone resume editor (post-import)
+- [Interview Response Builder](./interview-response-builder.md) — Build responses from stories
+
 
 ## Spec Template
 

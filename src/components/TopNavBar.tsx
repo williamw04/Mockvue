@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 
 const navItems = [
   { label: 'Home', path: '/' },
+  { label: 'Profile', path: '/profile' },
   { label: 'Stories', path: '/stories' },
   { label: 'AI Assistant', path: '/ai-assistant' },
 ];
@@ -78,11 +79,10 @@ export function TopNavBar() {
               <button
                 key={item.path}
                 onClick={() => handleNavigate(item.path)}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${
-                  location.pathname === item.path
+                className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${location.pathname === item.path
                     ? 'bg-blue-50 text-blue-600 font-medium'
                     : 'hover:bg-white/50 text-gray-900'
-                }`}
+                  }`}
               >
                 {item.label}
               </button>

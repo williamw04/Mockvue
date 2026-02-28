@@ -379,6 +379,8 @@ body {
 ### Test Files
 - `src/services/context.test.tsx` — ServicesProvider hooks (6 tests)
 - `src/components/documents/DocumentCard.test.tsx` — DocumentCard (8 tests)
+- `src/components/onboarding/ResumeUploadStep.test.tsx` — ResumeUploadStep (9 tests)
+- `src/components/onboarding/SurveyStep.test.tsx` — SurveyStep survey flow (16 tests)
 
 ### Test Utilities
 - `src/test/setup.ts` — Global setup (localStorage mock, cleanup, crypto.randomUUID)

@@ -27,7 +27,7 @@ export interface FilePickerOptions {
 }
 
 // AI Agent Types
-export type AgentFeatureType = 
+export type AgentFeatureType =
   | 'summarize'
   | 'rewrite'
   | 'expand'
@@ -73,6 +73,13 @@ export interface AgentResponse {
 
 // User Profile & Onboarding Types
 
+export type LikertValue = 'strongly-agree' | 'agree' | 'neutral' | 'disagree' | 'strongly-disagree';
+
+export interface SurveyResponse {
+  questionId: string;
+  value: LikertValue;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -80,8 +87,21 @@ export interface UserProfile {
   targetRole?: string;
   targetCompany?: string;
   onboardingCompleted: boolean;
+  surveyResponses?: SurveyResponse[];
+  projects: Project[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  role: string;
+  technologies: string[];
+  url?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface WorkExperience {
@@ -104,14 +124,35 @@ export interface Education {
   gpa?: string;
 }
 
+export type CoreStoryCategory =
+  | 'conflict'
+  | 'failure'
+  | 'leadership'
+  | 'adaptability'
+  | 'tight-deadline'
+  | 'difficult-customer'
+  | 'data-driven-decision'
+  | 'above-and-beyond'
+  | 'persuasion'
+  | 'proudest-accomplishment';
+
+export interface CoreStoryMatch {
+  category: CoreStoryCategory;
+  relatedExperienceId: string; // The ID (or company/position string if ID is not generated yet) of the matching experience
+  reasoning: string; // Why this experience is a good fit for this core story
+}
+
 export interface Resume {
   id: string;
   userId: string;
   workExperiences: WorkExperience[];
   education: Education[];
   skills: string[];
+  projects: Project[];
   summary?: string;
   rawText?: string; // For uploaded resumes
+  resumePdfPath?: string; // Path to stored PDF
+  coreStoryMatches?: CoreStoryMatch[]; // AI suggested mapping to the 10 core stories
   createdAt: string;
   updatedAt: string;
 }
@@ -127,6 +168,7 @@ export interface Story {
   result: string;
   tags: string[]; // e.g., ['leadership', 'problem-solving', 'teamwork']
   relatedExperienceId?: string; // Link to work experience
+  coreCategory?: CoreStoryCategory; // Link to one of the 10 behavioral core categories
   createdAt: string;
   updatedAt: string;
 }

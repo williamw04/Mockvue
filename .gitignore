@@ -33,3 +33,7 @@ release
 out/
 build/electron/
 
+# Environment variables
+.env
+.env.*
+!.env.example

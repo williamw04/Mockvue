@@ -1,7 +1,7 @@
 # Architecture
 
-**Version**: 1.0.0  
-**Last Updated**: 2026-02-14
+**Version**: 1.1.0  
+**Last Updated**: 2026-02-16
 
 ## Overview
 
@@ -57,10 +57,10 @@ Mockvue is an **Electron desktop application** using a React codebase. The key a
 - **Dependencies**: None
 
 ### Agent Domain (AI)
-- **Purpose**: AI-powered features for document editing and content generation
+- **Purpose**: AI-powered features for document editing, content generation, and resume parsing
 - **Service Interface**: `IAgentService`
-- **Key Operations**: summarize, rewrite, expand, translate, brainstorm, outline
-- **Capabilities**: Task execution, streaming, task history
+- **Key Operations**: summarize, rewrite, expand, translate, brainstorm, outline, parseResume
+- **Capabilities**: Task execution, streaming, task history, PDF parsing via Gemini
 - **Dependencies**: Documents (for context)
 
 ### Notifications Domain
@@ -97,6 +97,7 @@ Mockvue is an **Electron desktop application** using a React codebase. The key a
 │   ├── types.ts                    # Shared TypeScript type definitions
 │   ├── components/                 # React components (platform-agnostic)
 │   │   ├── Dashboard.tsx           # Main dashboard view
+│   │   ├── ProfilePage.tsx         # User profile & resume viewer
 │   │   ├── AIAssistant.tsx         # AI assistant interface
 │   │   ├── StoriesPage.tsx         # Story management
 │   │   ├── Sidebar.tsx             # Navigation sidebar
@@ -127,8 +128,9 @@ Mockvue is an **Electron desktop application** using a React codebase. The key a
 │   └── utils/
 │       └── platform.ts             # Platform detection utilities
 ├── electron/                       # Electron main process
-│   ├── main.ts                     # Main process entry
+│   ├── main.ts                     # Main process entry + IPC handlers
 │   ├── preload.ts                  # Preload script (contextBridge)
+│   ├── parser.ts                   # Resume PDF parsing (pdf-parse + Gemini)
 │   └── storage.ts                  # File system storage
 └── public/                         # Static assets
 ```
@@ -168,7 +170,7 @@ useNotifications()  // INotificationService
 ## Routing Architecture
 
 - **Router**: `HashRouter` for `file://` protocol compatibility (Electron standard)
-- **Routes**: `/` (Dashboard), `/document/:id`, `/stories`, `/ai-assistant`, `/onboarding`
+- **Routes**: `/` (Dashboard), `/profile`, `/document/:id`, `/stories`, `/ai-assistant`, `/onboarding`
 - **Protection**: `ProtectedRoute` wrapper checks onboarding completion
 
 ## Dependency Rules

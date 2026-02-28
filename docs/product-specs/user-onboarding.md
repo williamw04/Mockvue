@@ -1,78 +1,83 @@
-# Feature: User Onboarding
+# Feature: Resume Parsing & Import
 
 **Status**: Complete  
-**Last Updated**: 2026-02-14
+**Last Updated**: 2026-02-16
 
 ## User Story
 
-As a first-time user, I want to be guided through setting up my profile, adding my resume, and creating initial interview stories so that I'm ready to start preparing for interviews immediately.
+As a user, I want to upload my resume (PDF) so that the application can extract my work history, education, projects, and skills to auto-populate my profile.
 
 ## Overview
 
-The onboarding flow is a multi-step wizard that collects essential user information before granting access to the main application. It establishes the foundation for interview prep by requiring a minimum set of STAR-method stories. All protected routes redirect to onboarding until it is completed.
+The onboarding flow walks users through a 4-step wizard: Welcome → Resume → Stories → Completion. The Resume step combines **AI-powered PDF parsing** with **manual entry** on a single page. After parsing, the Stories step suggests AI-generated behavioral story matches.Uploading a PDF auto-fills the form fields, which the user can review and edit before saving.
 
 ## Acceptance Criteria
 
-- [x] Step 1 (Welcome): Collect name, target role, target company
-- [x] Step 2 (Resume): Manual entry of work experience, education, skills
-- [x] Step 3 (Stories): Create minimum 3 STAR-method stories
-- [x] Step 4 (Completion): Welcome message with navigation to dashboard
-- [x] Progress indicator showing current step
-- [x] Step navigation (next/back) with validation
-- [x] Cannot skip steps or proceed without required data
-- [x] Onboarding completion persisted across sessions
-- [x] Protected routes redirect to `/onboarding` if not completed
-- [x] Works on Electron platform
-
-## Key Components
-
-| Component | Path | Responsibility |
-|-----------|------|----------------|
-| OnboardingFlow | `src/components/onboarding/OnboardingFlow.tsx` | Step orchestration, progress tracking |
-| WelcomeStep | `src/components/onboarding/WelcomeStep.tsx` | Name, role, company form |
-| ResumeUploadStep | `src/components/onboarding/ResumeUploadStep.tsx` | Resume data entry form |
-| StoryCreationStep | `src/components/onboarding/StoryCreationStep.tsx` | STAR story creation |
-| CompletionStep | `src/components/onboarding/CompletionStep.tsx` | Congratulations + navigation |
-
-## Service Dependencies
-
-- `IUserService.getUserProfile()` — Check onboarding status
-- `IUserService.saveUserProfile(profile)` — Save profile data
-- `IUserService.saveResume(resume)` — Save resume data
-- `IUserService.createStory(story)` — Save each story
-- `IUserService.completeOnboarding()` — Mark onboarding as done
+- [x] Upload resume PDF via native file picker
+- [x] Parse text content using `pdf-parse` (Electron main process)
+- [x] Extract structured data via Gemini 2.0 Flash (work experience, education, projects, skills)
+- [x] Auto-fill manual entry form with parsed data
+- [x] User can edit parsed data before saving
+- [x] Store original PDF copy in app data directory
+- [x] Save all resume data (experiences, education, projects, skills, raw text, PDF path, and AI core story matches) to `IUserService`
+- [x] Profile page displays all stored resume data
+- [x] New "Stories" step suggests top 3 AI matches to draft into the library
+- [x] "Open PDF" button on Profile page opens stored resume with OS default viewer
+- [x] Redirect to Dashboard upon onboarding completion
 
 ## User Flow
 
+1. **Welcome Screen**: Brief intro to MockVue
+2. **Resume Step** (single page):
+   - **Top section**: "Quick Fill with AI" — file picker, Gemini API key input, Parse button
+   - **Below**: Manual entry form (always visible) — auto-filled by parsing
+   - User reviews, edits, and clicks Continue
+3. **AI Stories Match Step**:
+   - Presents top 3 AI-suggested behavioral core stories based on parsed achievements.
+   - User can "Add Stories" or "Skip for now".
+4. **Completion**: Profile saved, redirect to Dashboard
+
+## Key Components
+
+| Component | Responsibility |
+|-----------|----------------|
+| `OnboardingFlow.tsx` | 4-step wizard (Welcome → Resume → Stories → Completion) |
+| `ResumeUploadStep.tsx` | Combined upload + manual entry interface |
+| `CoreStoryMatchStep.tsx` | Presents top AI-matched behavioral stories |
+| `ProfilePage.tsx` | Displays stored profile, experiences, projects, skills |
+| `electron/parser.ts` | PDF text extraction + Gemini API parsing, including behavioral story mapping |
+| `electron/main.ts` | IPC handlers for parse, save, open PDF |
+| `electron/preload.ts` | `parseResume`, `openResumePdf` bridges |
+
+## Service Dependencies
+
+- `IUserService.saveUserProfile(profile)` — stores name, target role
+- `IUserService.saveResume(resumeData)` — stores experiences, education, projects, skills, PDF path
+- `IUserService.getResume()` — retrieves stored resume for Profile page
+- `electronAPI.parseResume(filePath, apiKey)` — PDF extraction + Gemini parsing
+- `electronAPI.openResumePdf(pdfPath)` — opens stored PDF with system viewer
+
+## Technical Details
+
+### Parser Pipeline
 ```
-App launch → check getUserProfile()
-  ├── onboardingCompleted === true → Dashboard
-  └── onboardingCompleted === false → /onboarding
-       Step 1: Welcome → validates name + role → Next
-       Step 2: Resume → add work/edu/skills → Next
-       Step 3: Stories → create ≥3 stories → Next
-       Step 4: Complete → click "Go to Dashboard" → /
+PDF File → pdf-parse (text extraction) → Gemini 2.0 Flash (structured JSON) → UI Form
 ```
 
-## Validation Rules
+### Data Stored
+- `workExperiences[]` — company, position, dates, achievements
+- `education[]` — school, degree, field, dates, GPA
+- `projects[]` — title, description, role, technologies, URL
+- `skills[]` — flat string array
+- `coreStoryMatches[]` — AI generated mapping of experiences to behavioral traits
+- `rawText` — extracted plain text from PDF
+- `resumePdfPath` — path to copied PDF in app data
 
-| Step | Field | Rule |
-|------|-------|------|
-| Welcome | Name | Required, non-empty |
-| Welcome | Target role | Required, non-empty |
-| Welcome | Target company | Optional |
-| Resume | Work experience | At least 1 entry recommended |
-| Stories | Stories | Minimum 3 required |
-| Stories | Each story | Title + at least Situation required |
+### API Key
+- Gemini API key entered per-session in the Upload step
+- Not stored permanently; sent directly to Google's generative AI endpoint
 
 ## Success Metrics
 
-- Onboarding completion rate: Target > 80%
-- Average time to complete: < 15 minutes
-- No data loss if user refreshes mid-flow
-- Smooth step transitions
-
-## Design References
-
-- See: `docs/ONBOARDING_FEATURE.md` — Detailed feature documentation
-- See: `docs/FRONTEND.md` — UI patterns and component styling
+- Parsing accuracy > 80% (users don't need to rewrite everything)
+- Time from upload to dashboard < 1 minute
