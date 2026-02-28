@@ -19,7 +19,14 @@ This feature transforms Mockvue into a behavioral interview prep tool. Users are
 ```typescript
 // User Profile - Tracks onboarding status and basic info
 UserProfile {
-  id, name, email, targetRole, targetCompany, onboardingCompleted
+  id, name, email, targetRole, targetCompany, onboardingCompleted,
+  surveyResponses?: SurveyResponse[]
+}
+
+// Survey Response - Collected during onboarding
+SurveyResponse {
+  questionId: string  // 'curveball' | 'feedback-gap' | 'delivery-pressure'
+  value: LikertValue  // 'strongly-agree' | 'agree' | 'neutral' | 'disagree' | 'strongly-disagree'
 }
 
 // Resume - Work experience, education, and skills
@@ -54,9 +61,10 @@ Implemented for:
 #### Onboarding Flow (`src/components/onboarding/`)
 
 1. **WelcomeStep** - Collects user name, target role, and company
-2. **ResumeUploadStep** - Manual resume entry (work experience, education, skills)
-3. **StoryCreationStep** - STAR method story builder (requires minimum 3 stories)
-4. **CompletionStep** - Welcome screen with next steps
+2. **SurveyStep** - 3-screen Likert survey assessing interview pain points with value proposition cards
+3. **ResumeUploadStep** - Manual resume entry (work experience, education, skills)
+4. **CoreStoryMatchStep** - AI-suggested core story matches from resume
+5. **CompletionStep** - Welcome screen with next steps
 
 #### StoriesPage (`src/components/StoriesPage.tsx`)
 
@@ -124,10 +132,12 @@ Users must create at least **3 stories** during onboarding to ensure they have f
    - Yes → Show Dashboard
 3. Onboarding Steps:
    a. Enter name and target role
-   b. Add work experience and skills
-   c. Create 3+ STAR stories
-   d. Complete onboarding
+   b. Complete 3-question survey (Curveball, Feedback Gap, Delivery Under Pressure)
+   c. Add work experience and skills
+   d. Review AI-suggested core story matches
+   e. Complete onboarding
 4. Dashboard shows story library
+   - Weighted outcome: highest-rated pain point drives initial dashboard CTA
 5. Users can manage stories at /stories
 6. Build interview responses from stories
 ```
@@ -216,7 +226,11 @@ userData/
 
 ## Testing Checklist
 
-- [ ] Onboarding flow completion
+- [x] Onboarding flow completion
+- [x] Survey step rendering (3 screens, Likert scale)
+- [x] Survey value proposition cards (agree vs disagree paths)
+- [x] Survey navigation (next, back, state persistence)
+- [x] Survey completion callback with responses
 - [ ] Story creation (STAR method)
 - [ ] Story editing and deletion
 - [ ] Dashboard story display
