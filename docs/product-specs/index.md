@@ -18,10 +18,11 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 
 ## Deferred / Blocked
 
-- [AI Assistant](./ai-assistant.md) — ⛔️ **Deferred**. Context-aware editing tools planned for future.
+- [AI Assistant](./ai-assistant.md) — ⛔️ **Deferred**. Superseded by [AI Interview Prep Agents](./ai-agents.md).
 
 ## Planned / Future
 
+- [AI Interview Prep Agents](./ai-agents.md) — Multi-agent pipeline: Resume Architect → Narrative Coach → Mock Simulator
 - [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks
 - [Resume Management](./resume-management.md) — Standalone resume editor (post-import)
 - [Interview Response Builder](./interview-response-builder.md) — Build responses from stories
