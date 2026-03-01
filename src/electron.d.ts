@@ -3,6 +3,7 @@ import type {
   Resume,
   Story,
   InterviewResponse,
+  CandidateProfile,
   Document,
   DocumentQuestion
 } from './types';
@@ -24,6 +25,7 @@ export interface ElectronAPI {
   getResume: () => Promise<Resume | null>;
   saveResume: (resume: Partial<Resume>) => Promise<Resume>;
   parseResume: (filePath: string, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string; rawText?: string; pdfPath?: string }>;
+  analyzeResumeBullets: (resumeData: any, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
   openResumePdf: (pdfPath: string) => Promise<void>;
 
   // Story operations
@@ -38,6 +40,10 @@ export interface ElectronAPI {
   createInterviewResponse: (response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<InterviewResponse>;
   updateInterviewResponse: (id: string, response: Partial<InterviewResponse>) => Promise<InterviewResponse>;
   deleteInterviewResponse: (id: string) => Promise<void>;
+
+  // Candidate profile operations (Resume Architect)
+  getCandidateProfile: () => Promise<CandidateProfile | null>;
+  saveCandidateProfile: (profile: CandidateProfile) => Promise<CandidateProfile>;
 
   // Document operations
   getDocuments: () => Promise<Document[]>;

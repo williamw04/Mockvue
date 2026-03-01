@@ -1,9 +1,4 @@
-/**
- * Electron User Service Implementation
- * Uses IPC to communicate with the main process for user data operations
- */
-
-import type { UserProfile, Resume, Story, InterviewResponse } from '../../types';
+import type { UserProfile, Resume, Story, InterviewResponse, CandidateProfile } from '../../types';
 import type { IUserService } from '../interfaces';
 
 export class ElectronUserService implements IUserService {
@@ -11,7 +6,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getUserProfile();
     } catch (error) {
@@ -50,7 +45,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getResume();
     } catch (error) {
@@ -76,7 +71,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getStories();
     } catch (error) {
@@ -89,7 +84,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getStory(id);
     } catch (error) {
@@ -141,7 +136,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getInterviewResponses();
     } catch (error) {
@@ -185,6 +180,32 @@ export class ElectronUserService implements IUserService {
       await window.electronAPI.deleteInterviewResponse(id);
     } catch (error) {
       console.error('Error deleting interview response:', error);
+      throw error;
+    }
+  }
+
+  async getCandidateProfile(): Promise<CandidateProfile | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.getCandidateProfile();
+    } catch (error) {
+      console.error('Error getting candidate profile:', error);
+      return null;
+    }
+  }
+
+  async saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.saveCandidateProfile(profile);
+    } catch (error) {
+      console.error('Error saving candidate profile:', error);
       throw error;
     }
   }

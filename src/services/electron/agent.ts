@@ -1,5 +1,5 @@
 import { IAgentService } from '../interfaces';
-import { AgentCapability, AgentTask, AgentFeatureType, AgentResponse } from '../../types';
+import { AgentCapability, AgentTask, AgentFeatureType, AgentResponse, Resume, ResumeAnalysis } from '../../types';
 
 /**
  * Electron Agent Service
@@ -244,6 +244,31 @@ export class ElectronAgentService implements IAgentService {
       return result.data;
     } catch (error) {
       console.error('Error parsing resume:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analyze resume bullets for quality issues and identify trigger points
+   */
+  async analyzeResume(resume: Resume, apiKey: string): Promise<ResumeAnalysis> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const result = await window.electronAPI.analyzeResumeBullets(resume, apiKey);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      return {
+        ...result.data,
+        analyzedAt: new Date().toISOString(),
+      } as ResumeAnalysis;
+    } catch (error) {
+      console.error('Error analyzing resume:', error);
       throw error;
     }
   }

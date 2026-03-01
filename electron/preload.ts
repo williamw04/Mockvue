@@ -144,6 +144,14 @@ export interface ElectronAPI {
 
   // AI/Agent operations
   parseResume: (filePath: string, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+  analyzeResumeBullets: (resumeData: any, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+
+  // Resume Architect operations
+  getCandidateProfile: () => Promise<any | null>;
+  saveCandidateProfile: (profile: any) => Promise<any>;
+
+  // PDF operations
+  openResumePdf: (pdfPath: string) => Promise<void>;
 }
 
 // Expose protected methods that allow the renderer process to use
@@ -189,7 +197,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // AI/Agent operations
   parseResume: (filePath: string, apiKey: string) =>
     ipcRenderer.invoke('resume:parse', { filePath, apiKey }),
+  analyzeResumeBullets: (resumeData: any, apiKey: string) =>
+    ipcRenderer.invoke('resume:analyze-bullets', { resumeData, apiKey }),
 
+  // Resume Architect operations
+  getCandidateProfile: () => ipcRenderer.invoke('get-candidate-profile'),
+  saveCandidateProfile: (profile: any) => ipcRenderer.invoke('save-candidate-profile', profile),
+
+  // PDF operations
   openResumePdf: (pdfPath: string) =>
     ipcRenderer.invoke('open-resume-pdf', pdfPath),
 });

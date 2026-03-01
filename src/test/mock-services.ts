@@ -50,6 +50,8 @@ export function createMockUserService(): IUserService {
     createInterviewResponse: vi.fn().mockResolvedValue({}),
     updateInterviewResponse: vi.fn().mockResolvedValue({}),
     deleteInterviewResponse: vi.fn().mockResolvedValue(undefined),
+    getCandidateProfile: vi.fn().mockResolvedValue(null),
+    saveCandidateProfile: vi.fn().mockResolvedValue({}),
   };
 }
 
@@ -68,6 +70,12 @@ export function createMockAgentService(): IAgentService {
     getTask: vi.fn().mockResolvedValue(null),
     cancelTask: vi.fn().mockResolvedValue(true),
     parseResume: vi.fn().mockResolvedValue({ success: true, data: {} }),
+    analyzeResume: vi.fn().mockResolvedValue({
+      bulletAnalyses: [],
+      triggerPoints: [],
+      overallScore: 75,
+      analyzedAt: new Date().toISOString(),
+    }),
   };
 }
 

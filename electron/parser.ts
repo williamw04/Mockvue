@@ -110,3 +110,102 @@ export async function parseResumeWithGemini(text: string, apiKey: string): Promi
     throw new Error("Failed to parse resume data");
   }
 }
+
+/**
+ * Analyzes resume bullets for quality issues and identifies trigger points
+ */
+export async function analyzeResumeBullets(resumeData: any, apiKey: string): Promise<any> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  // Build a compact representation of the resume for the prompt
+  const experienceSummary = (resumeData.workExperiences || []).map((exp: any) => ({
+    id: exp.id,
+    company: exp.company,
+    position: exp.position,
+    achievements: exp.achievements || [],
+  }));
+
+  const prompt = `
+    You are a senior resume consultant and interview strategist. Analyze the following resume data in two passes:
+
+    **PASS 1: BULLET ANALYSIS**
+    For EACH achievement bullet in EACH work experience, evaluate:
+    1. **Weak Verb**: Does it start with a weak or passive verb? (e.g., "managed", "helped", "was responsible for", "assisted", "worked on")
+    2. **No Metrics**: Does it lack quantification? (numbers, percentages, dollar amounts, time saved)
+    3. **Too Brief**: Is it under 8 words or lacking substance?
+    4. **Bad Structure**: Does it fail to follow the XYZ formula ("Accomplished [X] as measured by [Y], by doing [Z]") or PSR/CAR frameworks?
+    5. **Passive Voice**: Is it written in passive voice?
+
+    For each bullet, suggest a rewrite that fixes ALL identified issues. Use strong impact verbs (orchestrated, spearheaded, engineered, negotiated, accelerated, remediated, etc.).
+    Rate each bullet's impact on a scale of 1-10.
+
+    **PASS 2: TRIGGER POINT ANALYSIS**
+    Identify 5-8 "trigger points" — things a recruiter would DEFINITELY ask about in an interview. These include:
+    - Impressive claims that beg follow-up ("reduced latency by 40%" → "How did you measure that?")
+    - Interesting transitions (role changes, company changes)
+    - Technical depth claims
+    - Leadership or cross-functional work
+    - Gaps or unusual patterns
+
+    For each trigger point, explain WHY a recruiter would probe it and what story the candidate should have ready.
+
+    Also calculate an overall resume score from 0-100 based on:
+    - Bullet quality (40%): Average impact score across all bullets
+    - Quantification coverage (30%): % of bullets with metrics
+    - Structure consistency (30%): % of bullets following a framework
+
+    **Resume Data:**
+    ${JSON.stringify(experienceSummary, null, 2)}
+
+    **Return valid JSON matching this exact structure:**
+    {
+      "bulletAnalyses": [
+        {
+          "experienceId": "string (the experience id)",
+          "bulletIndex": 0,
+          "originalBullet": "string",
+          "issues": [
+            {
+              "type": "weak_verb" | "no_metrics" | "too_brief" | "bad_structure" | "passive_voice",
+              "message": "string (brief explanation)",
+              "suggestion": "string (how to fix)"
+            }
+          ],
+          "suggestedRewrite": "string (full rewrite of the bullet)",
+          "impactScore": 7
+        }
+      ],
+      "triggerPoints": [
+        {
+          "id": "tp-1",
+          "experienceId": "string (related experience id)",
+          "description": "string (what the recruiter would ask about)",
+          "whyItMatters": "string (why this stands out)"
+        }
+      ],
+      "overallScore": 72
+    }
+  `;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const textResponse = response.text();
+
+  console.log("====== GEMINI ANALYSIS PROMPT ======");
+  console.log(prompt);
+  console.log("====================================");
+
+  console.log("====== GEMINI ANALYSIS RESPONSE ======");
+  console.log(textResponse);
+  console.log("======================================");
+
+  const jsonString = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+
+  try {
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error("Failed to parse Gemini analysis response as JSON", textResponse);
+    throw new Error("Failed to parse resume analysis");
+  }
+}

@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { UserDataStorage, DocumentStorage } from './storage';
-import { extractText, parseResumeWithGemini } from './parser';
+import { extractText, parseResumeWithGemini, analyzeResumeBullets } from './parser';
 
 let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
@@ -209,6 +209,38 @@ ipcMain.handle('open-resume-pdf', async (_, pdfPath: string) => {
     await shell.openPath(pdfPath);
   } catch (error) {
     console.error('Error opening PDF:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('resume:analyze-bullets', async (_, { resumeData, apiKey }: { resumeData: any; apiKey: string }) => {
+  try {
+    const analysisData = await analyzeResumeBullets(resumeData, apiKey);
+    return { success: true, data: analysisData };
+  } catch (error) {
+    console.error('Resume analysis failed:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
+// ============================================
+// Candidate Profile IPC Handlers
+// ============================================
+
+ipcMain.handle('get-candidate-profile', async () => {
+  try {
+    return await userDataStorage.getCandidateProfile();
+  } catch (error) {
+    console.error('Error in get-candidate-profile:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('save-candidate-profile', async (_event, profile) => {
+  try {
+    return await userDataStorage.saveCandidateProfile(profile);
+  } catch (error) {
+    console.error('Error in save-candidate-profile:', error);
     throw error;
   }
 });

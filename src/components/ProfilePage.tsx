@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { TopNavBar } from './TopNavBar';
 import { useUser } from '../services';
-import type { UserProfile, Resume } from '../types';
+import { ResumeInsightsPanel } from './profile/ResumeInsightsPanel';
+import type { UserProfile, Resume, Story } from '../types';
 
 function formatDate(dateString?: string): string {
     if (!dateString) return '';
@@ -19,7 +20,9 @@ export default function ProfilePage() {
     const userService = useUser();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [resume, setResume] = useState<Resume | null>(null);
+    const [stories, setStories] = useState<Story[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showInsights, setShowInsights] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -27,12 +30,14 @@ export default function ProfilePage() {
 
     const loadData = async () => {
         try {
-            const [p, r] = await Promise.all([
+            const [p, r, s] = await Promise.all([
                 userService.getUserProfile(),
                 userService.getResume(),
+                userService.getStories(),
             ]);
             setProfile(p);
             setResume(r);
+            setStories(s);
         } catch (error) {
             console.error('Error loading profile data:', error);
         } finally {
@@ -121,13 +126,28 @@ export default function ProfilePage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={handleOpenPdf}
-                                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
-                                    >
-                                        📂 Open PDF
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setShowInsights(!showInsights)}
+                                            className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg transition-all text-sm"
+                                        >
+                                            ⚡ Resume Insights
+                                        </button>
+                                        <button
+                                            onClick={handleOpenPdf}
+                                            className="px-5 py-2.5 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm"
+                                        >
+                                            📂 Open PDF
+                                        </button>
+                                    </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Resume Insights Panel */}
+                        {showInsights && (
+                            <div className="mb-8">
+                                <ResumeInsightsPanel resume={resume} stories={stories} />
                             </div>
                         )}
 

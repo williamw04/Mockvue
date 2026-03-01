@@ -213,3 +213,53 @@ export interface DocumentData {
   questions?: DocumentQuestion[];
   tags?: string[];
 }
+
+// Resume Architect Types
+
+export type BulletIssueType = 'weak_verb' | 'no_metrics' | 'too_brief' | 'bad_structure' | 'passive_voice';
+
+export interface BulletIssue {
+  type: BulletIssueType;
+  message: string;
+  suggestion: string;
+}
+
+export interface BulletAnalysis {
+  experienceId: string;
+  bulletIndex: number;
+  originalBullet: string;
+  issues: BulletIssue[];
+  suggestedRewrite: string;
+  impactScore: number; // 1-10
+}
+
+export type TriggerPointComfort = 'have_story' | 'comfortable' | 'not_comfortable';
+
+export interface TriggerPoint {
+  id: string;
+  experienceId: string;
+  description: string;
+  whyItMatters: string;
+  userComfort?: TriggerPointComfort;
+  linkedStoryId?: string;
+}
+
+export interface ResumeAnalysis {
+  bulletAnalyses: BulletAnalysis[];
+  triggerPoints: TriggerPoint[];
+  overallScore: number; // 0-100
+  analyzedAt: string;
+}
+
+export interface CandidateProfile {
+  strengths: string[];
+  triggerPoints: TriggerPoint[];
+  storyReadiness: {
+    covered: number;
+    comfortable: number;
+    gaps: number;
+  };
+  resumeScore: number;
+  createdAt: string;
+  updatedAt: string;
+}

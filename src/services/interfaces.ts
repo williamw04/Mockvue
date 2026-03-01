@@ -10,6 +10,8 @@ import type {
   AgentFeatureType,
   UserProfile,
   Resume,
+  ResumeAnalysis,
+  CandidateProfile,
   Story,
   InterviewResponse,
   Document,
@@ -100,6 +102,11 @@ export interface IAgentService {
    * Parse a resume (raw text or file path handled by backend)
    */
   parseResume(filePath: string, apiKey: string): Promise<any>;
+
+  /**
+   * Analyze resume bullets for quality issues and identify trigger points
+   */
+  analyzeResume(resume: Resume, apiKey: string): Promise<ResumeAnalysis>;
 }
 
 /**
@@ -176,6 +183,16 @@ export interface IUserService {
    * Delete interview response
    */
   deleteInterviewResponse(id: string): Promise<void>;
+
+  /**
+   * Get candidate profile (Resume Architect output)
+   */
+  getCandidateProfile(): Promise<CandidateProfile | null>;
+
+  /**
+   * Save candidate profile
+   */
+  saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile>;
 }
 
 /**

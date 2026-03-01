@@ -102,6 +102,7 @@ export class UserDataStorage {
   private resumeFile: string;
   private storiesFile: string;
   private responsesFile: string;
+  private candidateProfileFile: string;
 
   constructor() {
     const userDataPath = app.getPath('userData');
@@ -110,6 +111,7 @@ export class UserDataStorage {
     this.resumeFile = path.join(this.userDataDir, 'resume.json');
     this.storiesFile = path.join(this.userDataDir, 'stories.json');
     this.responsesFile = path.join(this.userDataDir, 'responses.json');
+    this.candidateProfileFile = path.join(this.userDataDir, 'candidate-profile.json');
 
     this.ensureDirectories();
   }
@@ -363,6 +365,36 @@ export class UserDataStorage {
       fs.writeFileSync(this.responsesFile, JSON.stringify(filtered, null, 2), 'utf-8');
     } catch (error) {
       console.error('Error deleting interview response:', error);
+      throw error;
+    }
+  }
+
+  // Candidate Profile Methods (Resume Architect output)
+  async getCandidateProfile(): Promise<any | null> {
+    try {
+      if (fs.existsSync(this.candidateProfileFile)) {
+        const data = fs.readFileSync(this.candidateProfileFile, 'utf-8');
+        return JSON.parse(data);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting candidate profile:', error);
+      return null;
+    }
+  }
+
+  async saveCandidateProfile(profile: any): Promise<any> {
+    try {
+      const now = new Date().toISOString();
+      const updated = {
+        ...profile,
+        updatedAt: now,
+        createdAt: profile.createdAt || now,
+      };
+      fs.writeFileSync(this.candidateProfileFile, JSON.stringify(updated, null, 2), 'utf-8');
+      return updated;
+    } catch (error) {
+      console.error('Error saving candidate profile:', error);
       throw error;
     }
   }
