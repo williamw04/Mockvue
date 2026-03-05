@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TopNavBar } from './TopNavBar';
 import { useUser } from '../services';
-import { ResumeInsightsPanel } from './profile/ResumeInsightsPanel';
-import type { UserProfile, Resume, Story } from '../types';
+import type { UserProfile, Resume, CandidateProfile } from '../types';
 
 function formatDate(dateString?: string): string {
     if (!dateString) return '';
@@ -18,11 +18,11 @@ function formatDate(dateString?: string): string {
 
 export default function ProfilePage() {
     const userService = useUser();
+    const navigate = useNavigate();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [resume, setResume] = useState<Resume | null>(null);
-    const [stories, setStories] = useState<Story[]>([]);
+    const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
     const [loading, setLoading] = useState(true);
-    const [showInsights, setShowInsights] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -30,14 +30,14 @@ export default function ProfilePage() {
 
     const loadData = async () => {
         try {
-            const [p, r, s] = await Promise.all([
+            const [p, r, cp] = await Promise.all([
                 userService.getUserProfile(),
                 userService.getResume(),
-                userService.getStories(),
+                userService.getCandidateProfile(),
             ]);
             setProfile(p);
             setResume(r);
-            setStories(s);
+            setCandidateProfile(cp);
         } catch (error) {
             console.error('Error loading profile data:', error);
         } finally {
@@ -45,58 +45,47 @@ export default function ProfilePage() {
         }
     };
 
-    const handleOpenPdf = async () => {
+    const handleOpenPdf = () => {
         if (resume?.resumePdfPath && window.electronAPI) {
-            try {
-                await window.electronAPI.openResumePdf(resume.resumePdfPath);
-            } catch (error) {
-                console.error('Failed to open PDF:', error);
-            }
+            window.electronAPI.openResumePdf(resume.resumePdfPath);
         }
     };
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-gray-100">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            <div className="min-h-screen bg-gray-100">
+                <TopNavBar />
+                <div className="flex h-[calc(100vh-80px)] items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+                </div>
             </div>
         );
     }
-
-    const initials = profile?.name
-        ? profile.name
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2)
-        : '??';
 
     return (
         <div className="min-h-screen bg-gray-100">
             <TopNavBar />
 
-            <div className="max-w-4xl mx-auto px-6 py-12">
-                {/* Profile Header */}
-                <div className="rounded-2xl p-8 bg-surface shadow-lg mb-8">
-                    <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                            {initials}
-                        </div>
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900">{profile?.name || 'Unknown'}</h1>
-                            {profile?.targetRole && (
-                                <p className="text-lg text-blue-600 font-medium mt-1">
-                                    🎯 Target: {profile.targetRole}
-                                </p>
-                            )}
-                            {profile?.email && <p className="text-sm text-gray-500 mt-1">{profile.email}</p>}
-                            {profile?.targetCompany && (
-                                <p className="text-sm text-gray-500">🏢 {profile.targetCompany}</p>
-                            )}
+            <div className="container mx-auto p-6 max-w-4xl pt-20">
+                {/* Profile header */}
+                {profile && (
+                    <div className="rounded-2xl p-8 bg-surface shadow-lg mb-8">
+                        <div className="flex items-center gap-6">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                                {profile.name?.[0]?.toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
+                                {profile.targetRole && (
+                                    <p className="text-gray-600 mt-1">
+                                        {profile.targetRole}
+                                        {profile.targetCompany && ` at ${profile.targetCompany}`}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* No resume data */}
                 {!resume && (
@@ -111,7 +100,7 @@ export default function ProfilePage() {
 
                 {resume && (
                     <>
-                        {/* Uploaded Resume PDF */}
+                        {/* Uploaded Resume PDF + Resume Score */}
                         {resume.resumePdfPath && (
                             <div className="rounded-2xl p-6 bg-surface shadow-lg mb-8">
                                 <div className="flex items-center justify-between">
@@ -126,12 +115,23 @@ export default function ProfilePage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-3">
+                                        {/* Resume Score */}
+                                        {candidateProfile && (
+                                            <div className={`px-3 py-1.5 rounded-full text-sm font-bold border ${candidateProfile.resumeScore >= 80
+                                                    ? 'text-green-600 bg-green-50 border-green-200'
+                                                    : candidateProfile.resumeScore >= 60
+                                                        ? 'text-amber-600 bg-amber-50 border-amber-200'
+                                                        : 'text-red-600 bg-red-50 border-red-200'
+                                                }`}>
+                                                Score: {candidateProfile.resumeScore}/100
+                                            </div>
+                                        )}
                                         <button
-                                            onClick={() => setShowInsights(!showInsights)}
+                                            onClick={() => navigate('/resume-review')}
                                             className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg transition-all text-sm"
                                         >
-                                            ⚡ Resume Insights
+                                            ⚡ Analyze Resume
                                         </button>
                                         <button
                                             onClick={handleOpenPdf}
@@ -141,13 +141,6 @@ export default function ProfilePage() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Resume Insights Panel */}
-                        {showInsights && (
-                            <div className="mb-8">
-                                <ResumeInsightsPanel resume={resume} stories={stories} />
                             </div>
                         )}
 

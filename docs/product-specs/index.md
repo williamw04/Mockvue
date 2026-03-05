@@ -1,6 +1,6 @@
 # Product Specifications Index
 
-**Last Updated**: 2026-02-16
+**Last Updated**: 2026-03-02
 
 This directory contains specifications for all Mockvue features. Each spec includes user stories, acceptance criteria, and success metrics.
 
@@ -15,14 +15,14 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 ## In Progress
 
 - Profile Page — View stored resume data, work experiences, projects, skills, and original PDF
+- [AI Interview Prep Agents](./ai-agents.md) — Multi-agent pipeline: Resume Architect (✅ Phase 1 complete) → Narrative Coach → Mock Simulator
 
-## Deferred / Blocked
+## Removed
 
-- [AI Assistant](./ai-assistant.md) — ⛔️ **Deferred**. Superseded by [AI Interview Prep Agents](./ai-agents.md).
+- ~~[AI Assistant](./ai-assistant.md)~~ — Removed. Superseded by AI Interview Prep Agents above.
 
 ## Planned / Future
 
-- [AI Interview Prep Agents](./ai-agents.md) — Multi-agent pipeline: Resume Architect → Narrative Coach → Mock Simulator
 - [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks
 - [Resume Management](./resume-management.md) — Standalone resume editor (post-import)
 - [Interview Response Builder](./interview-response-builder.md) — Build responses from stories

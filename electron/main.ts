@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { UserDataStorage, DocumentStorage } from './storage';
-import { extractText, parseResumeWithGemini, analyzeResumeBullets } from './parser';
+import { extractText, parseResumeWithGemini, analyzeResumeBullets, chatWithResumeContext } from './parser';
 
 let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
@@ -241,6 +241,34 @@ ipcMain.handle('save-candidate-profile', async (_event, profile) => {
     return await userDataStorage.saveCandidateProfile(profile);
   } catch (error) {
     console.error('Error in save-candidate-profile:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('resume:chat', async (_, { messages, analysisContext, apiKey }: { messages: any[]; analysisContext: any; apiKey: string }) => {
+  try {
+    const reply = await chatWithResumeContext(messages, analysisContext, apiKey);
+    return { success: true, reply };
+  } catch (error) {
+    console.error('Resume chat failed:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
+ipcMain.handle('get-resume-analysis', async () => {
+  try {
+    return await userDataStorage.getResumeAnalysis();
+  } catch (error) {
+    console.error('Error in get-resume-analysis:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('save-resume-analysis', async (_event, analysis) => {
+  try {
+    return await userDataStorage.saveResumeAnalysis(analysis);
+  } catch (error) {
+    console.error('Error in save-resume-analysis:', error);
     throw error;
   }
 });

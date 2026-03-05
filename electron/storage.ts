@@ -103,6 +103,7 @@ export class UserDataStorage {
   private storiesFile: string;
   private responsesFile: string;
   private candidateProfileFile: string;
+  private resumeAnalysisFile: string;
 
   constructor() {
     const userDataPath = app.getPath('userData');
@@ -112,6 +113,7 @@ export class UserDataStorage {
     this.storiesFile = path.join(this.userDataDir, 'stories.json');
     this.responsesFile = path.join(this.userDataDir, 'responses.json');
     this.candidateProfileFile = path.join(this.userDataDir, 'candidate-profile.json');
+    this.resumeAnalysisFile = path.join(this.userDataDir, 'resume-analysis.json');
 
     this.ensureDirectories();
   }
@@ -395,6 +397,30 @@ export class UserDataStorage {
       return updated;
     } catch (error) {
       console.error('Error saving candidate profile:', error);
+      throw error;
+    }
+  }
+
+  // Resume Analysis Methods (cached analysis results)
+  async getResumeAnalysis(): Promise<any | null> {
+    try {
+      if (fs.existsSync(this.resumeAnalysisFile)) {
+        const data = fs.readFileSync(this.resumeAnalysisFile, 'utf-8');
+        return JSON.parse(data);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting resume analysis:', error);
+      return null;
+    }
+  }
+
+  async saveResumeAnalysis(analysis: any): Promise<any> {
+    try {
+      fs.writeFileSync(this.resumeAnalysisFile, JSON.stringify(analysis, null, 2), 'utf-8');
+      return analysis;
+    } catch (error) {
+      console.error('Error saving resume analysis:', error);
       throw error;
     }
   }

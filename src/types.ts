@@ -263,3 +263,11 @@ export interface CandidateProfile {
   createdAt: string;
   updatedAt: string;
 }
+
+// Chat Types (Resume Review)
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}

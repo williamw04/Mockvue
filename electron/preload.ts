@@ -207,6 +207,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // PDF operations
   openResumePdf: (pdfPath: string) =>
     ipcRenderer.invoke('open-resume-pdf', pdfPath),
+
+  // Resume chat
+  resumeChat: (messages: any[], analysisContext: any, apiKey: string) =>
+    ipcRenderer.invoke('resume:chat', { messages, analysisContext, apiKey }),
+
+  // Resume analysis cache
+  getResumeAnalysis: () => ipcRenderer.invoke('get-resume-analysis'),
+  saveResumeAnalysis: (analysis: any) => ipcRenderer.invoke('save-resume-analysis', analysis),
 });
 
 declare global {

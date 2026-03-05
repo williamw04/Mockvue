@@ -52,6 +52,8 @@ export function createMockUserService(): IUserService {
     deleteInterviewResponse: vi.fn().mockResolvedValue(undefined),
     getCandidateProfile: vi.fn().mockResolvedValue(null),
     saveCandidateProfile: vi.fn().mockResolvedValue({}),
+    getResumeAnalysis: vi.fn().mockResolvedValue(null),
+    saveResumeAnalysis: vi.fn().mockResolvedValue({}),
   };
 }
 
@@ -76,6 +78,7 @@ export function createMockAgentService(): IAgentService {
       overallScore: 75,
       analyzedAt: new Date().toISOString(),
     }),
+    chatWithResume: vi.fn().mockResolvedValue('Mock AI response about your resume.'),
   };
 }
 

@@ -45,6 +45,13 @@ export interface ElectronAPI {
   getCandidateProfile: () => Promise<CandidateProfile | null>;
   saveCandidateProfile: (profile: CandidateProfile) => Promise<CandidateProfile>;
 
+  // Resume chat
+  resumeChat: (messages: Array<{ role: string; content: string }>, analysisContext: any, apiKey: string) => Promise<{ success: boolean; reply?: string; error?: string }>;
+
+  // Resume analysis cache
+  getResumeAnalysis: () => Promise<ResumeAnalysis | null>;
+  saveResumeAnalysis: (analysis: ResumeAnalysis) => Promise<ResumeAnalysis>;
+
   // Document operations
   getDocuments: () => Promise<Document[]>;
   getDocument: (id: string) => Promise<Document | null>;

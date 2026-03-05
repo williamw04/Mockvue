@@ -209,3 +209,45 @@ export async function analyzeResumeBullets(resumeData: any, apiKey: string): Pro
     throw new Error("Failed to parse resume analysis");
   }
 }
+
+/**
+ * Chat with Gemini using resume analysis as context
+ */
+export async function chatWithResumeContext(
+  messages: Array<{ role: string; content: string }>,
+  analysisContext: any,
+  apiKey: string
+): Promise<string> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const systemPrompt = `
+    You are a senior resume consultant and interview strategist helping a candidate improve their resume and prepare for interviews.
+
+    Here is the candidate's resume analysis data for context:
+    ${JSON.stringify(analysisContext, null, 2)}
+
+    Use this context to provide specific, actionable advice. Reference specific bullets, trigger points, and scores when relevant.
+    Be concise but helpful. If the user asks about rewrites, provide concrete examples.
+    If they ask about interview prep, tie it back to their specific experiences and trigger points.
+  `;
+
+  // Build conversation history for Gemini
+  const conversationParts = messages.map(msg => ({
+    role: msg.role === 'user' ? 'user' as const : 'model' as const,
+    parts: [{ text: msg.content }],
+  }));
+
+  const chat = model.startChat({
+    history: [
+      { role: 'user', parts: [{ text: systemPrompt }] },
+      { role: 'model', parts: [{ text: 'Understood. I have your resume analysis loaded. How can I help you improve your resume and prepare for interviews?' }] },
+      ...conversationParts.slice(0, -1),
+    ],
+  });
+
+  const lastMessage = messages[messages.length - 1];
+  const result = await chat.sendMessage(lastMessage.content);
+  const response = await result.response;
+  return response.text();
+}

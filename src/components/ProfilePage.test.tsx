@@ -60,6 +60,7 @@ function createServicesWithData(profile: UserProfile | null, resume: Resume | nu
     const services = createMockServices();
     services.user.getUserProfile = vi.fn().mockResolvedValue(profile);
     services.user.getResume = vi.fn().mockResolvedValue(resume);
+    services.user.getCandidateProfile = vi.fn().mockResolvedValue(null);
     return services;
 }
 
@@ -68,6 +69,7 @@ describe('ProfilePage', () => {
         const services = createMockServices();
         services.user.getUserProfile = vi.fn().mockReturnValue(new Promise(() => { }));
         services.user.getResume = vi.fn().mockReturnValue(new Promise(() => { }));
+        services.user.getCandidateProfile = vi.fn().mockReturnValue(new Promise(() => { }));
 
         renderWithProviders(<ProfilePage />, { services });
 
@@ -147,4 +149,23 @@ describe('ProfilePage', () => {
         await screen.findByText('Jane Doe');
         expect(screen.queryByText(/Open PDF/)).not.toBeInTheDocument();
     });
+
+    // Resume Insights tests
+    it('renders "Analyze Resume" button when resume has a PDF path', async () => {
+        const services = createServicesWithData(mockProfile, mockResume);
+
+        renderWithProviders(<ProfilePage />, { services });
+
+        expect(await screen.findByText(/Analyze Resume/)).toBeInTheDocument();
+    });
+
+    it('does not render "Analyze Resume" button when no resume', async () => {
+        const services = createServicesWithData(mockProfile, null);
+
+        renderWithProviders(<ProfilePage />, { services });
+
+        await screen.findByText('Jane Doe');
+        expect(screen.queryByText(/Analyze Resume/)).not.toBeInTheDocument();
+    });
 });
+

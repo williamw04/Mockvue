@@ -107,6 +107,15 @@ export interface IAgentService {
    * Analyze resume bullets for quality issues and identify trigger points
    */
   analyzeResume(resume: Resume, apiKey: string): Promise<ResumeAnalysis>;
+
+  /**
+   * Chat with AI about resume analysis
+   */
+  chatWithResume(
+    messages: Array<{ role: string; content: string }>,
+    analysisContext: any,
+    apiKey: string
+  ): Promise<string>;
 }
 
 /**
@@ -193,6 +202,16 @@ export interface IUserService {
    * Save candidate profile
    */
   saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile>;
+
+  /**
+   * Get cached resume analysis
+   */
+  getResumeAnalysis(): Promise<ResumeAnalysis | null>;
+
+  /**
+   * Save resume analysis
+   */
+  saveResumeAnalysis(analysis: ResumeAnalysis): Promise<ResumeAnalysis>;
 }
 
 /**

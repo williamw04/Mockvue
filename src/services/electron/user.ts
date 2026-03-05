@@ -1,4 +1,4 @@
-import type { UserProfile, Resume, Story, InterviewResponse, CandidateProfile } from '../../types';
+import type { UserProfile, Resume, Story, InterviewResponse, CandidateProfile, ResumeAnalysis } from '../../types';
 import type { IUserService } from '../interfaces';
 
 export class ElectronUserService implements IUserService {
@@ -206,6 +206,32 @@ export class ElectronUserService implements IUserService {
       return await window.electronAPI.saveCandidateProfile(profile);
     } catch (error) {
       console.error('Error saving candidate profile:', error);
+      throw error;
+    }
+  }
+
+  async getResumeAnalysis(): Promise<ResumeAnalysis | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.getResumeAnalysis();
+    } catch (error) {
+      console.error('Error getting resume analysis:', error);
+      return null;
+    }
+  }
+
+  async saveResumeAnalysis(analysis: ResumeAnalysis): Promise<ResumeAnalysis> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.saveResumeAnalysis(analysis);
+    } catch (error) {
+      console.error('Error saving resume analysis:', error);
       throw error;
     }
   }

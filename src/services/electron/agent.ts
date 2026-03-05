@@ -272,4 +272,30 @@ export class ElectronAgentService implements IAgentService {
       throw error;
     }
   }
+
+  /**
+   * Chat with AI about resume analysis
+   */
+  async chatWithResume(
+    messages: Array<{ role: string; content: string }>,
+    analysisContext: any,
+    apiKey: string
+  ): Promise<string> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const result = await window.electronAPI.resumeChat(messages, analysisContext, apiKey);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      return result.reply || '';
+    } catch (error) {
+      console.error('Error in resume chat:', error);
+      throw error;
+    }
+  }
 }

@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { TopNavBar } from './TopNavBar';
 import ProgressChart from './ProgressChart';
-import { DailyTasks } from './DailyTasks';
 import { RecentlyOpened } from './RecentlyOpened';
 import { DashboardDocumentCard } from './DashboardDocumentCard';
 import { Input } from './ui/input';
@@ -13,10 +12,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { ProgressStats, Document } from '../types';
-import { useDocuments, useNotifications } from '../services';
+import { ProgressStats, Document, CandidateProfile } from '../types';
+import { useDocuments, useNotifications, useUser } from '../services';
 import { seedDocumentsIfEmpty } from '../utils/seedDocuments';
-import { Plus, Grid3X3, List, FileText, Search, ArrowUpDown } from 'lucide-react';
+import { Plus, Grid3X3, List, FileText, Search, ArrowUpDown, Zap, ArrowRight, Target, Shield, TrendingUp } from 'lucide-react';
 
 const progressStats: ProgressStats = {
   completed: 24,
@@ -33,11 +32,115 @@ const sortOptions = [
 
 type SortValue = (typeof sortOptions)[number]['value'];
 
+function ResumeScoreWidget({ candidateProfile, analysisScore }: { candidateProfile: CandidateProfile | null; analysisScore: number | null }) {
+  const score = candidateProfile?.resumeScore ?? analysisScore ?? 0;
+  const hasScore = candidateProfile !== null || analysisScore !== null;
+
+  // SVG circular progress
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const progress = hasScore ? (score / 100) * circumference : 0;
+
+  const scoreColor = score >= 80 ? '#16a34a' : score >= 60 ? '#d97706' : '#dc2626';
+  const scoreBg = score >= 80 ? 'bg-green-50' : score >= 60 ? 'bg-amber-50' : 'bg-red-50';
+  const scoreLabel = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : 'Needs Work';
+
+  return (
+    <Link
+      to="/resume-review"
+      className="block rounded-2xl bg-surface p-6 shadow-lg hover:shadow-xl transition-all group border border-gray-100"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <h3 className="text-sm font-semibold text-gray-900">Resume Score</h3>
+        </div>
+        <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+      </div>
+
+      {hasScore ? (
+        <div className="flex items-center gap-6">
+          {/* Circular Score */}
+          <div className="relative flex-shrink-0">
+            <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r={radius} fill="none" stroke="#f3f4f6" strokeWidth="8" />
+              <circle
+                cx="60" cy="60" r={radius} fill="none"
+                stroke={scoreColor} strokeWidth="8" strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={circumference - progress}
+                className="transition-all duration-1000"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-gray-900">{score}</span>
+              <span className="text-[10px] text-gray-400 uppercase tracking-wider">/ 100</span>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="flex-1 space-y-3">
+            <div>
+              <span className="text-xs text-gray-400 uppercase tracking-wider">Rating</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className={`inline-block w-2 h-2 rounded-full`} style={{ backgroundColor: scoreColor }} />
+                <p className="text-sm font-semibold text-gray-900">{scoreLabel}</p>
+              </div>
+            </div>
+
+            {candidateProfile && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className={`${scoreBg} rounded-lg px-2.5 py-1.5`}>
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="w-3 h-3 text-green-600" />
+                    <span className="text-xs font-medium text-gray-700">{candidateProfile.strengths.length}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500">Strengths</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg px-2.5 py-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Target className="w-3 h-3 text-amber-500" />
+                    <span className="text-xs font-medium text-gray-700">{candidateProfile.storyReadiness.gaps}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500">Gaps</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-1 text-xs text-blue-600 group-hover:text-blue-700 transition-colors">
+              <TrendingUp className="w-3 h-3" />
+              <span>Improve your score →</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Empty state — CTA */
+        <div className="text-center py-4">
+          <div className="w-16 h-16 rounded-full bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center mx-auto mb-3">
+            <span className="text-2xl">📄</span>
+          </div>
+          <p className="text-gray-800 text-sm font-medium mb-1">Get your resume scored</p>
+          <p className="text-gray-400 text-xs mb-3">AI analysis finds weak spots recruiters notice</p>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
+            Analyze now <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+          </span>
+        </div>
+      )}
+    </Link>
+  );
+}
+
 export function Dashboard() {
   const documentService = useDocuments();
   const notifications = useNotifications();
+  const userService = useUser();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+  const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
+  const [analysisScore, setAnalysisScore] = useState<number | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortValue>('recent');
@@ -45,14 +148,22 @@ export function Dashboard() {
 
   const loadData = useCallback(async () => {
     try {
-      const userDocuments = await documentService.getDocuments();
+      const [userDocuments, cp, cachedAnalysis] = await Promise.all([
+        documentService.getDocuments(),
+        userService.getCandidateProfile(),
+        userService.getResumeAnalysis(),
+      ]);
       setDocuments(userDocuments);
+      setCandidateProfile(cp);
+      if (cachedAnalysis) {
+        setAnalysisScore(cachedAnalysis.overallScore);
+      }
     } catch (err) {
       console.error('Error loading data:', err);
     } finally {
       setLoading(false);
     }
-  }, [documentService]);
+  }, [documentService, userService]);
 
   useEffect(() => {
     const init = async () => {
@@ -124,9 +235,9 @@ export function Dashboard() {
         <RecentlyOpened documents={documents} />
 
         {/* Dashboard Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 mb-8">
           <ProgressChart stats={progressStats} title="Interview Progress" />
-          <DailyTasks />
+          <ResumeScoreWidget candidateProfile={candidateProfile} analysisScore={analysisScore} />
         </div>
 
         {/* Search and Filters */}
