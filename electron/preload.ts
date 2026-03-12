@@ -145,6 +145,7 @@ export interface ElectronAPI {
   // AI/Agent operations
   parseResume: (filePath: string, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
   analyzeResumeBullets: (resumeData: any, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+  analyzeAtsCompatibility: (filePath: string) => Promise<{ success: boolean; data?: any; error?: string }>;
 
   // Resume Architect operations
   getCandidateProfile: () => Promise<any | null>;
@@ -197,8 +198,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // AI/Agent operations
   parseResume: (filePath: string, apiKey: string) =>
     ipcRenderer.invoke('resume:parse', { filePath, apiKey }),
+  replaceResumePdf: (filePath: string) =>
+    ipcRenderer.invoke('resume:replace-pdf', { filePath }),
   analyzeResumeBullets: (resumeData: any, apiKey: string) =>
     ipcRenderer.invoke('resume:analyze-bullets', { resumeData, apiKey }),
+  analyzeAtsCompatibility: (filePath: string) =>
+    ipcRenderer.invoke('resume:analyze-ats', { filePath }),
 
   // Resume Architect operations
   getCandidateProfile: () => ipcRenderer.invoke('get-candidate-profile'),

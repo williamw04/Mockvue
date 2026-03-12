@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { TopNavBar } from './TopNavBar';
 import { useUser } from '../services';
 import type { UserProfile, Resume, CandidateProfile } from '../types';
+import { Upload, Loader2 } from 'lucide-react';
 
 function formatDate(dateString?: string): string {
     if (!dateString) return '';
@@ -23,6 +24,7 @@ export default function ProfilePage() {
     const [resume, setResume] = useState<Resume | null>(null);
     const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [replacingResume, setReplacingResume] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -48,6 +50,88 @@ export default function ProfilePage() {
     const handleOpenPdf = () => {
         if (resume?.resumePdfPath && window.electronAPI) {
             window.electronAPI.openResumePdf(resume.resumePdfPath);
+        }
+    };
+
+    const handleReplaceResume = async () => {
+        if (!window.electronAPI) return;
+        
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+            alert('API key not configured. Please add VITE_GEMINI_API_KEY to your .env file.');
+            return;
+        }
+        
+        const result = await window.electronAPI.showOpenDialog({
+            filters: [{ name: 'PDF', extensions: ['pdf'] }],
+        });
+
+        if (!result.canceled && result.filePath) {
+            setReplacingResume(true);
+            try {
+                // Copy the new PDF to app storage and get the stored path
+                const copyResult = await window.electronAPI.replaceResumePdf(result.filePath);
+                
+                if (copyResult.success && copyResult.pdfPath) {
+                    // Parse the new PDF to extract resume details
+                    const parseResult = await window.electronAPI.parseResume(copyResult.pdfPath, apiKey);
+                    
+                    if (parseResult.success && parseResult.data) {
+                        const parsedData = parseResult.data;
+                        
+                        // Build updated resume with parsed data
+                        const updatedResumeData = {
+                            ...resume,
+                            resumePdfPath: copyResult.pdfPath,
+                            rawText: parseResult.rawText,
+                            workExperiences: parsedData.workExperience?.map((exp: any) => ({
+                                id: crypto.randomUUID(),
+                                company: exp.company || '',
+                                position: exp.position || '',
+                                startDate: exp.startDate || '',
+                                endDate: exp.endDate || '',
+                                description: exp.description || '',
+                                achievements: exp.achievements || [],
+                            })) || [],
+                            education: parsedData.education?.map((edu: any) => ({
+                                id: crypto.randomUUID(),
+                                school: edu.school || '',
+                                degree: edu.degree || '',
+                                field: edu.field || '',
+                                startDate: edu.startDate || '',
+                                endDate: edu.endDate || '',
+                            })) || [],
+                            skills: parsedData.skills || [],
+                            projects: parsedData.projects?.map((proj: any) => ({
+                                id: crypto.randomUUID(),
+                                title: proj.title || '',
+                                description: proj.description || '',
+                                role: proj.role || '',
+                                technologies: proj.technologies || [],
+                                url: proj.url || '',
+                            })) || [],
+                            summary: parsedData.summary || '',
+                            coreStoryMatches: parsedData.coreStoryMatches || [],
+                        };
+                        
+                        const updatedResume = await userService.saveResume(updatedResumeData);
+                        setResume(updatedResume);
+                    } else {
+                        // If parsing fails, just update the PDF path
+                        const updatedResume = await userService.saveResume({
+                            ...resume,
+                            resumePdfPath: copyResult.pdfPath,
+                        });
+                        setResume(updatedResume);
+                    }
+                } else {
+                    throw new Error(copyResult.error || 'Failed to replace resume');
+                }
+            } catch (error) {
+                console.error('Error replacing resume:', error);
+            } finally {
+                setReplacingResume(false);
+            }
         }
     };
 
@@ -138,6 +222,23 @@ export default function ProfilePage() {
                                             className="px-5 py-2.5 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm"
                                         >
                                             📂 Open PDF
+                                        </button>
+                                        <button
+                                            onClick={handleReplaceResume}
+                                            disabled={replacingResume}
+                                            className="px-5 py-2.5 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+                                        >
+                                            {replacingResume ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 inline animate-spin" />
+                                                    Replacing...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Upload className="w-4 h-4 mr-2 inline" />
+                                                    Replace Resume
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </div>

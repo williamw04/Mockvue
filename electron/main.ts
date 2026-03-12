@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { UserDataStorage, DocumentStorage } from './storage';
-import { extractText, parseResumeWithGemini, analyzeResumeBullets, chatWithResumeContext } from './parser';
+import { extractText, parseResumeWithGemini, analyzeResumeBullets, chatWithResumeContext, analyzeAtsCompatibility } from './parser';
 
 let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
@@ -185,6 +185,25 @@ ipcMain.handle('resume:parse', async (_, { filePath, apiKey }: { filePath: strin
   }
 });
 
+ipcMain.handle('resume:replace-pdf', async (_, { filePath }: { filePath: string }) => {
+  try {
+    // Copy new PDF to app data directory
+    const userDataPath = app.getPath('userData');
+    const resumesDir = path.join(userDataPath, 'user-data', 'resumes');
+    if (!fs.existsSync(resumesDir)) {
+      fs.mkdirSync(resumesDir, { recursive: true });
+    }
+    const pdfFileName = `resume-${Date.now()}.pdf`;
+    const storedPdfPath = path.join(resumesDir, pdfFileName);
+    fs.copyFileSync(filePath, storedPdfPath);
+
+    return { success: true, pdfPath: storedPdfPath };
+  } catch (error) {
+    console.error('Resume replace failed:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
 ipcMain.handle('get-resume', async () => {
   try {
     return await userDataStorage.getResume();
@@ -219,6 +238,16 @@ ipcMain.handle('resume:analyze-bullets', async (_, { resumeData, apiKey }: { res
     return { success: true, data: analysisData };
   } catch (error) {
     console.error('Resume analysis failed:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
+ipcMain.handle('resume:analyze-ats', async (_, { filePath }: { filePath: string }) => {
+  try {
+    const atsResult = await analyzeAtsCompatibility(filePath);
+    return { success: true, data: atsResult };
+  } catch (error) {
+    console.error('ATS compatibility analysis failed:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 });

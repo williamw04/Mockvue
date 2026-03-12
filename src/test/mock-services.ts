@@ -79,6 +79,17 @@ export function createMockAgentService(): IAgentService {
       analyzedAt: new Date().toISOString(),
     }),
     chatWithResume: vi.fn().mockResolvedValue('Mock AI response about your resume.'),
+    analyzeAtsCompatibility: vi.fn().mockResolvedValue({
+      overallScore: 80,
+      checks: [
+        { checkName: 'Single-Column Layout', status: 'pass', score: 20, details: 'Looks good' },
+        { checkName: 'Standard Fonts', status: 'pass', score: 20, details: 'Looks good' },
+        { checkName: 'Standardized Headings', status: 'pass', score: 20, details: 'Looks good' },
+        { checkName: 'No Graphics/Tables', status: 'pass', score: 20, details: 'Looks good' },
+        { checkName: 'Reverse Chronological Order', status: 'pass', score: 20, details: 'Looks good' },
+      ],
+      analyzedAt: new Date().toISOString(),
+    }),
   };
 }
 

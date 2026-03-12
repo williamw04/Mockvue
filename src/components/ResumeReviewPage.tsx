@@ -7,29 +7,31 @@ import { CandidateProfileSummary } from './profile/CandidateProfileSummary';
 import { ResumeChat } from './profile/ResumeChat';
 import {
     Zap, Loader2, AlertTriangle, FileText, Target, Shield,
-    ArrowRight, ArrowLeft, RefreshCw,
+    ArrowRight, ArrowLeft, RefreshCw, Layout, CheckCircle, XCircle, AlertCircle,
 } from 'lucide-react';
 import type {
     Resume, ResumeAnalysis, TriggerPointComfort,
-    CandidateProfile, Story,
+    CandidateProfile, Story, ATSAnalysisResult,
 } from '../types';
 
-type Tab = 'bullets' | 'triggers' | 'profile';
+type Tab = 'bullets' | 'triggers' | 'profile' | 'ats';
 
 const tabs: { key: Tab; label: string; num: number; icon: React.ElementType; color: string }[] = [
     { key: 'bullets', label: 'Bullet Analysis', num: 1, icon: FileText, color: 'bg-blue-600' },
     { key: 'triggers', label: 'Trigger Points', num: 2, icon: Target, color: 'bg-amber-500' },
     { key: 'profile', label: 'Candidate Strengths', num: 3, icon: Shield, color: 'bg-green-500' },
+    { key: 'ats', label: 'ATS Compatibility', num: 4, icon: Layout, color: 'bg-purple-500' },
 ];
 
-function ScoreBadge({ score }: { score: number }) {
+function ScoreBadge({ score, label }: { score: number; label?: string }) {
     const color =
         score >= 80 ? 'text-green-600 bg-green-50 border-green-200' :
             score >= 60 ? 'text-amber-600 bg-amber-50 border-amber-200' :
                 'text-red-600 bg-red-50 border-red-200';
 
     return (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold border ${color}`}>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold border ${color}`}>
+            {label && <span className="font-normal text-gray-500">{label}:</span>}
             {score}/100
         </span>
     );
@@ -46,12 +48,22 @@ export default function ResumeReviewPage() {
     const [loading, setLoading] = useState(true);
 
     const [analyzing, setAnalyzing] = useState(false);
+    const [atsAnalyzing, setAtsAnalyzing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
+    const [atsAnalysis, setAtsAnalysis] = useState<ATSAnalysisResult | null>(null);
     const [activeTab, setActiveTab] = useState<Tab>('bullets');
 
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+
+    // Clear cached analysis when resume is replaced
+    useEffect(() => {
+        if (resume) {
+            setAnalysis(null);
+            setAtsAnalysis(null);
+        }
+    }, [resume?.resumePdfPath]);
 
     // Load data + cached analysis on mount
     useEffect(() => {
@@ -77,12 +89,35 @@ export default function ResumeReviewPage() {
         loadData();
     }, [userService]);
 
-    // Auto-analyze ONLY when no cached analysis exists
+    // Auto-analyze when resume changes (new PDF uploaded or replaced)
     useEffect(() => {
-        if (!loading && resume && envApiKey && !analysis && !analyzing) {
+        if (!loading && resume && envApiKey && !analyzing) {
             handleAnalyze();
         }
-    }, [loading, resume, envApiKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [loading, resume?.resumePdfPath, resume?.workExperiences?.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Auto-analyze ATS compatibility when resume PDF exists or changes
+    useEffect(() => {
+        if (!loading && resume?.resumePdfPath) {
+            // Clear previous ATS analysis when resume changes
+            setAtsAnalysis(null);
+            handleAnalyzeAts();
+        }
+    }, [loading, resume?.resumePdfPath]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleAnalyzeAts = useCallback(async () => {
+        if (!resume?.resumePdfPath) return;
+
+        setAtsAnalyzing(true);
+        try {
+            const result = await agentService.analyzeAtsCompatibility(resume.resumePdfPath);
+            setAtsAnalysis(result);
+        } catch (err) {
+            console.error('ATS analysis failed:', err);
+        } finally {
+            setAtsAnalyzing(false);
+        }
+    }, [resume?.resumePdfPath, agentService]);
 
     const handleAnalyze = useCallback(async () => {
         if (!resume || !envApiKey) return;
@@ -230,7 +265,16 @@ export default function ResumeReviewPage() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        {analysis && <ScoreBadge score={analysis.overallScore} />}
+                        {analysis && <ScoreBadge score={analysis.overallScore} label="Resume Score" />}
+                        {atsAnalysis && (
+                            <ScoreBadge score={atsAnalysis.overallScore} label="ATS Score" />
+                        )}
+                        {atsAnalyzing && (
+                            <span className="text-sm text-gray-500 flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Analyzing ATS...
+                            </span>
+                        )}
                         {analysis && envApiKey && (
                             <button
                                 onClick={handleAnalyze}
@@ -433,6 +477,101 @@ export default function ResumeReviewPage() {
                                         <div className="flex justify-start pt-2">
                                             <button
                                                 onClick={() => setActiveTab('triggers')}
+                                                className="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm"
+                                            >
+                                                <ArrowLeft className="w-4 h-4" />
+                                                Back
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ATS Compatibility */}
+                                {activeTab === 'ats' && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-start gap-3 mb-2">
+                                            <div className="w-9 h-9 rounded-lg bg-purple-500 flex items-center justify-center flex-shrink-0">
+                                                <Layout className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg font-bold text-gray-900">ATS Compatibility</h2>
+                                                <p className="text-sm text-gray-500 mt-0.5">
+                                                    Analysis of your resume's formatting for Applicant Tracking System compatibility. 
+                                                    {resume?.resumePdfPath ? ' Based on your uploaded PDF.' : ' Upload a PDF resume to enable this analysis.'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {atsAnalysis ? (
+                                            <>
+                                                <div className="flex items-center gap-4 mb-6">
+                                                    <div className={`text-3xl font-bold ${atsAnalysis.overallScore >= 80 ? 'text-green-600' : atsAnalysis.overallScore >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
+                                                        {atsAnalysis.overallScore}/100
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        {atsAnalysis.overallScore >= 80 ? 'Excellent ATS compatibility' : 
+                                                         atsAnalysis.overallScore >= 60 ? 'Good, but could be improved' : 
+                                                         'Needs improvement for ATS parsing'}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {atsAnalysis.checks.map((check, index) => (
+                                                        <div 
+                                                            key={index}
+                                                            className={`p-4 rounded-lg border ${
+                                                                check.status === 'pass' ? 'bg-green-50 border-green-200' :
+                                                                check.status === 'warning' ? 'bg-amber-50 border-amber-200' :
+                                                                'bg-red-50 border-red-200'
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-start gap-3">
+                                                                {check.status === 'pass' ? (
+                                                                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                                                ) : check.status === 'warning' ? (
+                                                                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                                                ) : (
+                                                                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                                                )}
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center justify-between mb-1">
+                                                                        <h3 className="font-semibold text-gray-900">{check.checkName}</h3>
+                                                                        <span className={`text-sm font-medium ${
+                                                                            check.status === 'pass' ? 'text-green-600' :
+                                                                            check.status === 'warning' ? 'text-amber-600' :
+                                                                            'text-red-600'
+                                                                        }`}>
+                                                                            {check.status === 'pass' ? 'Pass' : check.status === 'warning' ? 'Warning' : 'Fail'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-sm text-gray-600 mb-1">{check.details}</p>
+                                                                    {check.recommendation && (
+                                                                        <p className="text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                                                                            💡 {check.recommendation}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        ) : resume?.resumePdfPath ? (
+                                            <div className="text-center py-8">
+                                                <Loader2 className="w-8 h-8 text-purple-600 animate-spin mx-auto mb-4" />
+                                                <p className="text-gray-600">Analyzing ATS compatibility...</p>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-8 text-gray-500">
+                                                <Layout className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                                <p>Upload a PDF resume to see ATS compatibility analysis.</p>
+                                                <p className="text-sm mt-2">Go to Profile page to upload your resume.</p>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-start pt-2">
+                                            <button
+                                                onClick={() => setActiveTab('profile')}
                                                 className="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm"
                                             >
                                                 <ArrowLeft className="w-4 h-4" />

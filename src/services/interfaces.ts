@@ -15,7 +15,8 @@ import type {
   Story,
   InterviewResponse,
   Document,
-  DocumentData
+  DocumentData,
+  ATSAnalysisResult
 } from '../types';
 
 /**
@@ -116,6 +117,11 @@ export interface IAgentService {
     analysisContext: any,
     apiKey: string
   ): Promise<string>;
+
+  /**
+   * Analyze resume PDF for ATS compatibility
+   */
+  analyzeAtsCompatibility(filePath: string): Promise<ATSAnalysisResult>;
 }
 
 /**

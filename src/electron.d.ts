@@ -25,7 +25,9 @@ export interface ElectronAPI {
   getResume: () => Promise<Resume | null>;
   saveResume: (resume: Partial<Resume>) => Promise<Resume>;
   parseResume: (filePath: string, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string; rawText?: string; pdfPath?: string }>;
+  replaceResumePdf: (filePath: string) => Promise<{ success: boolean; pdfPath?: string; error?: string }>;
   analyzeResumeBullets: (resumeData: any, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+  analyzeAtsCompatibility: (filePath: string) => Promise<{ success: boolean; data?: any; error?: string }>;
   openResumePdf: (pdfPath: string) => Promise<void>;
 
   // Story operations

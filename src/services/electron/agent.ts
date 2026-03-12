@@ -1,5 +1,5 @@
 import { IAgentService } from '../interfaces';
-import { AgentCapability, AgentTask, AgentFeatureType, AgentResponse, Resume, ResumeAnalysis } from '../../types';
+import { AgentCapability, AgentTask, AgentFeatureType, AgentResponse, Resume, ResumeAnalysis, ATSAnalysisResult } from '../../types';
 
 /**
  * Electron Agent Service
@@ -295,6 +295,28 @@ export class ElectronAgentService implements IAgentService {
       return result.reply || '';
     } catch (error) {
       console.error('Error in resume chat:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analyze resume PDF for ATS compatibility
+   */
+  async analyzeAtsCompatibility(filePath: string): Promise<ATSAnalysisResult> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const result = await window.electronAPI.analyzeAtsCompatibility(filePath);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      return result.data as ATSAnalysisResult;
+    } catch (error) {
+      console.error('Error analyzing ATS compatibility:', error);
       throw error;
     }
   }

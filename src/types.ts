@@ -271,3 +271,20 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
 }
+
+// ATS Compatibility Types
+export type ATSCheckStatus = 'pass' | 'warning' | 'fail';
+
+export interface ATSCheckResult {
+  checkName: string;
+  status: ATSCheckStatus;
+  score: number;
+  details: string;
+  recommendation?: string;
+}
+
+export interface ATSAnalysisResult {
+  overallScore: number;
+  checks: ATSCheckResult[];
+  analyzedAt: string;
+}

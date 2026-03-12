@@ -1,7 +1,7 @@
 # Feature: AI Interview Prep Agents
 
-**Status**: Planned  
-**Last Updated**: 2026-02-28
+**Status**: In Progress (Phase 1 Complete)  
+**Last Updated**: 2026-03-06
 
 ## User Story
 
@@ -34,7 +34,33 @@ graph LR
 ## Agent 1: The Resume Architect
 
 **Persona**: A strategic resume consultant who thinks like a recruiter.  
-**Trigger**: User uploads or edits resume data during onboarding or from the Profile page.
+**Trigger**: User uploads or edits resume data during onboarding or from the Profile page.  
+**Primary Surface**: `/resume-review` — Standalone Resume Review page with 3-step tab flow + chat sidebar.
+
+### Current Implementation (Phase 1 ✅)
+
+The Resume Architect currently provides:
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Bullet Analysis** | ✅ Done | Scores each bullet for impact (1-10), flags weak verbs, missing metrics, passive voice. Suggests rewrites. |
+| **Trigger Point Detection** | ✅ Done | Identifies resume elements recruiters will probe (gaps, short tenures, role changes, bold claims). |
+| **Candidate Profile** | ✅ Done | Compiles strengths, trigger points, story readiness, and overall score (0-100). Auto-saved to disk. |
+| **Contextual Chat** | ✅ Done | Sidebar chat agent with full analysis context. Users can ask about specific bullets, get advice, etc. |
+| **Analysis Caching** | ✅ Done | Analysis persisted to `resume-analysis.json`. Loads instantly on return visits. Reanalyze button available. |
+| **Dashboard Widget** | ✅ Done | Gamified score ring on Dashboard with strengths/gaps stats and CTA arrow. |
+
+### User Scenarios
+
+| # | Scenario | Priority | Status |
+|---|----------|----------|--------|
+| 1 | **Generic Review**: "Analyze my resume and tell me what's weak" | P0 | ✅ Done |
+| 2 | **Tailored Review**: "I'm applying to Google for SWE — how does my resume hold up?" | P0 | 🔜 Planned |
+| 3 | **Gap Story Coaching**: "I have a 6-month gap — help me prepare a story" | P0 | 🔜 Planned |
+| 4 | **Inline Bullet Rewriting**: "Rewrite my weakest 5 bullets and let me accept/reject" | P1 | 🔜 Planned |
+| 5 | **ATS Keyword Check**: "Will this pass an ATS scan for data engineering?" | P1 | 🔜 Planned |
+| 6 | **Score History**: "How does my new score compare to last week?" | P2 | 🔜 Planned |
+| 7 | **Section Structure Advice**: "Should I include my projects section?" | P2 | 🔜 Planned |
 
 ### Core Responsibilities
 
@@ -44,6 +70,9 @@ graph LR
 | **Quantification Forcing** | Actively prompt the user to surface metrics using Google's XYZ Formula: "Accomplished [X] as measured by [Y], by doing [Z]." |
 | **Framework Application** | Enforce scannable structures — **PSR** (Problem-Solution-Result) or **CAR** (Challenge-Action-Result) — on every bullet point. |
 | **Knowledge Transfer** | Compile a structured **Candidate Profile** (top achievements, competencies, and teased narratives) to pass to the Narrative Coach. |
+| **Tailored Matching** *(Planned)* | Score resume against a specific job description or target company. Flag missing keywords, role-fit issues, and suggest which bullets to emphasize. |
+| **Gap Story Coaching** *(Planned)* | For each trigger point, generate a sample narrative/talking point the user can rehearse. |
+| **ATS Optimization** *(Planned)* | Identify missing industry keywords and formatting issues that automated tracking systems flag. |
 
 ### Required AI Skills
 
@@ -52,23 +81,33 @@ graph LR
 | **Information Extraction** | Parse rambling, unstructured user input and isolate the core achievement. |
 | **Brevity Enforcement** | Cap bullet points to a strict word count (~20 words) for ATS compatibility and human readability. |
 | **Vocabulary Enhancement** | Swap weak verbs for **Impact Verbs** (e.g., _managed_ → _orchestrated_, _helped_ → _facilitated_, _fixed_ → _remediated_). |
+| **Contextual Chat** | Maintain multi-turn conversations with full resume analysis context to answer specific user questions. |
 
 ### Inputs & Outputs
 
 | Direction | Data |
 |-----------|------|
 | **Input** | Raw resume text, parsed `workExperiences[]`, `projects[]` from `IUserService.getResume()` |
-| **Output** | Refined bullet points per experience, a `CandidateProfile` object containing trigger points and competency tags, updated resume data saved via `IUserService.saveResume()` |
+| **Output** | `ResumeAnalysis` (bullet analyses, trigger points, overall score), `CandidateProfile` (strengths, story readiness), cached analysis via `IUserService.saveResumeAnalysis()` |
 
 ### Acceptance Criteria
 
-- [ ] User can invoke the Architect on any individual work experience or project
-- [ ] Agent identifies and flags weak bullets (no metrics, passive voice, vague impact)
-- [ ] Agent suggests rewritten bullets with before/after diff view
+- [x] Agent analyzes all bullets and produces impact scores (1-10)
+- [x] Agent identifies and flags weak bullets (no metrics, passive voice, vague impact)
+- [x] Agent suggests rewritten bullets with improved verbs and metrics
+- [x] Agent detects trigger points recruiters would probe
+- [x] Agent compiles a `CandidateProfile` that is persisted and accessible to Agent 2
+- [x] Chat sidebar provides contextual Q&A based on analysis results
+- [x] Analysis is cached and loads instantly on repeat visits
+- [x] Reanalyze button allows fresh analysis after resume updates
+- [x] Dashboard widget displays gamified score and CTA
+- [ ] User can review against a specific job description (tailored review)
+- [ ] Agent generates talking points for each trigger point (gap coaching)
+- [ ] User can accept, reject, or edit each bullet suggestion inline
 - [ ] Agent enforces ≤20-word limit per bullet and flags violations
-- [ ] Agent compiles a `CandidateProfile` that is persisted and accessible to Agent 2
 - [ ] XYZ quantification prompts appear when metrics are missing
-- [ ] User can accept, reject, or edit each suggestion individually
+- [ ] ATS keyword matching against a target role
+- [ ] Score history tracked over time with comparison view
 
 ---
 
@@ -290,25 +329,36 @@ saveMockSession(session: MockSession): Promise<MockSession>;
 
 ## Implementation Phases
 
-### Phase 1: Resume Architect
-- Define `CandidateProfile` and `TriggerPoint` types
-- Implement `refineResumeBullets()` and `generateCandidateProfile()` on the backend
-- Build Architect UI (inline on Profile/Resume pages)
-- Integrate before/after diff view for bullet suggestions
+### Phase 1: Resume Architect — ✅ Complete
+- [x] Define `ResumeAnalysis`, `BulletAnalysis`, `TriggerPoint`, `CandidateProfile` types
+- [x] Implement `analyzeResume()` and `chatWithResumeContext()` on the backend
+- [x] Build standalone Resume Review page (`/resume-review`) with 3-step tab flow
+- [x] Build contextual chat sidebar (`ResumeChat.tsx`)
+- [x] Implement analysis caching (save/load `ResumeAnalysis` to disk)
+- [x] Auto-save `CandidateProfile` after analysis
+- [x] Build Dashboard Resume Score widget with circular gauge and CTA
+- [x] Add navigation from Profile, Dashboard, and TopNavBar
+
+### Phase 1.5: Resume Architect Enhancements — 🔜 Next
+- [ ] Tailored review: accept job description input and score against it
+- [ ] Gap story coaching: generate talking points per trigger point
+- [ ] Inline bullet editing: accept/reject/edit suggestions directly
+- [ ] ATS keyword check against target role
+- [ ] Score history tracking and comparison view
 
 ### Phase 2: Narrative Coach
-- Define `StoryQuality` and `RedFlag` types
-- Implement `coachStory()` and `analyzeStoryQuality()` on the backend
-- Build proportion visualization component
-- Integrate coaching flow into Core Stories page
-- Implement pattern mapping (story → questions)
+- [ ] Define `StoryQuality` and `RedFlag` types
+- [ ] Implement `coachStory()` and `analyzeStoryQuality()` on the backend
+- [ ] Build proportion visualization component
+- [ ] Integrate coaching flow into Core Stories page
+- [ ] Implement pattern mapping (story → questions)
 
 ### Phase 3: Mock Interview Simulator
-- Define `MockSession` and `MockResponse` types
-- Implement mock session API endpoints
-- Build Practice Mode UI with timer and adaptive questioning
-- Implement session summary and readiness scoring
-- Add readiness widget to Dashboard
+- [ ] Define `MockSession` and `MockResponse` types
+- [ ] Implement mock session API endpoints
+- [ ] Build Practice Mode UI with timer and adaptive questioning
+- [ ] Implement session summary and readiness scoring
+- [ ] Add readiness widget to Dashboard
 
 ---
 
