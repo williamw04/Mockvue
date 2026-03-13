@@ -1,6 +1,6 @@
 # Design Decisions Index
 
-**Last Updated**: 2026-02-14
+**Last Updated**: 2026-03-13
 
 This directory catalogs all architectural and design decisions made in the Mockvue project. Each decision includes the problem statement, chosen approach, rationale, and alternatives considered.
 
@@ -8,6 +8,9 @@ This directory catalogs all architectural and design decisions made in the Mockv
 
 - [Core Beliefs](./core-beliefs.md) - Foundational principles guiding all development
 - [Service Abstraction](./service-abstraction.md) - Cross-platform service layer architecture
+- [Agent Foundation Architecture](./agent-foundation-architecture.md) - Reusable read-only assistant runtime inside the existing agent domain
+- [Company Question Ingestion Architecture](./company-question-ingestion-architecture.md) - Scraper-heavy question ingestion with normalization and provenance
+- [Voice Interview Architecture](./voice-interview-architecture.md) - Provider-agnostic voice session model with text fallback
 
 ## Decision Template
 

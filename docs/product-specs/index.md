@@ -1,6 +1,6 @@
 # Product Specifications Index
 
-**Last Updated**: 2026-03-06
+**Last Updated**: 2026-03-13
 
 This directory contains specifications for all Mockvue features. Each spec includes user stories, acceptance criteria, and success metrics.
 
@@ -17,6 +17,7 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 - Profile Page — View stored resume data, work experiences, projects, skills, and original PDF
 - [AI Interview Prep Agents](./ai-agents.md) — Multi-agent pipeline: Resume Architect (✅ Phase 1 complete, Phase 1.5 planned) → Narrative Coach → Mock Simulator
 - Resume Review Page — Standalone `/resume-review` with 3-step tab flow, contextual chat, analysis caching, and Reanalyze
+- [Agent Foundation](./agent-foundation.md) — Reusable read-only assistant runtime for Resume Assistant and Behavioral Assistant
 
 ## Removed
 
@@ -27,6 +28,8 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 - [Dashboard Widgets](./dashboard-widgets.md) — Progress chart and daily tasks
 - [Resume Management](./resume-management.md) — Standalone resume editor (post-import)
 - [Interview Response Builder](./interview-response-builder.md) — Build responses from stories
+- [Company Question Ingestion Pipeline](./company-question-ingestion.md) — Scraper-heavy normalized company-question knowledge pipeline
+- [Voice Interview Simulator](./voice-interview-simulator.md) — Provider-agnostic voice practice layer with text fallback
 
 
 ## Spec Template
