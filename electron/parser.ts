@@ -17,7 +17,7 @@ export async function extractText(filePath: string): Promise<string> {
  */
 export async function parseResumeWithGemini(text: string, apiKey: string): Promise<any> {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const prompt = `
     You are a resume parsing assistant. 
@@ -115,8 +115,10 @@ export async function parseResumeWithGemini(text: string, apiKey: string): Promi
  * Analyzes resume bullets for quality issues and identifies trigger points
  */
 export async function analyzeResumeBullets(resumeData: any, apiKey: string): Promise<any> {
+  console.log("[analyzeResumeBullets] API Key present:", !!apiKey, "Length:", apiKey?.length);
+  
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   // Build a compact representation of the resume for the prompt
   const experienceSummary = (resumeData.workExperiences || []).map((exp: any) => ({
@@ -188,9 +190,19 @@ export async function analyzeResumeBullets(resumeData: any, apiKey: string): Pro
     }
   `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const textResponse = response.text();
+  console.log("[analyzeResumeBullets] Sending request to Gemini...");
+  
+  let textResponse: string;
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    textResponse = response.text();
+    console.log("[analyzeResumeBullets] Received response, length:", textResponse.length);
+  } catch (err: any) {
+    console.error("[analyzeResumeBullets] Gemini API error:", err.message);
+    console.error("[analyzeResumeBullets] Error details:", err);
+    throw new Error(`Gemini API failed: ${err.message}`);
+  }
 
   console.log("====== GEMINI ANALYSIS PROMPT ======");
   console.log(prompt);
@@ -219,7 +231,7 @@ export async function chatWithResumeContext(
   apiKey: string
 ): Promise<string> {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const systemPrompt = `
     You are a senior resume consultant and interview strategist helping a candidate improve their resume and prepare for interviews.
