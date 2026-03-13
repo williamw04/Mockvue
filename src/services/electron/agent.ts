@@ -1,5 +1,18 @@
 import { IAgentService } from '../interfaces';
-import { AgentCapability, AgentTask, AgentFeatureType, AgentResponse, Resume, ResumeAnalysis, ATSAnalysisResult } from '../../types';
+import {
+  AgentAssistantId,
+  AgentCapability,
+  AgentFeatureType,
+  AgentResponse,
+  AgentSession,
+  AgentTask,
+  AgentTurnInput,
+  AgentTurnResult,
+  ATSAnalysisResult,
+  CreateAgentSessionInput,
+  Resume,
+  ResumeAnalysis,
+} from '../../types';
 
 /**
  * Electron Agent Service
@@ -319,5 +332,45 @@ export class ElectronAgentService implements IAgentService {
       console.error('Error analyzing ATS compatibility:', error);
       throw error;
     }
+  }
+
+  async createAssistantSession(input: CreateAgentSessionInput): Promise<AgentSession> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentCreateSession(input);
+  }
+
+  async getAssistantSession(sessionId: string): Promise<AgentSession | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentGetSession(sessionId);
+  }
+
+  async listAssistantSessions(assistantId?: AgentAssistantId): Promise<AgentSession[]> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentListSessions(assistantId);
+  }
+
+  async runAssistantTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentRunTurn(input);
+  }
+
+  async clearAssistantSessionMemory(sessionId: string): Promise<void> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    await window.electronAPI.agentClearSessionMemory(sessionId);
   }
 }

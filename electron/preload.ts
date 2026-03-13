@@ -1,4 +1,16 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type {
+  AgentAssistantId,
+  AgentSession,
+  AgentTurnInput,
+  AgentTurnResult,
+  AppendVoiceTranscriptEventInput,
+  CreateAgentSessionInput,
+  CreateVoiceInterviewSessionInput,
+  VoiceInterviewEvent,
+  VoiceInterviewSession,
+  VoiceTranscriptEvent,
+} from './internal-types';
 
 // Type definitions for the exposed API
 export interface FileDialogResult {
@@ -153,6 +165,26 @@ export interface ElectronAPI {
 
   // PDF operations
   openResumePdf: (pdfPath: string) => Promise<void>;
+
+  // Agent foundation operations
+  agentCreateSession: (input: CreateAgentSessionInput) => Promise<AgentSession>;
+  agentGetSession: (sessionId: string) => Promise<AgentSession | null>;
+  agentListSessions: (assistantId?: AgentAssistantId) => Promise<AgentSession[]>;
+  agentRunTurn: (input: AgentTurnInput) => Promise<AgentTurnResult>;
+  agentClearSessionMemory: (sessionId: string) => Promise<void>;
+
+  // Voice interview operations
+  voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => Promise<VoiceInterviewSession>;
+  voiceInterviewGetSession: (sessionId: string) => Promise<VoiceInterviewSession | null>;
+  voiceInterviewListSessions: () => Promise<VoiceInterviewSession[]>;
+  voiceInterviewStartSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewPauseSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewResumeSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewInterruptSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewEndSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewGetTranscript: (sessionId: string) => Promise<VoiceTranscriptEvent[]>;
+  voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => Promise<VoiceTranscriptEvent>;
+  voiceInterviewGetEvents: (sessionId: string) => Promise<VoiceInterviewEvent[]>;
 }
 
 // Expose protected methods that allow the renderer process to use
@@ -220,6 +252,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Resume analysis cache
   getResumeAnalysis: () => ipcRenderer.invoke('get-resume-analysis'),
   saveResumeAnalysis: (analysis: any) => ipcRenderer.invoke('save-resume-analysis', analysis),
+
+  // Agent foundation operations
+  agentCreateSession: (input: CreateAgentSessionInput) => ipcRenderer.invoke('agent:create-session', input),
+  agentGetSession: (sessionId: string) => ipcRenderer.invoke('agent:get-session', sessionId),
+  agentListSessions: (assistantId?: AgentAssistantId) => ipcRenderer.invoke('agent:list-sessions', assistantId),
+  agentRunTurn: (input: AgentTurnInput) => ipcRenderer.invoke('agent:run-turn', input),
+  agentClearSessionMemory: (sessionId: string) => ipcRenderer.invoke('agent:clear-session-memory', sessionId),
+
+  // Voice interview operations
+  voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => ipcRenderer.invoke('voice-interview:create-session', input),
+  voiceInterviewGetSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-session', sessionId),
+  voiceInterviewListSessions: () => ipcRenderer.invoke('voice-interview:list-sessions'),
+  voiceInterviewStartSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:start-session', sessionId),
+  voiceInterviewPauseSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:pause-session', sessionId),
+  voiceInterviewResumeSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:resume-session', sessionId),
+  voiceInterviewInterruptSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:interrupt-session', sessionId),
+  voiceInterviewEndSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:end-session', sessionId),
+  voiceInterviewGetTranscript: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-transcript', sessionId),
+  voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => ipcRenderer.invoke('voice-interview:append-transcript-event', sessionId, input),
+  voiceInterviewGetEvents: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-events', sessionId),
 });
 
 declare global {
@@ -227,4 +279,3 @@ declare global {
     electronAPI: ElectronAPI;
   }
 }
-

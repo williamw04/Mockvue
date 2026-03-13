@@ -3,10 +3,17 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { UserDataStorage, DocumentStorage } from './storage';
 import { extractText, parseResumeWithGemini, analyzeResumeBullets, chatWithResumeContext, analyzeAtsCompatibility } from './parser';
+import { AgentKnowledgeAssembler } from './agent/knowledge';
+import { AgentMemoryStore } from './agent/memory-store';
+import { AgentRuntime } from './agent/runtime';
+import { registerVoiceInterviewIpcHandlers, TextOnlyVoiceInterviewProvider, VoiceInterviewController } from './voice';
+import { VoiceInterviewSessionStore } from './voice/session-store';
 
 let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
 let documentStorage: DocumentStorage;
+let agentRuntime: AgentRuntime;
+let voiceInterviewController: VoiceInterviewController;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -43,8 +50,14 @@ app.whenReady().then(() => {
   // Initialize storage
   userDataStorage = new UserDataStorage();
   documentStorage = new DocumentStorage();
+  agentRuntime = new AgentRuntime(new AgentKnowledgeAssembler(userDataStorage), new AgentMemoryStore());
+  voiceInterviewController = new VoiceInterviewController(
+    new VoiceInterviewSessionStore(),
+    new TextOnlyVoiceInterviewProvider(),
+  );
 
   createWindow();
+  registerVoiceInterviewIpcHandlers(ipcMain, voiceInterviewController);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -298,6 +311,55 @@ ipcMain.handle('save-resume-analysis', async (_event, analysis) => {
     return await userDataStorage.saveResumeAnalysis(analysis);
   } catch (error) {
     console.error('Error in save-resume-analysis:', error);
+    throw error;
+  }
+});
+
+// ============================================
+// Agent Foundation IPC Handlers
+// ============================================
+
+ipcMain.handle('agent:create-session', async (_event, input) => {
+  try {
+    return agentRuntime.createSession(input);
+  } catch (error) {
+    console.error('Error in agent:create-session:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('agent:get-session', async (_event, sessionId: string) => {
+  try {
+    return agentRuntime.getSession(sessionId);
+  } catch (error) {
+    console.error('Error in agent:get-session:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('agent:list-sessions', async (_event, assistantId) => {
+  try {
+    return agentRuntime.listSessions(assistantId);
+  } catch (error) {
+    console.error('Error in agent:list-sessions:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('agent:run-turn', async (_event, input) => {
+  try {
+    return await agentRuntime.runTurn(input);
+  } catch (error) {
+    console.error('Error in agent:run-turn:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('agent:clear-session-memory', async (_event, sessionId: string) => {
+  try {
+    agentRuntime.clearSessionMemory(sessionId);
+  } catch (error) {
+    console.error('Error in agent:clear-session-memory:', error);
     throw error;
   }
 });

@@ -16,7 +16,17 @@ import type {
   InterviewResponse,
   Document,
   DocumentData,
-  ATSAnalysisResult
+  ATSAnalysisResult,
+  AgentAssistantId,
+  AgentSession,
+  CreateAgentSessionInput,
+  AgentTurnInput,
+  AgentTurnResult,
+  CreateVoiceInterviewSessionInput,
+  VoiceInterviewSession,
+  VoiceTranscriptEvent,
+  AppendVoiceTranscriptEventInput,
+  VoiceInterviewEvent
 } from '../types';
 
 /**
@@ -122,6 +132,51 @@ export interface IAgentService {
    * Analyze resume PDF for ATS compatibility
    */
   analyzeAtsCompatibility(filePath: string): Promise<ATSAnalysisResult>;
+
+  /**
+   * Create a new assistant session
+   */
+  createAssistantSession(input: CreateAgentSessionInput): Promise<AgentSession>;
+
+  /**
+   * Get an assistant session by ID
+   */
+  getAssistantSession(sessionId: string): Promise<AgentSession | null>;
+
+  /**
+   * List assistant sessions, optionally filtered by assistant kind
+   */
+  listAssistantSessions(assistantId?: AgentAssistantId): Promise<AgentSession[]>;
+
+  /**
+   * Run a single assistant turn
+   */
+  runAssistantTurn(input: AgentTurnInput): Promise<AgentTurnResult>;
+
+  /**
+   * Clear memory associated with an assistant session
+   */
+  clearAssistantSessionMemory(sessionId: string): Promise<void>;
+}
+
+/**
+ * Voice interview service interface
+ */
+export interface IVoiceInterviewService {
+  createSession(input: CreateVoiceInterviewSessionInput): Promise<VoiceInterviewSession>;
+  getSession(sessionId: string): Promise<VoiceInterviewSession | null>;
+  listSessions(): Promise<VoiceInterviewSession[]>;
+  startSession(sessionId: string): Promise<VoiceInterviewSession>;
+  pauseSession(sessionId: string): Promise<VoiceInterviewSession>;
+  resumeSession(sessionId: string): Promise<VoiceInterviewSession>;
+  interruptSession(sessionId: string): Promise<VoiceInterviewSession>;
+  endSession(sessionId: string): Promise<VoiceInterviewSession>;
+  getTranscript(sessionId: string): Promise<VoiceTranscriptEvent[]>;
+  appendTranscriptEvent(
+    sessionId: string,
+    input: AppendVoiceTranscriptEventInput
+  ): Promise<VoiceTranscriptEvent>;
+  getEvents(sessionId: string): Promise<VoiceInterviewEvent[]>;
 }
 
 /**
@@ -262,7 +317,7 @@ export interface IDocumentService {
 export interface IAppServices {
   notifications: INotificationService;
   agent: IAgentService;
+  voiceInterview: IVoiceInterviewService;
   user: IUserService;
   documents: IDocumentService;
 }
-

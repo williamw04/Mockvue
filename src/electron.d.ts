@@ -1,11 +1,22 @@
 import type {
+  AgentAssistantId,
+  AgentSession,
+  AgentTurnInput,
+  AgentTurnResult,
+  AppendVoiceTranscriptEventInput,
+  CreateAgentSessionInput,
+  CreateVoiceInterviewSessionInput,
+  ResumeAnalysis,
   UserProfile,
   Resume,
   Story,
   InterviewResponse,
   CandidateProfile,
   Document,
-  DocumentQuestion
+  DocumentQuestion,
+  VoiceInterviewEvent,
+  VoiceInterviewSession,
+  VoiceTranscriptEvent
 } from './types';
 
 export interface FileDialogResult {
@@ -54,6 +65,26 @@ export interface ElectronAPI {
   getResumeAnalysis: () => Promise<ResumeAnalysis | null>;
   saveResumeAnalysis: (analysis: ResumeAnalysis) => Promise<ResumeAnalysis>;
 
+  // Agent foundation operations
+  agentCreateSession: (input: CreateAgentSessionInput) => Promise<AgentSession>;
+  agentGetSession: (sessionId: string) => Promise<AgentSession | null>;
+  agentListSessions: (assistantId?: AgentAssistantId) => Promise<AgentSession[]>;
+  agentRunTurn: (input: AgentTurnInput) => Promise<AgentTurnResult>;
+  agentClearSessionMemory: (sessionId: string) => Promise<void>;
+
+  // Voice interview operations
+  voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => Promise<VoiceInterviewSession>;
+  voiceInterviewGetSession: (sessionId: string) => Promise<VoiceInterviewSession | null>;
+  voiceInterviewListSessions: () => Promise<VoiceInterviewSession[]>;
+  voiceInterviewStartSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewPauseSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewResumeSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewInterruptSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewEndSession: (sessionId: string) => Promise<VoiceInterviewSession>;
+  voiceInterviewGetTranscript: (sessionId: string) => Promise<VoiceTranscriptEvent[]>;
+  voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => Promise<VoiceTranscriptEvent>;
+  voiceInterviewGetEvents: (sessionId: string) => Promise<VoiceInterviewEvent[]>;
+
   // Document operations
   getDocuments: () => Promise<Document[]>;
   getDocument: (id: string) => Promise<Document | null>;
@@ -83,4 +114,3 @@ declare global {
 }
 
 export { };
-

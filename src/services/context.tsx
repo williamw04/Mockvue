@@ -67,6 +67,14 @@ export function useAgent() {
 }
 
 /**
+ * Hook to access voice interview service
+ */
+export function useVoiceInterview() {
+  const { voiceInterview } = useServices();
+  return voiceInterview;
+}
+
+/**
  * Hook to access user service
  */
 export function useUser() {

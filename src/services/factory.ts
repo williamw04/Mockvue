@@ -10,6 +10,7 @@ import type { IAppServices } from './interfaces';
 import {
   ElectronNotificationService,
   ElectronAgentService,
+  ElectronVoiceInterviewService,
   ElectronUserService,
   ElectronDocumentService,
 } from './electron';
@@ -22,6 +23,7 @@ export function createServices(): IAppServices {
   return {
     notifications: new ElectronNotificationService(),
     agent: new ElectronAgentService(),
+    voiceInterview: new ElectronVoiceInterviewService(),
     user: new ElectronUserService(),
     documents: new ElectronDocumentService(),
   };
@@ -49,4 +51,3 @@ export function getServices(): IAppServices {
 export function resetServices(): void {
   servicesInstance = null;
 }
-

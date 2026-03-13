@@ -8,6 +8,7 @@ export type {
   INotificationService,
   IAppServices,
   IAgentService,
+  IVoiceInterviewService,
   IUserService,
   IDocumentService,
 } from './interfaces';
@@ -21,6 +22,7 @@ export {
   useServices,
   useNotifications,
   useAgent,
+  useVoiceInterview,
   useUser,
   useDocuments,
 } from './context';
@@ -29,9 +31,9 @@ export {
 export {
   ElectronNotificationService,
   ElectronAgentService,
+  ElectronVoiceInterviewService,
   ElectronUserService,
   ElectronDocumentService,
 } from './electron';
-
 
 

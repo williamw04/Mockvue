@@ -5,6 +5,7 @@ import {
   IUserService,
   IAgentService,
   INotificationService,
+  IVoiceInterviewService,
 } from '../services/interfaces';
 
 export function createMockDocumentService(): IDocumentService {
@@ -90,6 +91,94 @@ export function createMockAgentService(): IAgentService {
       ],
       analyzedAt: new Date().toISOString(),
     }),
+    createAssistantSession: vi.fn().mockResolvedValue({
+      id: 'agent-session-1',
+      assistantId: 'resume-assistant',
+      title: 'Test Session',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    getAssistantSession: vi.fn().mockResolvedValue(null),
+    listAssistantSessions: vi.fn().mockResolvedValue([]),
+    runAssistantTurn: vi.fn().mockResolvedValue({
+      session: {
+        id: 'agent-session-1',
+        assistantId: 'resume-assistant',
+        title: 'Test Session',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      reply: 'Mock grounded assistant reply.',
+      evidence: [],
+      memoryUpdated: false,
+    }),
+    clearAssistantSessionMemory: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
+export function createMockVoiceInterviewService(): IVoiceInterviewService {
+  return {
+    createSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'draft',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    getSession: vi.fn().mockResolvedValue(null),
+    listSessions: vi.fn().mockResolvedValue([]),
+    startSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'active',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    pauseSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'paused',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    resumeSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'active',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    interruptSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'active',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    endSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'ended',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    getTranscript: vi.fn().mockResolvedValue([]),
+    appendTranscriptEvent: vi.fn().mockResolvedValue({
+      id: 'voice-event-1',
+      sessionId: 'voice-session-1',
+      speaker: 'candidate',
+      text: 'Mock transcript',
+      createdAt: new Date().toISOString(),
+    }),
+    getEvents: vi.fn().mockResolvedValue([]),
   };
 }
 
@@ -108,6 +197,7 @@ export function createMockServices(): IAppServices {
   return {
     notifications: createMockNotificationService(),
     agent: createMockAgentService(),
+    voiceInterview: createMockVoiceInterviewService(),
     user: createMockUserService(),
     documents: createMockDocumentService(),
   };

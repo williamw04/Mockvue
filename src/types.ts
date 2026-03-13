@@ -288,3 +288,170 @@ export interface ATSAnalysisResult {
   checks: ATSCheckResult[];
   analyzedAt: string;
 }
+
+// Agent Foundation Types
+export type AgentAssistantId = 'resume-assistant' | 'behavioral-assistant';
+
+export type AgentToolName =
+  | 'resume_get'
+  | 'resume_search'
+  | 'memory_lookup'
+  | 'memory_save'
+  | 'memory_summarize'
+  | 'memory_clear';
+
+export type AgentMessageRole = 'system' | 'user' | 'assistant' | 'tool';
+
+export interface AgentMessage {
+  role: AgentMessageRole;
+  content: string;
+  createdAt: string;
+}
+
+export interface AgentEvidenceRef {
+  source: string;
+  sourceId: string;
+  label?: string;
+  snippet?: string;
+}
+
+export type ResumeFactKind =
+  | 'experience'
+  | 'achievement'
+  | 'project'
+  | 'skill'
+  | 'trigger-point'
+  | 'strength'
+  | 'core-story-match'
+  | 'story'
+  | 'interview-response';
+
+export interface ResumeFact {
+  id: string;
+  kind: ResumeFactKind;
+  text: string;
+  sourceId: string;
+  tags: string[];
+}
+
+export interface ResumeDoc {
+  resume: Resume | null;
+  resumeAnalysis: ResumeAnalysis | null;
+  candidateProfile: CandidateProfile | null;
+  stories: Story[];
+  interviewResponses: InterviewResponse[];
+  facts: ResumeFact[];
+}
+
+export type MemoryEntryKind = 'preference' | 'goal' | 'fact' | 'summary';
+
+export interface MemoryEntry {
+  id: string;
+  sessionId: string;
+  assistantId: AgentAssistantId;
+  content: string;
+  kind: MemoryEntryKind;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContextSummary {
+  sessionId: string;
+  summary: string;
+  updatedAt: string;
+}
+
+export interface AgentSession {
+  id: string;
+  assistantId: AgentAssistantId;
+  title: string;
+  status: 'active' | 'archived';
+  createdAt: string;
+  updatedAt: string;
+  lastTurnAt?: string;
+  summary?: string;
+}
+
+export interface CreateAgentSessionInput {
+  assistantId: AgentAssistantId;
+  title?: string;
+  initialContext?: string;
+}
+
+export interface AgentTurnInput {
+  sessionId: string;
+  message: string;
+  includeMemory?: boolean;
+}
+
+export interface AgentTurnResult {
+  session: AgentSession;
+  reply: string;
+  evidence: AgentEvidenceRef[];
+  memoryUpdated: boolean;
+}
+
+// Voice Interview Types
+export type VoiceInterviewMode = 'text-only' | 'stt-llm-tts' | 'realtime-s2s';
+
+export type VoiceInterviewSessionStatus =
+  | 'draft'
+  | 'active'
+  | 'paused'
+  | 'ended'
+  | 'error';
+
+export type VoiceInterviewSpeaker = 'system' | 'interviewer' | 'candidate';
+
+export type VoiceInterviewEventType =
+  | 'session-created'
+  | 'session-started'
+  | 'session-paused'
+  | 'session-resumed'
+  | 'session-interrupted'
+  | 'session-ended'
+  | 'transcript-appended';
+
+export interface VoiceInterviewContext {
+  targetRole?: string;
+  targetCompany?: string;
+  candidateSummary?: string;
+  questionPlanId?: string;
+}
+
+export interface CreateVoiceInterviewSessionInput {
+  mode: VoiceInterviewMode;
+  context?: VoiceInterviewContext;
+}
+
+export interface AppendVoiceTranscriptEventInput {
+  speaker: VoiceInterviewSpeaker;
+  text: string;
+}
+
+export interface VoiceInterviewSession {
+  id: string;
+  mode: VoiceInterviewMode;
+  status: VoiceInterviewSessionStatus;
+  context: VoiceInterviewContext;
+  createdAt: string;
+  updatedAt: string;
+  startedAt?: string;
+  endedAt?: string;
+}
+
+export interface VoiceTranscriptEvent {
+  id: string;
+  sessionId: string;
+  speaker: VoiceInterviewSpeaker;
+  text: string;
+  createdAt: string;
+}
+
+export interface VoiceInterviewEvent {
+  id: string;
+  sessionId: string;
+  type: VoiceInterviewEventType;
+  createdAt: string;
+  payload?: Record<string, unknown>;
+}
