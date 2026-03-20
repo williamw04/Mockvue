@@ -6,7 +6,7 @@ import { extractText, parseResumeWithGemini, analyzeResumeBullets, chatWithResum
 import { AgentKnowledgeAssembler } from './agent/knowledge';
 import { AgentMemoryStore } from './agent/memory-store';
 import { AgentRuntime } from './agent/runtime';
-import { registerVoiceInterviewIpcHandlers, TextOnlyVoiceInterviewProvider, VoiceInterviewController } from './voice';
+import { registerVoiceInterviewIpcHandlers, TextOnlyVoiceInterviewProvider, VoiceInterviewController } from './voice/index';
 import { VoiceInterviewSessionStore } from './voice/session-store';
 
 let mainWindow: BrowserWindow | null = null;
@@ -315,6 +315,24 @@ ipcMain.handle('save-resume-analysis', async (_event, analysis) => {
   }
 });
 
+ipcMain.handle('get-ats-analysis', async () => {
+  try {
+    return await userDataStorage.getAtsAnalysis();
+  } catch (error) {
+    console.error('Error in get-ats-analysis:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('save-ats-analysis', async (_event, analysis) => {
+  try {
+    return await userDataStorage.saveAtsAnalysis(analysis);
+  } catch (error) {
+    console.error('Error in save-ats-analysis:', error);
+    throw error;
+  }
+});
+
 // ============================================
 // Agent Foundation IPC Handlers
 // ============================================
@@ -346,9 +364,16 @@ ipcMain.handle('agent:list-sessions', async (_event, assistantId) => {
   }
 });
 
-ipcMain.handle('agent:run-turn', async (_event, input) => {
+ipcMain.handle('agent:run-turn', async (event, input) => {
   try {
-    return await agentRuntime.runTurn(input);
+    return await agentRuntime.runTurn(input, {
+      onChunk: (text: string) => {
+        event.sender.send('agent:chunk', { sessionId: input.sessionId, text });
+      },
+      onStep: (step: any) => {
+        event.sender.send('agent:step', { sessionId: input.sessionId, step });
+      },
+    });
   } catch (error) {
     console.error('Error in agent:run-turn:', error);
     throw error;
@@ -360,6 +385,42 @@ ipcMain.handle('agent:clear-session-memory', async (_event, sessionId: string) =
     agentRuntime.clearSessionMemory(sessionId);
   } catch (error) {
     console.error('Error in agent:clear-session-memory:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('agent:get-session-messages', async (_event, sessionId: string) => {
+  try {
+    return agentRuntime.getMessages(sessionId);
+  } catch (error) {
+    console.error('Error in agent:get-session-messages:', error);
+    throw error;
+  }
+});
+
+ipcMain.on('agent:set-api-key', (_event, apiKey: string) => {
+  try {
+    agentRuntime.setApiKey(apiKey);
+    console.log('[Agent] API key set');
+  } catch (error) {
+    console.error('Error in agent:set-api-key:', error);
+  }
+});
+
+ipcMain.handle('agent:rename-session', async (_event, sessionId: string, newTitle: string) => {
+  try {
+    return agentRuntime.renameSession(sessionId, newTitle);
+  } catch (error) {
+    console.error('Error in agent:rename-session:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('agent:delete-session', async (_event, sessionId: string) => {
+  try {
+    return agentRuntime.deleteSession(sessionId);
+  } catch (error) {
+    console.error('Error in agent:delete-session:', error);
     throw error;
   }
 });

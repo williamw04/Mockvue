@@ -3,6 +3,8 @@ import type {
   AgentSession,
   AgentTurnInput,
   AgentTurnResult,
+  AgentChatMessage,
+  AgentStep,
   AppendVoiceTranscriptEventInput,
   CreateAgentSessionInput,
   CreateVoiceInterviewSessionInput,
@@ -16,7 +18,8 @@ import type {
   DocumentQuestion,
   VoiceInterviewEvent,
   VoiceInterviewSession,
-  VoiceTranscriptEvent
+  VoiceTranscriptEvent,
+  ATSAnalysisResult,
 } from './types';
 
 export interface FileDialogResult {
@@ -65,12 +68,24 @@ export interface ElectronAPI {
   getResumeAnalysis: () => Promise<ResumeAnalysis | null>;
   saveResumeAnalysis: (analysis: ResumeAnalysis) => Promise<ResumeAnalysis>;
 
+  // ATS analysis cache
+  getAtsAnalysis: () => Promise<ATSAnalysisResult | null>;
+  saveAtsAnalysis: (analysis: ATSAnalysisResult) => Promise<ATSAnalysisResult>;
+
   // Agent foundation operations
   agentCreateSession: (input: CreateAgentSessionInput) => Promise<AgentSession>;
   agentGetSession: (sessionId: string) => Promise<AgentSession | null>;
   agentListSessions: (assistantId?: AgentAssistantId) => Promise<AgentSession[]>;
   agentRunTurn: (input: AgentTurnInput) => Promise<AgentTurnResult>;
   agentClearSessionMemory: (sessionId: string) => Promise<void>;
+  agentGetSessionMessages: (sessionId: string) => Promise<AgentChatMessage[]>;
+  agentSetApiKey: (apiKey: string) => void;
+  agentRenameSession: (sessionId: string, newTitle: string) => Promise<AgentSession | null>;
+  agentDeleteSession: (sessionId: string) => Promise<boolean>;
+
+  // Agent streaming events
+  onAgentChunk: (callback: (sessionId: string, text: string) => void) => () => void;
+  onAgentStep: (callback: (sessionId: string, step: AgentStep) => void) => () => void;
 
   // Voice interview operations
   voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => Promise<VoiceInterviewSession>;

@@ -253,12 +253,32 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getResumeAnalysis: () => ipcRenderer.invoke('get-resume-analysis'),
   saveResumeAnalysis: (analysis: any) => ipcRenderer.invoke('save-resume-analysis', analysis),
 
+  // ATS analysis cache
+  getAtsAnalysis: () => ipcRenderer.invoke('get-ats-analysis'),
+  saveAtsAnalysis: (analysis: any) => ipcRenderer.invoke('save-ats-analysis', analysis),
+
   // Agent foundation operations
   agentCreateSession: (input: CreateAgentSessionInput) => ipcRenderer.invoke('agent:create-session', input),
   agentGetSession: (sessionId: string) => ipcRenderer.invoke('agent:get-session', sessionId),
   agentListSessions: (assistantId?: AgentAssistantId) => ipcRenderer.invoke('agent:list-sessions', assistantId),
   agentRunTurn: (input: AgentTurnInput) => ipcRenderer.invoke('agent:run-turn', input),
   agentClearSessionMemory: (sessionId: string) => ipcRenderer.invoke('agent:clear-session-memory', sessionId),
+  agentGetSessionMessages: (sessionId: string) => ipcRenderer.invoke('agent:get-session-messages', sessionId),
+  agentSetApiKey: (apiKey: string) => ipcRenderer.send('agent:set-api-key', apiKey),
+  agentRenameSession: (sessionId: string, newTitle: string) => ipcRenderer.invoke('agent:rename-session', sessionId, newTitle),
+  agentDeleteSession: (sessionId: string) => ipcRenderer.invoke('agent:delete-session', sessionId),
+
+  // Agent streaming events
+  onAgentChunk: (callback: (sessionId: string, text: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string; text: string }) => callback(data.sessionId, data.text);
+    ipcRenderer.on('agent:chunk', listener);
+    return () => ipcRenderer.removeListener('agent:chunk', listener);
+  },
+  onAgentStep: (callback: (sessionId: string, step: any) => void) => {
+    const listener = (_event: any, data: { sessionId: string; step: any }) => callback(data.sessionId, data.step);
+    ipcRenderer.on('agent:step', listener);
+    return () => ipcRenderer.removeListener('agent:step', listener);
+  },
 
   // Voice interview operations
   voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => ipcRenderer.invoke('voice-interview:create-session', input),
