@@ -64,8 +64,8 @@ export class AgentModelClient {
     let iteration = 0;
     let toolResultsSummary = '';
 
-    console.log('\n[AgentModelClient] ========== AGENTIC LOOP START ==========');
-    console.log('[AgentModelClient] User message:', currentQuery.substring(0, 100));
+console.log('\n[AgentModelClient] ========== AGENTIC LOOP START ==========');
+      console.log('[AgentModelClient] User message:', currentQuery.substring(0, 100));
 
     while (iteration < maxIterations) {
       iteration++;
@@ -86,6 +86,10 @@ Current user message: ${currentQuery}
 
 ${iteration === 1 ? 'First, determine what tools you need to call to answer this question. Call the appropriate tools.' : 'Based on the tool results above, provide your final response to the user. If you need more information, call additional tools.'}`;
 
+      console.log('\n[AgentModelClient] === FULL PROMPT (Iteration ' + iteration + ') ===');
+      console.log(fullPrompt);
+      console.log('[AgentModelClient] === END PROMPT ===\n');
+
       const result = await model.generateContent(fullPrompt);
       const response = await result.response;
       const parts = response.candidates?.[0]?.content?.parts || [];
@@ -98,7 +102,7 @@ ${iteration === 1 ? 'First, determine what tools you need to call to answer this
           const toolName = part.functionCall.name as AgentToolName;
           const toolArgs = (part.functionCall.args || {}) as Record<string, unknown>;
 
-          console.log(`[AgentModelClient] Tool call: ${toolName}`, toolArgs);
+          console.log(`[AgentModelClient] Tool call: ${toolName}`, JSON.stringify(toolArgs, null, 2));
 
           const toolCallStep: AgentStep = {
             id: makeId('step'),
@@ -113,6 +117,11 @@ ${iteration === 1 ? 'First, determine what tools you need to call to answer this
           const toolResult: ToolCallResult = await toolExecutor.execute(toolName, toolArgs);
 
           console.log(`[AgentModelClient] Tool result:`, toolResult.success ? 'success' : 'error');
+          if (toolResult.success && toolResult.data !== undefined) {
+            console.log('[AgentModelClient] Tool result data:', typeof toolResult.data === 'string' 
+              ? toolResult.data.substring(0, 500) 
+              : JSON.stringify(toolResult.data, null, 2).substring(0, 500));
+          }
 
           const toolResultStep: AgentStep = {
             id: makeId('step'),
@@ -147,10 +156,16 @@ ${iteration === 1 ? 'First, determine what tools you need to call to answer this
         for await (const chunk of streamingResult.stream) {
           const chunkText = chunk.text();
           if (chunkText) {
+            process.stdout.write(chunkText);
             fullResponse += chunkText;
             callbacks?.onChunk?.(chunkText);
           }
         }
+        process.stdout.write('\n');
+
+        console.log('[AgentModelClient] === FULL RESPONSE ===');
+        console.log(fullResponse);
+        console.log('[AgentModelClient] === END RESPONSE ===');
 
         console.log('[AgentModelClient] ========== AGENTIC LOOP END ==========');
         console.log(`[AgentModelClient] Total iterations: ${iteration}`);
