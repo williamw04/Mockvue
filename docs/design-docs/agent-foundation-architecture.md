@@ -76,6 +76,91 @@ The assistant loop should:
 3. answer only from retrieved evidence or stored memory
 4. optionally persist useful assistant-owned memory
 
+## Streaming Architecture
+
+### IPC Events
+
+The runtime streams responses to the renderer via dedicated IPC channels:
+
+- `agent:chunk` — Emitted for each text chunk from the model. Payload: `{ sessionId, content }`
+- `agent:step` — Emitted at step boundaries (tool calls, memory reads, completions). Payload: `{ sessionId, step, status }`
+
+The renderer subscribes via `window.api.onAgentChunk(callback)` and `window.api.onAgentStep(callback)`.
+
+### Event Flow
+
+```
+Renderer starts session → IPC: agent:start
+Runtime executes turn loop
+  ├─ Tool call → agent:step { step: 'tool_call', status: 'running' }
+  ├─ Tool result → agent:step { step: 'tool_result', status: 'complete' }
+  ├─ Model chunk → agent:chunk { content: '...' }
+  └─ Turn complete → agent:step { step: 'turn_complete', status: 'complete' }
+```
+
+### Backpressure
+
+Chunks are queued in the main process. If the renderer lags, chunks accumulate in memory. The runtime does not apply backpressure; consumers must handle cleanup on unmount.
+
+## Session Management
+
+Sessions are first-class entities with CRUD operations:
+
+- **Rename**: Update `session.title` and persist. No content mutation.
+- **Delete**: Remove session and all associated `MemoryEntry` records. Cascading delete.
+- **Duplicate/Fork**: Clone session with new `sessionId`. Memory entries may be optionally included or reset.
+
+### Session Lifecycle
+
+```
+create → active → archived
+              ↓
+           deleted
+```
+
+Archived sessions retain memory but do not appear in active lists. Deleted sessions are purged.
+
+## Resume Snapshot Storage
+
+Each session stores a resume snapshot at creation time:
+
+```typescript
+interface ResumeSnapshot {
+  resumeId: string
+  sections: ResumeSection[]
+  timestamp: string
+}
+```
+
+Purpose:
+- Context restoration when the source resume is modified or deleted
+- Reproducible conversations even if canonical data changes
+- Comparison between original context and current state
+
+Snapshots are immutable once stored. If the resume is deleted, the session remains usable with its snapshot.
+
+## Stop Generating and Undo
+
+### Stop Generating
+
+- Sends `agent:abort` IPC event with `{ sessionId }`
+- Runtime cancels the current turn, discards pending chunks
+- Partial response is preserved in the session history
+- UI shows "Stopped" indicator
+
+### Undo Pattern
+
+Undo reverts the last user-assistant turn pair:
+
+1. Remove last assistant message from history
+2. Remove last user message from history
+3. Rollback `MemoryEntry` writes from that turn (if any)
+4. Persist updated session
+
+Undo is not available for:
+- Sessions with only one turn
+- Sessions where memory was mutated by other sessions
+
 ## Alternatives Considered
 
 1. **New top-level memory or runtime service**
@@ -91,6 +176,11 @@ The assistant loop should:
 - Add strict schemas for assistant turns, sessions, memory, and normalized resume facts
 - Keep existing `chatWithResume()` as a compatibility wrapper during migration
 - Expose new runtime through Electron IPC only
+- Implement streaming via `agent:chunk` and `agent:step` IPC events
+- Add session management methods: `renameSession()`, `deleteSession()`, `duplicateSession()`
+- Store `ResumeSnapshot` on session creation for context restoration
+- Implement `abortGeneration(sessionId)` for stop generating
+- Implement `undoLastTurn(sessionId)` with memory rollback support
 
 ## Verification Status
 

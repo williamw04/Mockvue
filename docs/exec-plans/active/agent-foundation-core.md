@@ -1,7 +1,7 @@
 # Execution Plan: Agent Foundation Core
 
 **Created**: 2026-03-13  
-**Status**: Planned  
+**Status**: Complete  
 **Target**: Reusable read-only assistant runtime for Resume Assistant and Behavioral Assistant
 
 ## Objective
@@ -14,7 +14,42 @@ Build the reusable assistant foundation that powers multiple grounded domain ass
 - Do not overlap with scraper ingestion internals or voice provider implementation
 - This workstream owns shared contracts and runtime primitives
 
-## Phase 0: Contracts And Scaffolding
+## Recent Accomplishments
+
+The following features have been implemented as part of this execution plan:
+
+### Session Management
+- **Rename sessions**: Users can rename assistant sessions with inline editing
+- **Delete sessions**: Sessions can be deleted with confirmation
+- **Duplicate sessions**: Sessions can be duplicated, creating a copy with all messages
+
+### Resume Snapshot Storage
+- Resume snapshots are now stored per session, preserving the resume state at session creation
+- Ensures historical sessions remain accurate to the resume content at the time
+
+### Streaming Responses
+- Real-time streaming responses with typewriter effect
+- Progressive text display as tokens arrive from the AI
+- Smooth, natural-feeling response delivery
+
+### Stop Generating
+- "Stop generating" button allows users to halt streaming mid-response
+- Clean cancellation without leaving partial state
+
+### Undo Functionality
+- Undo capability to revert the last exchange
+- Maintains conversation history integrity
+
+### Tool Call Timeline
+- Visual timeline of tool calls during streaming
+- Shows knowledge retrieval and other tool operations in real-time
+- Transparent visibility into assistant reasoning
+
+### Auto-Generated Titles
+- Session titles automatically generated from assistant's first response
+- No manual title entry required for new sessions
+
+## Phase 0: Contracts And Scaffolding ✅
 
 ### Deliverables
 - product spec
@@ -32,7 +67,7 @@ Build the reusable assistant foundation that powers multiple grounded domain ass
 - shared types agreed
 - `IAgentService` extension surface defined
 
-## Phase 1: Internal Runtime Modules
+## Phase 1: Internal Runtime Modules ✅
 
 ### Build
 - `electron/agent/runtime.ts`
@@ -51,7 +86,7 @@ Build the reusable assistant foundation that powers multiple grounded domain ass
 ### Exit Criteria
 - runtime can complete one read-only grounded turn end-to-end
 
-## Phase 2: Service And IPC Integration
+## Phase 2: Service And IPC Integration ✅
 
 ### Build
 - extend `IAgentService`
@@ -66,7 +101,7 @@ Build the reusable assistant foundation that powers multiple grounded domain ass
 ### Exit Criteria
 - renderer can create or continue assistant sessions through `useAgent()`
 
-## Phase 3: Resume Assistant Migration
+## Phase 3: Resume Assistant Migration ✅
 
 ### Build
 - migrate `ResumeChat.tsx` to use session runtime
@@ -81,7 +116,7 @@ Build the reusable assistant foundation that powers multiple grounded domain ass
 - Resume Assistant is live on current chat surface
 - no regression in current Resume Review flow
 
-## Phase 4: Behavioral Assistant Foundation Hookup
+## Phase 4: Behavioral Assistant Foundation Hookup ✅
 
 ### Build
 - wire the same runtime into `StoriesPage`
@@ -91,7 +126,7 @@ Build the reusable assistant foundation that powers multiple grounded domain ass
 ### Exit Criteria
 - behavioral coaching can run on same runtime with different prompt/config
 
-## Phase 5: Hardening And Tests
+## Phase 5: Hardening And Tests ✅
 
 ### Tests
 - resume retrieval correctness

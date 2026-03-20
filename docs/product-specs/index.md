@@ -1,6 +1,6 @@
 # Product Specifications Index
 
-**Last Updated**: 2026-03-13
+**Last Updated**: 2026-03-20
 
 This directory contains specifications for all Mockvue features. Each spec includes user stories, acceptance criteria, and success metrics.
 
@@ -18,6 +18,7 @@ This directory contains specifications for all Mockvue features. Each spec inclu
 - [AI Interview Prep Agents](./ai-agents.md) — Multi-agent pipeline: Resume Architect (✅ Phase 1 complete, Phase 1.5 planned) → Narrative Coach → Mock Simulator
 - Resume Review Page — Standalone `/resume-review` with 3-step tab flow, contextual chat, analysis caching, and Reanalyze
 - [Agent Foundation](./agent-foundation.md) — Reusable read-only assistant runtime for Resume Assistant and Behavioral Assistant
+- [Resume Assistant](./resume-assistant.md) — Chat-based resume coaching with session management, streaming, stop, undo, and tool call visibility
 
 ## Removed
 
