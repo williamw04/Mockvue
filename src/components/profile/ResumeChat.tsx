@@ -591,12 +591,12 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                                 ? 'bg-blue-600 text-white rounded-br-sm'
                                 : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                             } rounded-xl px-3 py-2 text-sm`}>
-                            {msg.role === 'user' ? (
+{msg.role === 'user' ? (
                                 <p className="whitespace-pre-wrap">{msg.content}</p>
                             ) : (
                                 <>
                                     <div className="prose prose-sm prose-gray max-w-none">
-                                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                        <ReactMarkdown>{msg.content.replace(/\n/g, '\n\n')}</ReactMarkdown>
                                     </div>
                                     {msg.trace && <TraceViewer trace={msg.trace} />}
                                 </>

@@ -214,11 +214,11 @@ export default function ResumeReviewPage() {
         return (
             <div className="min-h-screen bg-gray-100">
                 <TopNavBar />
-                <div className="container mx-auto p-6 max-w-7xl pt-20">
-                    <div className="rounded-2xl p-12 bg-surface shadow-lg text-center">
-                        <div className="text-5xl mb-4">📄</div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">No Resume Data</h2>
-                        <p className="text-gray-500 mb-4">
+                <div className="container mx-auto p-4 sm:p-6 max-w-7xl pt-16 sm:pt-20">
+                    <div className="rounded-2xl p-6 sm:p-12 bg-surface shadow-lg text-center">
+                        <div className="text-4xl sm:text-5xl mb-4">📄</div>
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Resume Data</h2>
+                        <p className="text-sm sm:text-base text-gray-500 mb-4">
                             Upload your resume in the Profile page to get started with the analysis.
                         </p>
                     </div>
@@ -231,21 +231,21 @@ export default function ResumeReviewPage() {
         <div className="min-h-screen bg-gray-100">
             <TopNavBar />
 
-            <div className="container mx-auto p-6 max-w-[1400px] pt-20">
+            <div className="container mx-auto p-4 sm:p-6 max-w-[1400px] pt-16 sm:pt-20">
                 {/* Page Header */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-1">Resume Review</h1>
-                        <p className="text-gray-600">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Resume Review</h1>
+                        <p className="text-sm sm:text-base text-gray-600">
                             AI-powered analysis of your resume for interview readiness
                             {analysis?.analyzedAt && (
-                                <span className="text-gray-400 ml-2">
+                                <span className="text-gray-400 ml-2 hidden sm:inline">
                                     · Last analyzed {new Date(analysis.analyzedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             )}
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         {analysis && <ScoreBadge score={analysis.overallScore} label="Resume Score" />}
                         {atsAnalysis && (
                             <ScoreBadge score={atsAnalysis.overallScore} label="ATS Score" />
@@ -260,17 +260,17 @@ export default function ResumeReviewPage() {
                             <button
                                 onClick={handleAnalyze}
                                 disabled={analyzing}
-                                className="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+                                className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
                             >
                                 <RefreshCw className={`w-4 h-4 ${analyzing ? 'animate-spin' : ''}`} />
-                                Reanalyze
+                                <span className="hidden sm:inline">Reanalyze</span>
                             </button>
                         )}
                         {!analysis && !analyzing && (
                             <button
                                 onClick={handleAnalyze}
                                 disabled={!envApiKey}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg transition-all text-sm disabled:opacity-50"
+                                className="flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg transition-all text-sm disabled:opacity-50"
                             >
                                 <Zap className="w-4 h-4" />
                                 Analyze Resume
@@ -300,35 +300,36 @@ export default function ResumeReviewPage() {
 
                 {/* Main content: 2-column layout with tabs */}
                 {analysis && !analyzing && (
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6">
                         {/* Left column — Tabbed analysis sections */}
                         <div>
                             {/* Tab navigation */}
-                            <div className="flex items-center gap-2 mb-6">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-6">
                                 {tabs.map((tab, i) => (
                                     <div key={tab.key} className="flex items-center">
                                         <button
                                             onClick={() => setActiveTab(tab.key)}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === tab.key
+                                            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${activeTab === tab.key
                                                 ? 'bg-blue-100 text-blue-700 border border-blue-200'
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                                                 }`}
                                         >
-                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${activeTab === tab.key ? tab.color + ' text-white' : 'bg-gray-200 text-gray-600'
+                                            <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-bold ${activeTab === tab.key ? tab.color + ' text-white' : 'bg-gray-200 text-gray-600'
                                                 }`}>
                                                 {tab.num}
                                             </span>
-                                            {tab.label}
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="sm:hidden">{tab.key === 'bullets' ? 'Bullets' : tab.key === 'triggers' ? 'Triggers' : tab.key === 'profile' ? 'Strengths' : 'ATS'}</span>
                                         </button>
                                         {i < tabs.length - 1 && (
-                                            <ArrowRight className="w-3 h-3 text-gray-300 mx-1" />
+                                            <ArrowRight className="w-3 h-3 text-gray-300 mx-0.5 hidden sm:block" />
                                         )}
                                     </div>
                                 ))}
                             </div>
 
                             {/* Tab content */}
-                            <div className="rounded-2xl bg-surface shadow-lg border border-gray-100 p-6">
+                            <div className="rounded-2xl bg-surface shadow-lg border border-gray-100 p-4 sm:p-6">
                                 {/* Bullet Analysis */}
                                 {activeTab === 'bullets' && (
                                     <div className="space-y-4">
@@ -587,7 +588,7 @@ export default function ResumeReviewPage() {
                         </div>
 
                         {/* Right column — Chat */}
-                        <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-120px)]">
+                        <div className="h-[500px] sm:h-[550px] lg:sticky lg:top-20 lg:h-[calc(100vh-120px)]">
                             <ResumeChat analysisContext={analysis} resumeContext={resume} />
                         </div>
                     </div>
@@ -595,11 +596,11 @@ export default function ResumeReviewPage() {
 
                 {/* Empty state — no API key */}
                 {!analysis && !analyzing && !envApiKey && (
-                    <div className="rounded-2xl p-12 bg-surface shadow-lg text-center">
-                        <div className="text-5xl mb-4">🔑</div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">API Key Required</h2>
-                        <p className="text-gray-500">
-                            Add <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm">VITE_GEMINI_API_KEY</code> to your <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm">.env</code> file to enable resume analysis.
+                    <div className="rounded-2xl p-6 sm:p-12 bg-surface shadow-lg text-center">
+                        <div className="text-4xl sm:text-5xl mb-4">🔑</div>
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">API Key Required</h2>
+                        <p className="text-sm sm:text-base text-gray-500">
+                            Add <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs sm:text-sm">VITE_GEMINI_API_KEY</code> to your <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs sm:text-sm">.env</code> file to enable resume analysis.
                         </p>
                     </div>
                 )}
