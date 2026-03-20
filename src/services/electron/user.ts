@@ -1,4 +1,4 @@
-import type { UserProfile, Resume, Story, InterviewResponse, CandidateProfile, ResumeAnalysis } from '../../types';
+import type { UserProfile, Resume, Story, InterviewResponse, CandidateProfile, ResumeAnalysis, ATSAnalysisResult } from '../../types';
 import type { IUserService } from '../interfaces';
 
 export class ElectronUserService implements IUserService {
@@ -232,6 +232,32 @@ export class ElectronUserService implements IUserService {
       return await window.electronAPI.saveResumeAnalysis(analysis);
     } catch (error) {
       console.error('Error saving resume analysis:', error);
+      throw error;
+    }
+  }
+
+  async getAtsAnalysis(): Promise<ATSAnalysisResult | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.getAtsAnalysis();
+    } catch (error) {
+      console.error('Error getting ATS analysis:', error);
+      return null;
+    }
+  }
+
+  async saveAtsAnalysis(analysis: ATSAnalysisResult): Promise<ATSAnalysisResult> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.saveAtsAnalysis(analysis);
+    } catch (error) {
+      console.error('Error saving ATS analysis:', error);
       throw error;
     }
   }

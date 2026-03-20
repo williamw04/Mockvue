@@ -51,12 +51,46 @@ export interface AgentSession {
   updatedAt: string;
   lastTurnAt?: string;
   summary?: string;
+  messageCount: number;
+  resumeAnalysisSnapshot?: unknown;
+  resumeSnapshot?: unknown;
+  forkedFrom?: string;
+}
+
+export interface AgentChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export type AgentStepKind = 'thinking' | 'tool_call' | 'tool_result' | 'response';
+
+export interface AgentStep {
+  id: string;
+  kind: AgentStepKind;
+  timestamp: string;
+  thinking?: string;
+  toolName?: string;
+  toolArgs?: Record<string, unknown>;
+  toolResult?: unknown;
+  toolError?: string;
+  content?: string;
+}
+
+export interface AgentTurnTrace {
+  steps: AgentStep[];
+  totalToolCalls: number;
+  totalTokens?: number;
 }
 
 export interface CreateAgentSessionInput {
   assistantId: AgentAssistantId;
   title?: string;
   initialContext?: string;
+  resumeAnalysisSnapshot?: unknown;
+  resumeSnapshot?: unknown;
+  forkFromSessionId?: string;
 }
 
 export interface AgentTurnInput {
@@ -70,6 +104,7 @@ export interface AgentTurnResult {
   reply: string;
   evidence: AgentEvidenceRef[];
   memoryUpdated: boolean;
+  trace: AgentTurnTrace;
 }
 
 export type VoiceInterviewMode = 'text-only' | 'stt-llm-tts' | 'realtime-s2s';

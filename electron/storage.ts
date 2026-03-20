@@ -104,6 +104,7 @@ export class UserDataStorage {
   private responsesFile: string;
   private candidateProfileFile: string;
   private resumeAnalysisFile: string;
+  private atsAnalysisFile: string;
 
   constructor() {
     const userDataPath = app.getPath('userData');
@@ -114,6 +115,7 @@ export class UserDataStorage {
     this.responsesFile = path.join(this.userDataDir, 'responses.json');
     this.candidateProfileFile = path.join(this.userDataDir, 'candidate-profile.json');
     this.resumeAnalysisFile = path.join(this.userDataDir, 'resume-analysis.json');
+    this.atsAnalysisFile = path.join(this.userDataDir, 'ats-analysis.json');
 
     this.ensureDirectories();
   }
@@ -421,6 +423,30 @@ export class UserDataStorage {
       return analysis;
     } catch (error) {
       console.error('Error saving resume analysis:', error);
+      throw error;
+    }
+  }
+
+  // ATS Analysis Methods (cached analysis results)
+  async getAtsAnalysis(): Promise<any | null> {
+    try {
+      if (fs.existsSync(this.atsAnalysisFile)) {
+        const data = fs.readFileSync(this.atsAnalysisFile, 'utf-8');
+        return JSON.parse(data);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting ATS analysis:', error);
+      return null;
+    }
+  }
+
+  async saveAtsAnalysis(analysis: any): Promise<any> {
+    try {
+      fs.writeFileSync(this.atsAnalysisFile, JSON.stringify(analysis, null, 2), 'utf-8');
+      return analysis;
+    } catch (error) {
+      console.error('Error saving ATS analysis:', error);
       throw error;
     }
   }
