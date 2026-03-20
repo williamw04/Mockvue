@@ -12,6 +12,7 @@ import {
   CreateAgentSessionInput,
   Resume,
   ResumeAnalysis,
+  AgentChatMessage,
 } from '../../types';
 
 /**
@@ -372,5 +373,37 @@ export class ElectronAgentService implements IAgentService {
     }
 
     await window.electronAPI.agentClearSessionMemory(sessionId);
+  }
+
+  async getSessionMessages(sessionId: string): Promise<AgentChatMessage[]> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentGetSessionMessages(sessionId);
+  }
+
+  setAgentApiKey(apiKey: string): void {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    window.electronAPI.agentSetApiKey(apiKey);
+  }
+
+  async renameAssistantSession(sessionId: string, newTitle: string): Promise<AgentSession | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentRenameSession(sessionId, newTitle);
+  }
+
+  async deleteAssistantSession(sessionId: string): Promise<boolean> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentDeleteSession(sessionId);
   }
 }

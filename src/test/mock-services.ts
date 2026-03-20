@@ -55,6 +55,8 @@ export function createMockUserService(): IUserService {
     saveCandidateProfile: vi.fn().mockResolvedValue({}),
     getResumeAnalysis: vi.fn().mockResolvedValue(null),
     saveResumeAnalysis: vi.fn().mockResolvedValue({}),
+    getAtsAnalysis: vi.fn().mockResolvedValue(null),
+    saveAtsAnalysis: vi.fn().mockResolvedValue({}),
   };
 }
 
@@ -98,6 +100,7 @@ export function createMockAgentService(): IAgentService {
       status: 'active',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      messageCount: 0,
     }),
     getAssistantSession: vi.fn().mockResolvedValue(null),
     listAssistantSessions: vi.fn().mockResolvedValue([]),
@@ -109,12 +112,18 @@ export function createMockAgentService(): IAgentService {
         status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        messageCount: 2,
       },
       reply: 'Mock grounded assistant reply.',
       evidence: [],
       memoryUpdated: false,
+      trace: { steps: [], totalToolCalls: 0 },
     }),
     clearAssistantSessionMemory: vi.fn().mockResolvedValue(undefined),
+    getSessionMessages: vi.fn().mockResolvedValue([]),
+    setAgentApiKey: vi.fn(),
+    renameAssistantSession: vi.fn().mockResolvedValue(null),
+    deleteAssistantSession: vi.fn().mockResolvedValue(true),
   };
 }
 

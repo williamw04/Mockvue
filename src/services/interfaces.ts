@@ -22,6 +22,7 @@ import type {
   CreateAgentSessionInput,
   AgentTurnInput,
   AgentTurnResult,
+  AgentChatMessage,
   CreateVoiceInterviewSessionInput,
   VoiceInterviewSession,
   VoiceTranscriptEvent,
@@ -157,6 +158,26 @@ export interface IAgentService {
    * Clear memory associated with an assistant session
    */
   clearAssistantSessionMemory(sessionId: string): Promise<void>;
+
+  /**
+   * Get chat messages for a session
+   */
+  getSessionMessages(sessionId: string): Promise<AgentChatMessage[]>;
+
+  /**
+   * Set the API key for the agent runtime
+   */
+  setAgentApiKey(apiKey: string): void;
+
+  /**
+   * Rename a session
+   */
+  renameAssistantSession(sessionId: string, newTitle: string): Promise<AgentSession | null>;
+
+  /**
+   * Delete a session
+   */
+  deleteAssistantSession(sessionId: string): Promise<boolean>;
 }
 
 /**
@@ -273,6 +294,16 @@ export interface IUserService {
    * Save resume analysis
    */
   saveResumeAnalysis(analysis: ResumeAnalysis): Promise<ResumeAnalysis>;
+
+  /**
+   * Get cached ATS analysis
+   */
+  getAtsAnalysis(): Promise<ATSAnalysisResult | null>;
+
+  /**
+   * Save ATS analysis
+   */
+  saveAtsAnalysis(analysis: ATSAnalysisResult): Promise<ATSAnalysisResult>;
 }
 
 /**
