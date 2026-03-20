@@ -57,28 +57,24 @@ export default function ResumeReviewPage() {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
 
-    // Clear cached analysis when resume is replaced
-    useEffect(() => {
-        if (resume) {
-            setAnalysis(null);
-            setAtsAnalysis(null);
-        }
-    }, [resume?.resumePdfPath]);
-
     // Load data + cached analysis on mount
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [resumeData, storiesData, cachedAnalysis] = await Promise.all([
+                const [resumeData, storiesData, cachedAnalysis, cachedAtsAnalysis] = await Promise.all([
                     userService.getResume(),
                     userService.getStories(),
                     userService.getResumeAnalysis(),
+                    userService.getAtsAnalysis(),
                 ]);
                 setResume(resumeData);
                 setStories(storiesData || []);
 
                 if (cachedAnalysis) {
                     setAnalysis(cachedAnalysis);
+                }
+                if (cachedAtsAnalysis) {
+                    setAtsAnalysis(cachedAtsAnalysis);
                 }
             } catch (err) {
                 console.error('Error loading data:', err);
@@ -89,22 +85,6 @@ export default function ResumeReviewPage() {
         loadData();
     }, [userService]);
 
-    // Auto-analyze when resume changes (new PDF uploaded or replaced)
-    useEffect(() => {
-        if (!loading && resume && envApiKey && !analyzing) {
-            handleAnalyze();
-        }
-    }, [loading, resume?.resumePdfPath, resume?.workExperiences?.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // Auto-analyze ATS compatibility when resume PDF exists or changes
-    useEffect(() => {
-        if (!loading && resume?.resumePdfPath) {
-            // Clear previous ATS analysis when resume changes
-            setAtsAnalysis(null);
-            handleAnalyzeAts();
-        }
-    }, [loading, resume?.resumePdfPath]); // eslint-disable-line react-hooks/exhaustive-deps
-
     const handleAnalyzeAts = useCallback(async () => {
         if (!resume?.resumePdfPath) return;
 
@@ -112,12 +92,13 @@ export default function ResumeReviewPage() {
         try {
             const result = await agentService.analyzeAtsCompatibility(resume.resumePdfPath);
             setAtsAnalysis(result);
+            await userService.saveAtsAnalysis(result);
         } catch (err) {
             console.error('ATS analysis failed:', err);
         } finally {
             setAtsAnalyzing(false);
         }
-    }, [resume?.resumePdfPath, agentService]);
+    }, [resume?.resumePdfPath, agentService, userService]);
 
     const handleAnalyze = useCallback(async () => {
         if (!resume || !envApiKey) return;
@@ -504,15 +485,25 @@ export default function ResumeReviewPage() {
 
                                         {atsAnalysis ? (
                                             <>
-                                                <div className="flex items-center gap-4 mb-6">
-                                                    <div className={`text-3xl font-bold ${atsAnalysis.overallScore >= 80 ? 'text-green-600' : atsAnalysis.overallScore >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
-                                                        {atsAnalysis.overallScore}/100
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`text-3xl font-bold ${atsAnalysis.overallScore >= 80 ? 'text-green-600' : atsAnalysis.overallScore >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
+                                                            {atsAnalysis.overallScore}/100
+                                                        </div>
+                                                        <div className="text-sm text-gray-500">
+                                                            {atsAnalysis.overallScore >= 80 ? 'Excellent ATS compatibility' : 
+                                                             atsAnalysis.overallScore >= 60 ? 'Good, but could be improved' : 
+                                                             'Needs improvement for ATS parsing'}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-sm text-gray-500">
-                                                        {atsAnalysis.overallScore >= 80 ? 'Excellent ATS compatibility' : 
-                                                         atsAnalysis.overallScore >= 60 ? 'Good, but could be improved' : 
-                                                         'Needs improvement for ATS parsing'}
-                                                    </div>
+                                                    <button
+                                                        onClick={handleAnalyzeAts}
+                                                        disabled={atsAnalyzing}
+                                                        className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 bg-surface hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+                                                    >
+                                                        <RefreshCw className={`w-3.5 h-3.5 ${atsAnalyzing ? 'animate-spin' : ''}`} />
+                                                        Recheck
+                                                    </button>
                                                 </div>
 
                                                 <div className="space-y-3">
@@ -556,10 +547,22 @@ export default function ResumeReviewPage() {
                                                     ))}
                                                 </div>
                                             </>
-                                        ) : resume?.resumePdfPath ? (
+                                        ) : atsAnalyzing ? (
                                             <div className="text-center py-8">
                                                 <Loader2 className="w-8 h-8 text-purple-600 animate-spin mx-auto mb-4" />
                                                 <p className="text-gray-600">Analyzing ATS compatibility...</p>
+                                            </div>
+                                        ) : resume?.resumePdfPath ? (
+                                            <div className="text-center py-8">
+                                                <Layout className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                                                <p className="text-gray-600 mb-4">Run ATS compatibility check on your resume PDF.</p>
+                                                <button
+                                                    onClick={handleAnalyzeAts}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors text-sm mx-auto"
+                                                >
+                                                    <Layout className="w-4 h-4" />
+                                                    Check ATS Compatibility
+                                                </button>
                                             </div>
                                         ) : (
                                             <div className="text-center py-8 text-gray-500">
@@ -585,7 +588,7 @@ export default function ResumeReviewPage() {
 
                         {/* Right column — Chat */}
                         <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-120px)]">
-                            <ResumeChat analysisContext={analysis} />
+                            <ResumeChat analysisContext={analysis} resumeContext={resume} />
                         </div>
                     </div>
                 )}
