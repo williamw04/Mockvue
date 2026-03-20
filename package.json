@@ -8,8 +8,8 @@
     "dev": "npm run electron:dev",
     "build": "tsc && vite build && npm run build:electron",
     "build:electron": "tsc -p tsconfig.electron.json && npm run rename:electron && npm run fix:electron",
-    "rename:electron": "node -e \"const fs=require('fs');fs.renameSync('dist-electron/main.js','dist-electron/main.cjs');fs.renameSync('dist-electron/preload.js','dist-electron/preload.cjs');fs.renameSync('dist-electron/storage.js','dist-electron/storage.cjs');try{fs.renameSync('dist-electron/parser.js','dist-electron/parser.cjs')}catch(e){}\"",
-    "fix:electron": "node -e \"const fs=require('fs');const main=fs.readFileSync('dist-electron/main.cjs','utf8').replace(/require\\(\\\"\\.\\/storage\\\"\\)/g,'require(\\\"./storage.cjs\\\")').replace(/require\\(\\\"\\.\\/parser\\\"\\)/g,'require(\\\"./parser.cjs\\\")');fs.writeFileSync('dist-electron/main.cjs',main);\"",
+    "rename:electron": "node -e \"const fs=require('fs');const path=require('path');function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,entry.name);if(entry.isDirectory())walk(full);else if(entry.isFile()&&full.endsWith('.js'))fs.renameSync(full,full.replace(/\\.js$/,'.cjs'));}}walk('dist-electron');\"",
+    "fix:electron": "node scripts/fix-electron-requires.cjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -33,6 +33,7 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.4",
     "tailwind-merge": "^3.4.0"
   },
