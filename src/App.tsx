@@ -8,6 +8,7 @@ import DocumentPage from "./components/documents/DocumentPage";
 import ProfilePage from "./components/ProfilePage";
 import ResumeReviewPage from "./components/ResumeReviewPage";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useUser } from "./services";
 
 // Use HashRouter for Electron compatibility
@@ -48,59 +49,61 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/onboarding" element={<OnboardingFlow />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/stories"
-          element={
-            <ProtectedRoute>
-              <StoriesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/document"
-          element={
-            <ProtectedRoute>
-              <DocumentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/document/:id"
-          element={
-            <ProtectedRoute>
-              <DocumentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/resume-review"
-          element={
-            <ProtectedRoute>
-              <ResumeReviewPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/onboarding" element={<OnboardingFlow />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stories"
+            element={
+              <ProtectedRoute>
+                <StoriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document"
+            element={
+              <ProtectedRoute>
+                <DocumentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document/:id"
+            element={
+              <ProtectedRoute>
+                <DocumentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resume-review"
+            element={
+              <ProtectedRoute>
+                <ResumeReviewPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
