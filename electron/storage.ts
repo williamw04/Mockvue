@@ -2,6 +2,8 @@
 /**
  * User Data Storage Manager for Electron
  * Handles user profile, resume, stories, and interview responses
+ * 
+ * Uses async file operations to avoid blocking the main process.
  */
 
 import * as fs from 'fs';
@@ -30,6 +32,8 @@ export type {
   DocumentQuestion,
   Document,
 };
+
+const fsp = fs.promises;
 
 export class UserDataStorage {
   private userDataDir: string;
@@ -65,14 +69,23 @@ export class UserDataStorage {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
+  private async readFileSafe(filePath: string): Promise<string | null> {
+    try {
+      return await fsp.readFile(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  private async writeFile(filePath: string, data: string): Promise<void> {
+    await fsp.writeFile(filePath, data, 'utf-8');
+  }
+
   // User Profile Methods
   async getUserProfile(): Promise<UserProfile | null> {
     try {
-      if (fs.existsSync(this.userProfileFile)) {
-        const data = fs.readFileSync(this.userProfileFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return null;
+      const data = await this.readFileSafe(this.userProfileFile);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting user profile:', error);
       return null;
@@ -95,7 +108,7 @@ export class UserDataStorage {
         updatedAt: now,
       };
 
-      fs.writeFileSync(this.userProfileFile, JSON.stringify(updated, null, 2), 'utf-8');
+      await this.writeFile(this.userProfileFile, JSON.stringify(updated, null, 2));
       return updated;
     } catch (error) {
       console.error('Error saving user profile:', error);
@@ -113,11 +126,8 @@ export class UserDataStorage {
   // Resume Methods
   async getResume(): Promise<Resume | null> {
     try {
-      if (fs.existsSync(this.resumeFile)) {
-        const data = fs.readFileSync(this.resumeFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return null;
+      const data = await this.readFileSafe(this.resumeFile);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting resume:', error);
       return null;
@@ -145,7 +155,7 @@ export class UserDataStorage {
         updatedAt: now,
       };
 
-      fs.writeFileSync(this.resumeFile, JSON.stringify(updated, null, 2), 'utf-8');
+      await this.writeFile(this.resumeFile, JSON.stringify(updated, null, 2));
       return updated;
     } catch (error) {
       console.error('Error saving resume:', error);
@@ -156,11 +166,8 @@ export class UserDataStorage {
   // Story Methods
   async getStories(): Promise<Story[]> {
     try {
-      if (fs.existsSync(this.storiesFile)) {
-        const data = fs.readFileSync(this.storiesFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return [];
+      const data = await this.readFileSafe(this.storiesFile);
+      return data ? JSON.parse(data) : [];
     } catch (error) {
       console.error('Error getting stories:', error);
       return [];
@@ -187,7 +194,7 @@ export class UserDataStorage {
       };
 
       stories.push(newStory);
-      fs.writeFileSync(this.storiesFile, JSON.stringify(stories, null, 2), 'utf-8');
+      await this.writeFile(this.storiesFile, JSON.stringify(stories, null, 2));
       return newStory;
     } catch (error) {
       console.error('Error creating story:', error);
@@ -214,7 +221,7 @@ export class UserDataStorage {
       };
 
       stories[index] = updated;
-      fs.writeFileSync(this.storiesFile, JSON.stringify(stories, null, 2), 'utf-8');
+      await this.writeFile(this.storiesFile, JSON.stringify(stories, null, 2));
       return updated;
     } catch (error) {
       console.error('Error updating story:', error);
@@ -226,7 +233,7 @@ export class UserDataStorage {
     try {
       const stories = await this.getStories();
       const filtered = stories.filter(s => s.id !== id);
-      fs.writeFileSync(this.storiesFile, JSON.stringify(filtered, null, 2), 'utf-8');
+      await this.writeFile(this.storiesFile, JSON.stringify(filtered, null, 2));
     } catch (error) {
       console.error('Error deleting story:', error);
       throw error;
@@ -236,11 +243,8 @@ export class UserDataStorage {
   // Interview Response Methods
   async getInterviewResponses(): Promise<InterviewResponse[]> {
     try {
-      if (fs.existsSync(this.responsesFile)) {
-        const data = fs.readFileSync(this.responsesFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return [];
+      const data = await this.readFileSafe(this.responsesFile);
+      return data ? JSON.parse(data) : [];
     } catch (error) {
       console.error('Error getting interview responses:', error);
       return [];
@@ -262,7 +266,7 @@ export class UserDataStorage {
       };
 
       responses.push(newResponse);
-      fs.writeFileSync(this.responsesFile, JSON.stringify(responses, null, 2), 'utf-8');
+      await this.writeFile(this.responsesFile, JSON.stringify(responses, null, 2));
       return newResponse;
     } catch (error) {
       console.error('Error creating interview response:', error);
@@ -289,7 +293,7 @@ export class UserDataStorage {
       };
 
       responses[index] = updated;
-      fs.writeFileSync(this.responsesFile, JSON.stringify(responses, null, 2), 'utf-8');
+      await this.writeFile(this.responsesFile, JSON.stringify(responses, null, 2));
       return updated;
     } catch (error) {
       console.error('Error updating interview response:', error);
@@ -301,7 +305,7 @@ export class UserDataStorage {
     try {
       const responses = await this.getInterviewResponses();
       const filtered = responses.filter(r => r.id !== id);
-      fs.writeFileSync(this.responsesFile, JSON.stringify(filtered, null, 2), 'utf-8');
+      await this.writeFile(this.responsesFile, JSON.stringify(filtered, null, 2));
     } catch (error) {
       console.error('Error deleting interview response:', error);
       throw error;
@@ -311,11 +315,8 @@ export class UserDataStorage {
   // Candidate Profile Methods (Resume Architect output)
   async getCandidateProfile(): Promise<any | null> {
     try {
-      if (fs.existsSync(this.candidateProfileFile)) {
-        const data = fs.readFileSync(this.candidateProfileFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return null;
+      const data = await this.readFileSafe(this.candidateProfileFile);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting candidate profile:', error);
       return null;
@@ -330,7 +331,7 @@ export class UserDataStorage {
         updatedAt: now,
         createdAt: profile.createdAt || now,
       };
-      fs.writeFileSync(this.candidateProfileFile, JSON.stringify(updated, null, 2), 'utf-8');
+      await this.writeFile(this.candidateProfileFile, JSON.stringify(updated, null, 2));
       return updated;
     } catch (error) {
       console.error('Error saving candidate profile:', error);
@@ -341,11 +342,8 @@ export class UserDataStorage {
   // Resume Analysis Methods (cached analysis results)
   async getResumeAnalysis(): Promise<any | null> {
     try {
-      if (fs.existsSync(this.resumeAnalysisFile)) {
-        const data = fs.readFileSync(this.resumeAnalysisFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return null;
+      const data = await this.readFileSafe(this.resumeAnalysisFile);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting resume analysis:', error);
       return null;
@@ -354,7 +352,7 @@ export class UserDataStorage {
 
   async saveResumeAnalysis(analysis: any): Promise<any> {
     try {
-      fs.writeFileSync(this.resumeAnalysisFile, JSON.stringify(analysis, null, 2), 'utf-8');
+      await this.writeFile(this.resumeAnalysisFile, JSON.stringify(analysis, null, 2));
       return analysis;
     } catch (error) {
       console.error('Error saving resume analysis:', error);
@@ -365,11 +363,8 @@ export class UserDataStorage {
   // ATS Analysis Methods (cached analysis results)
   async getAtsAnalysis(): Promise<any | null> {
     try {
-      if (fs.existsSync(this.atsAnalysisFile)) {
-        const data = fs.readFileSync(this.atsAnalysisFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return null;
+      const data = await this.readFileSafe(this.atsAnalysisFile);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting ATS analysis:', error);
       return null;
@@ -378,7 +373,7 @@ export class UserDataStorage {
 
   async saveAtsAnalysis(analysis: any): Promise<any> {
     try {
-      fs.writeFileSync(this.atsAnalysisFile, JSON.stringify(analysis, null, 2), 'utf-8');
+      await this.writeFile(this.atsAnalysisFile, JSON.stringify(analysis, null, 2));
       return analysis;
     } catch (error) {
       console.error('Error saving ATS analysis:', error);
@@ -409,17 +404,26 @@ export class DocumentStorage {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
+  private async readFileSafe(filePath: string): Promise<string | null> {
+    try {
+      return await fsp.readFile(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  private async writeFile(filePath: string, data: string): Promise<void> {
+    await fsp.writeFile(filePath, data, 'utf-8');
+  }
+
   async getDocuments(): Promise<Document[]> {
     try {
-      if (fs.existsSync(this.documentsFile)) {
-        const data = fs.readFileSync(this.documentsFile, 'utf-8');
-        const documents = JSON.parse(data);
-        // Sort by last modified (most recent first)
-        return documents.sort((a: Document, b: Document) =>
-          new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
-        );
-      }
-      return [];
+      const data = await this.readFileSafe(this.documentsFile);
+      if (!data) return [];
+      const documents = JSON.parse(data);
+      return documents.sort((a: Document, b: Document) =>
+        new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+      );
     } catch (error) {
       console.error('Error getting documents:', error);
       return [];
@@ -443,7 +447,7 @@ export class DocumentStorage {
 
       const newDocument: Document = {
         id: this.generateId(),
-        userId: 'user-1', // Will be updated with actual user ID
+        userId: 'user-1',
         title: data.title,
         description: data.description,
         questions: data.questions || [],
@@ -454,7 +458,7 @@ export class DocumentStorage {
       };
 
       documents.push(newDocument);
-      fs.writeFileSync(this.documentsFile, JSON.stringify(documents, null, 2), 'utf-8');
+      await this.writeFile(this.documentsFile, JSON.stringify(documents, null, 2));
       return newDocument;
     } catch (error) {
       console.error('Error creating document:', error);
@@ -482,7 +486,7 @@ export class DocumentStorage {
       };
 
       documents[index] = updated;
-      fs.writeFileSync(this.documentsFile, JSON.stringify(documents, null, 2), 'utf-8');
+      await this.writeFile(this.documentsFile, JSON.stringify(documents, null, 2));
       return updated;
     } catch (error) {
       console.error('Error updating document:', error);
@@ -494,7 +498,7 @@ export class DocumentStorage {
     try {
       const documents = await this.getDocuments();
       const filtered = documents.filter(d => d.id !== id);
-      fs.writeFileSync(this.documentsFile, JSON.stringify(filtered, null, 2), 'utf-8');
+      await this.writeFile(this.documentsFile, JSON.stringify(filtered, null, 2));
     } catch (error) {
       console.error('Error deleting document:', error);
       throw error;
