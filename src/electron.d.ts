@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   AgentAssistantId,
   AgentSession,
@@ -86,6 +87,13 @@ export interface ElectronAPI {
   // Agent streaming events
   onAgentChunk: (callback: (sessionId: string, text: string) => void) => () => void;
   onAgentStep: (callback: (sessionId: string, step: AgentStep) => void) => () => void;
+
+  // Agent logging operations
+  agentLoggingStatus: () => Promise<{ enabled: boolean; logsDir: string }>;
+  agentListLogs: (maxCount?: number) => Promise<Array<{ path: string; name: string; size: number; modified: Date }>>;
+  agentGetLog: (logPath: string) => Promise<unknown>;
+  agentDeleteLog: (logPath: string) => Promise<boolean>;
+  agentOpenLogsDir: () => Promise<void>;
 
   // Voice interview operations
   voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => Promise<VoiceInterviewSession>;

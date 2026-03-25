@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { UserDataStorage, DocumentStorage } from './storage';
@@ -8,6 +9,8 @@ import { AgentMemoryStore } from './agent/memory-store';
 import { AgentRuntime } from './agent/runtime';
 import { registerVoiceInterviewIpcHandlers, TextOnlyVoiceInterviewProvider, VoiceInterviewController } from './voice/index';
 import { VoiceInterviewSessionStore } from './voice/session-store';
+import { agentLogger } from './agent/logger';
+import { registerIpcHandlers, createHandler } from './ipc-utils';
 
 let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
@@ -59,6 +62,78 @@ app.whenReady().then(() => {
   createWindow();
   registerVoiceInterviewIpcHandlers(ipcMain, voiceInterviewController);
 
+  registerIpcHandlers(ipcMain, [
+    // User Profile
+    createHandler('get-user-profile', () => userDataStorage.getUserProfile()),
+    createHandler('save-user-profile', (_, profile) => userDataStorage.saveUserProfile(profile as any)),
+    createHandler('complete-onboarding', () => userDataStorage.completeOnboarding()),
+
+    // Resume
+    createHandler('get-resume', () => userDataStorage.getResume()),
+    createHandler('save-resume', (_, resume) => userDataStorage.saveResume(resume as any)),
+
+    // Candidate Profile
+    createHandler('get-candidate-profile', () => userDataStorage.getCandidateProfile()),
+    createHandler('save-candidate-profile', (_, profile) => userDataStorage.saveCandidateProfile(profile as any)),
+
+    // Resume Analysis Cache
+    createHandler('get-resume-analysis', () => userDataStorage.getResumeAnalysis()),
+    createHandler('save-resume-analysis', (_, analysis) => userDataStorage.saveResumeAnalysis(analysis as any)),
+
+    // ATS Analysis Cache
+    createHandler('get-ats-analysis', () => userDataStorage.getAtsAnalysis()),
+    createHandler('save-ats-analysis', (_, analysis) => userDataStorage.saveAtsAnalysis(analysis as any)),
+
+    // Stories
+    createHandler('get-stories', () => userDataStorage.getStories()),
+    createHandler('get-story', (_, id) => userDataStorage.getStory(id as string)),
+    createHandler('create-story', (_, story) => userDataStorage.createStory(story as any)),
+    createHandler('update-story', (_, id, story) => userDataStorage.updateStory(id as string, story as any)),
+    createHandler('delete-story', (_, id) => userDataStorage.deleteStory(id as string)),
+
+    // Interview Responses
+    createHandler('get-interview-responses', () => userDataStorage.getInterviewResponses()),
+    createHandler('create-interview-response', (_, response) => userDataStorage.createInterviewResponse(response as any)),
+    createHandler('update-interview-response', (_, id, response) => userDataStorage.updateInterviewResponse(id as string, response as any)),
+    createHandler('delete-interview-response', (_, id) => userDataStorage.deleteInterviewResponse(id as string)),
+
+    // Documents
+    createHandler('get-documents', () => documentStorage.getDocuments()),
+    createHandler('get-document', (_, id) => documentStorage.getDocument(id as string)),
+    createHandler('create-document', (_, data) => documentStorage.createDocument(data as any)),
+    createHandler('update-document', (_, id, data) => documentStorage.updateDocument(id as string, data as any)),
+    createHandler('delete-document', (_, id) => documentStorage.deleteDocument(id as string)),
+    createHandler('search-documents', (_, query) => documentStorage.searchDocuments(query as string)),
+
+    // Agent Sessions
+    createHandler('agent:create-session', (_, input) => agentRuntime.createSession(input as any)),
+    createHandler('agent:get-session', (_, sessionId) => agentRuntime.getSession(sessionId as string)),
+    createHandler('agent:list-sessions', (_, assistantId) => agentRuntime.listSessions(assistantId as any)),
+    createHandler('agent:clear-session-memory', (_, sessionId) => agentRuntime.clearSessionMemory(sessionId as string)),
+    createHandler('agent:get-session-messages', (_, sessionId) => agentRuntime.getMessages(sessionId as string)),
+    createHandler('agent:rename-session', (_, sessionId, newTitle) => agentRuntime.renameSession(sessionId as string, newTitle as string)),
+    createHandler('agent:delete-session', (_, sessionId) => agentRuntime.deleteSession(sessionId as string)),
+
+    // Agent Logs
+    createHandler('agent:logging-status', () => ({
+      enabled: agentLogger.isEnabled(),
+      logsDir: agentLogger.getLogsDir(),
+    })),
+    createHandler('agent:list-logs', (_, maxCount = 20) => {
+      const logFiles = agentLogger.listRecentLogs(maxCount as number);
+      return logFiles.map(filePath => {
+        const stats = fs.statSync(filePath);
+        return { path: filePath, name: path.basename(filePath), size: stats.size, modified: stats.mtime };
+      });
+    }),
+    createHandler('agent:open-logs-dir', () => shell.openPath(agentLogger.getLogsDir())),
+  ]);
+
+  ipcMain.on('agent:set-api-key', (_, apiKey: string) => {
+    agentRuntime.setApiKey(apiKey);
+    console.log('[Agent] API key set');
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -73,7 +148,7 @@ app.on('window-all-closed', () => {
 });
 
 // ============================================
-// File Dialog IPC Handlers
+// File Dialog IPC Handlers (complex - need mainWindow)
 // ============================================
 
 ipcMain.handle('show-open-dialog', async (_event, options) => {
@@ -92,17 +167,11 @@ ipcMain.handle('show-open-dialog', async (_event, options) => {
       return { canceled: true };
     }
 
-    // Read file content
     const filePath = result.filePaths[0];
     const content = fs.readFileSync(filePath, 'utf-8');
     const fileName = path.basename(filePath);
 
-    return {
-      canceled: false,
-      filePath,
-      fileName,
-      content,
-    };
+    return { canceled: false, filePath, fileName, content };
   } catch (error) {
     console.error('Error in show-open-dialog:', error);
     throw error;
@@ -128,13 +197,8 @@ ipcMain.handle('show-save-dialog', async (_event, content: string, options) => {
       return { canceled: true };
     }
 
-    // Write file
     fs.writeFileSync(result.filePath, content, 'utf-8');
-
-    return {
-      canceled: false,
-      filePath: result.filePath,
-    };
+    return { canceled: false, filePath: result.filePath };
   } catch (error) {
     console.error('Error in show-save-dialog:', error);
     throw error;
@@ -142,38 +206,7 @@ ipcMain.handle('show-save-dialog', async (_event, content: string, options) => {
 });
 
 // ============================================
-// User Profile Operations IPC Handlers
-// ============================================
-
-ipcMain.handle('get-user-profile', async () => {
-  try {
-    return await userDataStorage.getUserProfile();
-  } catch (error) {
-    console.error('Error in get-user-profile:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('save-user-profile', async (_event, profile) => {
-  try {
-    return await userDataStorage.saveUserProfile(profile);
-  } catch (error) {
-    console.error('Error in save-user-profile:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('complete-onboarding', async () => {
-  try {
-    await userDataStorage.completeOnboarding();
-  } catch (error) {
-    console.error('Error in complete-onboarding:', error);
-    throw error;
-  }
-});
-
-// ============================================
-// Resume Operations IPC Handlers
+// Resume Operations IPC Handlers (complex - file operations)
 // ============================================
 
 ipcMain.handle('resume:parse', async (_, { filePath, apiKey }: { filePath: string; apiKey: string }) => {
@@ -181,7 +214,6 @@ ipcMain.handle('resume:parse', async (_, { filePath, apiKey }: { filePath: strin
     const text = await extractText(filePath);
     const parsedData = await parseResumeWithGemini(text, apiKey);
 
-    // Copy PDF to app data directory for later viewing
     const userDataPath = app.getPath('userData');
     const resumesDir = path.join(userDataPath, 'user-data', 'resumes');
     if (!fs.existsSync(resumesDir)) {
@@ -200,7 +232,6 @@ ipcMain.handle('resume:parse', async (_, { filePath, apiKey }: { filePath: strin
 
 ipcMain.handle('resume:replace-pdf', async (_, { filePath }: { filePath: string }) => {
   try {
-    // Copy new PDF to app data directory
     const userDataPath = app.getPath('userData');
     const resumesDir = path.join(userDataPath, 'user-data', 'resumes');
     if (!fs.existsSync(resumesDir)) {
@@ -217,27 +248,16 @@ ipcMain.handle('resume:replace-pdf', async (_, { filePath }: { filePath: string 
   }
 });
 
-ipcMain.handle('get-resume', async () => {
-  try {
-    return await userDataStorage.getResume();
-  } catch (error) {
-    console.error('Error in get-resume:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('save-resume', async (_event, resume) => {
-  try {
-    return await userDataStorage.saveResume(resume);
-  } catch (error) {
-    console.error('Error in save-resume:', error);
-    throw error;
-  }
-});
-
 ipcMain.handle('open-resume-pdf', async (_, pdfPath: string) => {
   try {
-    const { shell } = require('electron');
+    const userDataPath = app.getPath('userData');
+    const resumesDir = path.resolve(path.join(userDataPath, 'user-data', 'resumes'));
+    const resolvedPath = path.resolve(pdfPath);
+    
+    if (!resolvedPath.startsWith(resumesDir)) {
+      throw new Error('Invalid path: PDF must be within resumes directory');
+    }
+    
     await shell.openPath(pdfPath);
   } catch (error) {
     console.error('Error opening PDF:', error);
@@ -265,28 +285,6 @@ ipcMain.handle('resume:analyze-ats', async (_, { filePath }: { filePath: string 
   }
 });
 
-// ============================================
-// Candidate Profile IPC Handlers
-// ============================================
-
-ipcMain.handle('get-candidate-profile', async () => {
-  try {
-    return await userDataStorage.getCandidateProfile();
-  } catch (error) {
-    console.error('Error in get-candidate-profile:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('save-candidate-profile', async (_event, profile) => {
-  try {
-    return await userDataStorage.saveCandidateProfile(profile);
-  } catch (error) {
-    console.error('Error in save-candidate-profile:', error);
-    throw error;
-  }
-});
-
 ipcMain.handle('resume:chat', async (_, { messages, analysisContext, apiKey }: { messages: any[]; analysisContext: any; apiKey: string }) => {
   try {
     const reply = await chatWithResumeContext(messages, analysisContext, apiKey);
@@ -297,72 +295,9 @@ ipcMain.handle('resume:chat', async (_, { messages, analysisContext, apiKey }: {
   }
 });
 
-ipcMain.handle('get-resume-analysis', async () => {
-  try {
-    return await userDataStorage.getResumeAnalysis();
-  } catch (error) {
-    console.error('Error in get-resume-analysis:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('save-resume-analysis', async (_event, analysis) => {
-  try {
-    return await userDataStorage.saveResumeAnalysis(analysis);
-  } catch (error) {
-    console.error('Error in save-resume-analysis:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('get-ats-analysis', async () => {
-  try {
-    return await userDataStorage.getAtsAnalysis();
-  } catch (error) {
-    console.error('Error in get-ats-analysis:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('save-ats-analysis', async (_event, analysis) => {
-  try {
-    return await userDataStorage.saveAtsAnalysis(analysis);
-  } catch (error) {
-    console.error('Error in save-ats-analysis:', error);
-    throw error;
-  }
-});
-
 // ============================================
-// Agent Foundation IPC Handlers
+// Agent IPC Handlers (complex - streaming)
 // ============================================
-
-ipcMain.handle('agent:create-session', async (_event, input) => {
-  try {
-    return agentRuntime.createSession(input);
-  } catch (error) {
-    console.error('Error in agent:create-session:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('agent:get-session', async (_event, sessionId: string) => {
-  try {
-    return agentRuntime.getSession(sessionId);
-  } catch (error) {
-    console.error('Error in agent:get-session:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('agent:list-sessions', async (_event, assistantId) => {
-  try {
-    return agentRuntime.listSessions(assistantId);
-  } catch (error) {
-    console.error('Error in agent:list-sessions:', error);
-    throw error;
-  }
-});
 
 ipcMain.handle('agent:run-turn', async (event, input) => {
   try {
@@ -380,194 +315,40 @@ ipcMain.handle('agent:run-turn', async (event, input) => {
   }
 });
 
-ipcMain.handle('agent:clear-session-memory', async (_event, sessionId: string) => {
-  try {
-    agentRuntime.clearSessionMemory(sessionId);
-  } catch (error) {
-    console.error('Error in agent:clear-session-memory:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('agent:get-session-messages', async (_event, sessionId: string) => {
-  try {
-    return agentRuntime.getMessages(sessionId);
-  } catch (error) {
-    console.error('Error in agent:get-session-messages:', error);
-    throw error;
-  }
-});
-
-ipcMain.on('agent:set-api-key', (_event, apiKey: string) => {
-  try {
-    agentRuntime.setApiKey(apiKey);
-    console.log('[Agent] API key set');
-  } catch (error) {
-    console.error('Error in agent:set-api-key:', error);
-  }
-});
-
-ipcMain.handle('agent:rename-session', async (_event, sessionId: string, newTitle: string) => {
-  try {
-    return agentRuntime.renameSession(sessionId, newTitle);
-  } catch (error) {
-    console.error('Error in agent:rename-session:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('agent:delete-session', async (_event, sessionId: string) => {
-  try {
-    return agentRuntime.deleteSession(sessionId);
-  } catch (error) {
-    console.error('Error in agent:delete-session:', error);
-    throw error;
-  }
-});
-
 // ============================================
-// Story Operations IPC Handlers
+// Agent Log IPC Handlers (complex - path validation)
 // ============================================
 
-ipcMain.handle('get-stories', async () => {
+ipcMain.handle('agent:get-log', async (_event, logPath: string) => {
   try {
-    return await userDataStorage.getStories();
+    const resolvedPath = path.resolve(logPath);
+    const logsDir = agentLogger.getLogsDir();
+    
+    if (!resolvedPath.startsWith(logsDir)) {
+      throw new Error('Invalid log path');
+    }
+    
+    const content = fs.readFileSync(resolvedPath, 'utf-8');
+    return JSON.parse(content);
   } catch (error) {
-    console.error('Error in get-stories:', error);
+    console.error('Error reading agent log:', error);
     throw error;
   }
 });
 
-ipcMain.handle('get-story', async (_event, id: string) => {
+ipcMain.handle('agent:delete-log', async (_event, logPath: string) => {
   try {
-    return await userDataStorage.getStory(id);
+    const resolvedPath = path.resolve(logPath);
+    const logsDir = agentLogger.getLogsDir();
+    
+    if (!resolvedPath.startsWith(logsDir)) {
+      throw new Error('Invalid log path');
+    }
+    
+    fs.unlinkSync(resolvedPath);
+    return true;
   } catch (error) {
-    console.error('Error in get-story:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('create-story', async (_event, story) => {
-  try {
-    return await userDataStorage.createStory(story);
-  } catch (error) {
-    console.error('Error in create-story:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('update-story', async (_event, id: string, story) => {
-  try {
-    return await userDataStorage.updateStory(id, story);
-  } catch (error) {
-    console.error('Error in update-story:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('delete-story', async (_event, id: string) => {
-  try {
-    await userDataStorage.deleteStory(id);
-  } catch (error) {
-    console.error('Error in delete-story:', error);
-    throw error;
-  }
-});
-
-// ============================================
-// Interview Response Operations IPC Handlers
-// ============================================
-
-ipcMain.handle('get-interview-responses', async () => {
-  try {
-    return await userDataStorage.getInterviewResponses();
-  } catch (error) {
-    console.error('Error in get-interview-responses:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('create-interview-response', async (_event, response) => {
-  try {
-    return await userDataStorage.createInterviewResponse(response);
-  } catch (error) {
-    console.error('Error in create-interview-response:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('update-interview-response', async (_event, id: string, response) => {
-  try {
-    return await userDataStorage.updateInterviewResponse(id, response);
-  } catch (error) {
-    console.error('Error in update-interview-response:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('delete-interview-response', async (_event, id: string) => {
-  try {
-    await userDataStorage.deleteInterviewResponse(id);
-  } catch (error) {
-    console.error('Error in delete-interview-response:', error);
-    throw error;
-  }
-});
-
-// ============================================
-// Document Operations IPC Handlers
-// ============================================
-
-ipcMain.handle('get-documents', async () => {
-  try {
-    return await documentStorage.getDocuments();
-  } catch (error) {
-    console.error('Error in get-documents:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('get-document', async (_event, id: string) => {
-  try {
-    return await documentStorage.getDocument(id);
-  } catch (error) {
-    console.error('Error in get-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('create-document', async (_event, data) => {
-  try {
-    return await documentStorage.createDocument(data);
-  } catch (error) {
-    console.error('Error in create-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('update-document', async (_event, id: string, data) => {
-  try {
-    return await documentStorage.updateDocument(id, data);
-  } catch (error) {
-    console.error('Error in update-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('delete-document', async (_event, id: string) => {
-  try {
-    await documentStorage.deleteDocument(id);
-  } catch (error) {
-    console.error('Error in delete-document:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('search-documents', async (_event, query: string) => {
-  try {
-    return await documentStorage.searchDocuments(query);
-  } catch (error) {
-    console.error('Error in search-documents:', error);
+    console.error('Error deleting agent log:', error);
     throw error;
   }
 });
