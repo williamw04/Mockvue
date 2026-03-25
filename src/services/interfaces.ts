@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Service interfaces for platform abstraction
  */
@@ -67,10 +68,10 @@ export interface INotificationService {
 }
 
 /**
- * AI Agent service interface
- * Handles AI-powered features and agentic workflows
+ * Task execution service interface
+ * Handles AI task execution and streaming
  */
-export interface IAgentService {
+export interface ITaskExecutionService {
   /**
    * Get available agent capabilities
    */
@@ -109,7 +110,13 @@ export interface IAgentService {
     context?: AgentTask['context'],
     onChunk?: (chunk: string) => void
   ): Promise<AgentResponse>;
+}
 
+/**
+ * Resume service interface
+ * Handles resume parsing and analysis
+ */
+export interface IResumeService {
   /**
    * Parse a resume (raw text or file path handled by backend)
    */
@@ -133,7 +140,13 @@ export interface IAgentService {
    * Analyze resume PDF for ATS compatibility
    */
   analyzeAtsCompatibility(filePath: string): Promise<ATSAnalysisResult>;
+}
 
+/**
+ * Assistant session service interface
+ * Handles AI assistant session management
+ */
+export interface IAssistantSessionService {
   /**
    * Create a new assistant session
    */
@@ -179,6 +192,13 @@ export interface IAgentService {
    */
   deleteAssistantSession(sessionId: string): Promise<boolean>;
 }
+
+/**
+ * AI Agent service interface
+ * Handles AI-powered features and agentic workflows
+ * Combines task execution, resume analysis, and assistant session management
+ */
+export interface IAgentService extends ITaskExecutionService, IResumeService, IAssistantSessionService {}
 
 /**
  * Voice interview service interface
