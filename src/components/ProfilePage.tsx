@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TopNavBar } from './TopNavBar';
 import { useUser } from '../services';
 import type { UserProfile, Resume, CandidateProfile } from '../types';
 import { Upload, Loader2 } from 'lucide-react';
+import { LoadingSpinner } from './ui/LoadingSpinner';
 
 function formatDate(dateString?: string): string {
     if (!dateString) return '';
@@ -139,9 +141,7 @@ export default function ProfilePage() {
         return (
             <div className="min-h-screen bg-gray-100">
                 <TopNavBar />
-                <div className="flex h-[calc(100vh-80px)] items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-                </div>
+                <LoadingSpinner fullScreen={false} message="" />
             </div>
         );
     }

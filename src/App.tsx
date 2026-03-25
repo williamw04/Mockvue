@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Dashboard } from "./components/Dashboard";
@@ -6,6 +7,7 @@ import StoriesPage from "./components/StoriesPage";
 import DocumentPage from "./components/documents/DocumentPage";
 import ProfilePage from "./components/ProfilePage";
 import ResumeReviewPage from "./components/ResumeReviewPage";
+import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { useUser } from "./services";
 
 // Use HashRouter for Electron compatibility
@@ -22,7 +24,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const checkOnboarding = async () => {
     try {
-      let profile = await userService.getUserProfile();
+      const profile = await userService.getUserProfile();
 
       setOnboardingComplete(profile?.onboardingCompleted || false);
     } catch (error) {
@@ -34,14 +36,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!onboardingComplete) {

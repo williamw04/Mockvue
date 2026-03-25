@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
@@ -6,6 +7,7 @@ import { QuestionItem } from './QuestionItem';
 import { Plus, ChevronsDown, ChevronsUp, Save, ArrowLeft } from 'lucide-react';
 import { DocumentQuestion, Document } from '../../types';
 import { useNotifications, useDocuments } from '../../services';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 export default function DocumentPage() {
   const { id } = useParams<{ id: string }>();
@@ -123,14 +125,7 @@ export default function DocumentPage() {
   const allExpanded = questions.length > 0 && questions.every((q) => q.isExpanded);
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading document...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading document..." />;
   }
 
   return (

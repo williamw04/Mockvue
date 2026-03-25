@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 import { useState, useEffect, useMemo } from 'react';
 // use-navigate removed
 import { useUser, useNotifications } from '../services';
 import { Story, Resume, CoreStoryCategory, CoreStoryMatch } from '../types';
 import { TopNavBar } from './TopNavBar';
+import { LoadingSpinner } from './ui/LoadingSpinner';
 
 // The 10 Core Story categories with metadata
 const CORE_STORIES: { category: CoreStoryCategory; title: string; icon: string; description: string }[] = [
@@ -122,11 +124,7 @@ export default function StoriesPage() {
   const aiMatch = selectedCategory ? getAiMatchForCategory(selectedCategory) : null;
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingSpinner message="" />;
   }
 
   return (

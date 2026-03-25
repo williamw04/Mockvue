@@ -9,6 +9,7 @@ import {
     Zap, Loader2, AlertTriangle, FileText, Target, Shield,
     ArrowRight, ArrowLeft, RefreshCw, Layout, CheckCircle, XCircle, AlertCircle,
 } from 'lucide-react';
+import { LoadingSpinner } from './ui/LoadingSpinner';
 import type {
     Resume, ResumeAnalysis, TriggerPointComfort,
     CandidateProfile, Story, ATSAnalysisResult,
@@ -200,12 +201,7 @@ export default function ResumeReviewPage() {
         return (
             <div className="min-h-screen bg-gray-100">
                 <TopNavBar />
-                <div className="flex h-[calc(100vh-80px)] items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-                        <p className="text-gray-600">Loading...</p>
-                    </div>
-                </div>
+                <LoadingSpinner fullScreen={false} />
             </div>
         );
     }
