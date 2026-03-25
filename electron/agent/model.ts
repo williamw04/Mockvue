@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GoogleGenerativeAI, FunctionDeclaration } from '@google/generative-ai';
 import type { AgentChatMessage, AgentAssistantId, AgentTurnTrace, AgentStep } from '../internal-types';
 import { getToolDefinitionsForAssistant, AgentToolExecutor, ToolCallResult, AgentToolName } from './tools';
 import { buildSystemPrompt } from './prompts';
+import { agentLogger } from './logger';
 
 function makeId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -22,6 +24,7 @@ export interface StreamingCallbacks {
 
 export class AgentModelClient {
   private apiKey: string | null = null;
+  private currentSessionId: string | null = null;
 
   setApiKey(apiKey: string): void {
     this.apiKey = apiKey;
@@ -64,12 +67,25 @@ export class AgentModelClient {
     let iteration = 0;
     let toolResultsSummary = '';
 
-console.log('\n[AgentModelClient] ========== AGENTIC LOOP START ==========');
-      console.log('[AgentModelClient] User message:', currentQuery.substring(0, 100));
+    this.currentSessionId = makeId('session');
+    agentLogger.startSession(this.currentSessionId, assistantId);
+    agentLogger.log({
+      type: 'iteration',
+      data: {
+        iteration: 0,
+        userMessage: currentQuery.substring(0, 500),
+        messageCount: messages.length,
+        assistantId,
+      },
+    });
+
+    if (agentLogger.isEnabled()) {
+      console.log('[AgentModelClient] Logging enabled. Session:', this.currentSessionId);
+    }
 
     while (iteration < maxIterations) {
       iteration++;
-      console.log(`\n[AgentModelClient] --- Iteration ${iteration} ---`);
+      console.log(`[AgentModelClient] Iteration ${iteration}`);
 
       const model = genAI.getGenerativeModel({
         model: 'gemini-3-flash-preview',
@@ -86,9 +102,10 @@ Current user message: ${currentQuery}
 
 ${iteration === 1 ? 'First, determine what tools you need to call to answer this question. Call the appropriate tools.' : 'Based on the tool results above, provide your final response to the user. If you need more information, call additional tools.'}`;
 
-      console.log('\n[AgentModelClient] === FULL PROMPT (Iteration ' + iteration + ') ===');
-      console.log(fullPrompt);
-      console.log('[AgentModelClient] === END PROMPT ===\n');
+      agentLogger.logPrompt(iteration, fullPrompt, {
+        chatHistoryLength: chatHistory.length,
+        toolResultsLength: toolResultsSummary.length,
+      });
 
       const result = await model.generateContent(fullPrompt);
       const response = await result.response;
@@ -102,7 +119,8 @@ ${iteration === 1 ? 'First, determine what tools you need to call to answer this
           const toolName = part.functionCall.name as AgentToolName;
           const toolArgs = (part.functionCall.args || {}) as Record<string, unknown>;
 
-          console.log(`[AgentModelClient] Tool call: ${toolName}`, JSON.stringify(toolArgs, null, 2));
+          console.log(`[AgentModelClient] Tool call: ${toolName}`);
+          agentLogger.logToolCall(toolName, toolArgs);
 
           const toolCallStep: AgentStep = {
             id: makeId('step'),
@@ -116,12 +134,13 @@ ${iteration === 1 ? 'First, determine what tools you need to call to answer this
 
           const toolResult: ToolCallResult = await toolExecutor.execute(toolName, toolArgs);
 
-          console.log(`[AgentModelClient] Tool result:`, toolResult.success ? 'success' : 'error');
-          if (toolResult.success && toolResult.data !== undefined) {
-            console.log('[AgentModelClient] Tool result data:', typeof toolResult.data === 'string' 
-              ? toolResult.data.substring(0, 500) 
-              : JSON.stringify(toolResult.data, null, 2).substring(0, 500));
-          }
+          console.log(`[AgentModelClient] Tool result: ${toolResult.success ? 'success' : 'error'}`);
+          agentLogger.logToolResult(
+            toolName, 
+            toolResult.data, 
+            toolResult.success, 
+            toolResult.error
+          );
 
           const toolResultStep: AgentStep = {
             id: makeId('step'),
@@ -163,14 +182,10 @@ ${iteration === 1 ? 'First, determine what tools you need to call to answer this
         }
         process.stdout.write('\n');
 
-        console.log('[AgentModelClient] === FULL RESPONSE ===');
-        console.log(fullResponse);
-        console.log('[AgentModelClient] === END RESPONSE ===');
+        console.log(`[AgentModelClient] Complete. Iterations: ${iteration}, Tool calls: ${trace.totalToolCalls}, Response: ${fullResponse.length} chars`);
 
-        console.log('[AgentModelClient] ========== AGENTIC LOOP END ==========');
-        console.log(`[AgentModelClient] Total iterations: ${iteration}`);
-        console.log(`[AgentModelClient] Total tool calls: ${trace.totalToolCalls}`);
-        console.log(`[AgentModelClient] Response length: ${fullResponse.length}`);
+        agentLogger.logResponse(fullResponse);
+        agentLogger.logIteration(iteration, trace.totalToolCalls, true);
 
         trace.steps.push({
           id: makeId('step'),
@@ -179,16 +194,21 @@ ${iteration === 1 ? 'First, determine what tools you need to call to answer this
           content: fullResponse,
         });
 
+        agentLogger.endSession();
+
         return { reply: fullResponse, trace };
       }
 
       currentQuery = 'Based on the tool results above, continue answering the user\'s original question.';
     }
 
-    console.log('[AgentModelClient] ========== AGENTIC LOOP END (max iterations) ==========');
+    console.log('[AgentModelClient] Max iterations reached');
 
     const maxIterMsg = 'I apologize, but I reached the maximum number of processing steps. Please try rephrasing your question.';
     callbacks?.onChunk?.(maxIterMsg);
+
+    agentLogger.logIteration(iteration, trace.totalToolCalls, false);
+    agentLogger.endSession();
 
     return {
       reply: maxIterMsg,

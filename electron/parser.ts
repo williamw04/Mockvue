@@ -1,4 +1,4 @@
-// @ts-ignore
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, no-control-regex */
 import pdf = require('pdf-parse');
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
@@ -92,15 +92,6 @@ export async function parseResumeWithGemini(text: string, apiKey: string): Promi
   const response = await result.response;
   const textResponse = response.text();
 
-  console.log("====== GEMINI PARSER PROMPT ======");
-  console.log(prompt);
-  console.log("==================================");
-
-  console.log("====== GEMINI RAW RESPONSE ======");
-  console.log(textResponse);
-  console.log("=================================");
-
-  // Clean up code blocks if present
   const jsonString = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
 
   try {
@@ -115,8 +106,6 @@ export async function parseResumeWithGemini(text: string, apiKey: string): Promi
  * Analyzes resume bullets for quality issues and identifies trigger points
  */
 export async function analyzeResumeBullets(resumeData: any, apiKey: string): Promise<any> {
-  console.log("[analyzeResumeBullets] API Key present:", !!apiKey, "Length:", apiKey?.length);
-  
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
@@ -200,17 +189,8 @@ export async function analyzeResumeBullets(resumeData: any, apiKey: string): Pro
     console.log("[analyzeResumeBullets] Received response, length:", textResponse.length);
   } catch (err: any) {
     console.error("[analyzeResumeBullets] Gemini API error:", err.message);
-    console.error("[analyzeResumeBullets] Error details:", err);
     throw new Error(`Gemini API failed: ${err.message}`);
   }
-
-  console.log("====== GEMINI ANALYSIS PROMPT ======");
-  console.log(prompt);
-  console.log("====================================");
-
-  console.log("====== GEMINI ANALYSIS RESPONSE ======");
-  console.log(textResponse);
-  console.log("======================================");
 
   const jsonString = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
 
