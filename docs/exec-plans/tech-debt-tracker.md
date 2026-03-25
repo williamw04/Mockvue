@@ -114,10 +114,17 @@ This document tracks known technical debt, prioritization, and remediation plans
 
 ## Low Priority (P3)
 
-### Switch to Async File Operations
+### ~~No Error Boundaries~~ → Resolved
+- **Description**: No React Error Boundaries around major UI sections
+- **Impact**: Unhandled errors crash entire app instead of individual sections
+- **Remediation**: Add ErrorBoundary components around routes
+- **Status**: Resolved (2026-03-25) — Added ErrorBoundary component wrapping entire app
+
+### ~~Synchronous File Operations~~ → Resolved
 - **Description**: `electron/storage.ts` uses synchronous file operations (`fs.readFileSync`, `fs.writeFileSync`)
 - **Impact**: Blocks main process, could cause UI freezes on large files
 - **Remediation**: Switch to `fs.promises` async API
+- **Status**: Resolved (2026-03-25) — Converted to async operations with `fs.promises`
 
 ### No Performance Monitoring
 - **Description**: No automated performance tracking or regression detection
@@ -178,6 +185,17 @@ This document tracks known technical debt, prioritization, and remediation plans
 - Removed `useLocalModel()` stub from `src/services/electron/agent.ts`
 - Removed `cacheToFileSystem()` stub
 - Removed commented-out constructor parameters
+
+### Error Boundaries (2026-03-25)
+- Created `src/components/ErrorBoundary.tsx`
+- Wraps entire App with error boundary
+- Shows user-friendly error message with reset option
+- Displays error details in expandable section
+
+### Async File Operations (2026-03-25)
+- Converted `electron/storage.ts` to use `fs.promises`
+- Created helper methods `readFileSafe()` and `writeFile()`
+- Prevents blocking main process during file I/O
 
 ### CI/CD Pipeline (2026-02-14)
 - Created `.github/workflows/ci.yml` with 3 parallel jobs: lint & type check, test + coverage, build
