@@ -1,4 +1,109 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type AgentAssistantId = 'resume-assistant' | 'behavioral-assistant';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email?: string;
+  targetRole?: string;
+  targetCompany?: string;
+  onboardingCompleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkExperience {
+  id: string;
+  company: string;
+  position: string;
+  startDate: string;
+  endDate?: string;
+  description: string;
+  achievements: string[];
+}
+
+export interface Education {
+  id: string;
+  school: string;
+  degree: string;
+  field: string;
+  startDate: string;
+  endDate: string;
+  gpa?: string;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  role: string;
+  technologies: string[];
+  url?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface Resume {
+  id: string;
+  userId: string;
+  workExperiences: WorkExperience[];
+  education: Education[];
+  skills: string[];
+  projects: Project[];
+  summary?: string;
+  rawText?: string;
+  resumePdfPath?: string;
+  coreStoryMatches?: any[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Story {
+  id: string;
+  userId: string;
+  title: string;
+  situation: string;
+  task: string;
+  action: string;
+  result: string;
+  tags: string[];
+  relatedExperienceId?: string;
+  coreCategory?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InterviewResponse {
+  id: string;
+  userId: string;
+  question: string;
+  response: string;
+  storyIds: string[];
+  tags: string[];
+  isPracticed: boolean;
+  lastPracticedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentQuestion {
+  id: string;
+  text: string;
+  response: string;
+  isExpanded: boolean;
+}
+
+export interface Document {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  questions: DocumentQuestion[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  lastModified: string;
+}
 
 export interface AgentEvidenceRef {
   source: string;
