@@ -1,6 +1,6 @@
 # Tech Debt Tracker
 
-**Last Updated**: 2026-02-14  
+**Last Updated**: 2026-03-25  
 **Review Frequency**: Monthly  
 
 This document tracks known technical debt, prioritization, and remediation plans.
@@ -21,6 +21,20 @@ This document tracks known technical debt, prioritization, and remediation plans
 - **Effort**: Small (half day)
 - **Status**: Resolved (2026-02-14) — `.github/workflows/ci.yml` with lint, typecheck, test, build jobs
 
+### ~~Sensitive Data Logging~~ → Resolved
+- **Description**: API keys and resume content logged to console in production code
+- **Location**: `electron/parser.ts`, `electron/agent/model.ts`
+- **Impact**: PII exposure in logs, security vulnerability
+- **Remediation**: Remove sensitive logging statements
+- **Status**: Resolved (2026-03-25) — Removed all sensitive logging, added safe file-based logging system
+
+### ~~Path Traversal Vulnerability~~ → Resolved
+- **Description**: `shell.openPath()` accepted arbitrary file paths without validation
+- **Location**: `electron/main.ts`
+- **Impact**: Could open arbitrary files on user's system
+- **Remediation**: Validate paths are within expected directories
+- **Status**: Resolved (2026-03-25) — Added path validation for resumes directory
+
 ## High Priority (P1)
 
 ### DEV Mode Onboarding Bypass
@@ -37,6 +51,20 @@ This document tracks known technical debt, prioritization, and remediation plans
 - **Effort**: Medium (1-2 hours per spec)
 - **Status**: Resolved (2026-02-14) — 9 product specs created in `docs/product-specs/`
 
+### ~~Type Definition Duplication~~ → Resolved
+- **Description**: Entity types (UserProfile, Resume, Story) defined in multiple files
+- **Location**: `src/types.ts`, `electron/preload.ts`, `electron/storage.ts`, `electron/internal-types.ts`
+- **Impact**: Maintenance burden, risk of type drift
+- **Remediation**: Consolidate to single source
+- **Status**: Resolved (2026-03-25) — Types consolidated in `electron/internal-types.ts`
+
+### ~~Oversized IAgentService Interface~~ → Resolved
+- **Description**: `IAgentService` had 20+ methods mixing concerns (task execution, resume parsing, session management)
+- **Location**: `src/services/interfaces.ts`
+- **Impact**: Violates Interface Segregation Principle
+- **Remediation**: Split into focused interfaces
+- **Status**: Resolved (2026-03-25) — Split into `ITaskExecutionService`, `IResumeService`, `IAssistantSessionService`
+
 ### No Prettier Configuration
 - **Description**: No code formatter configured. Inconsistent formatting possible across contributors.
 - **Impact**: Code style inconsistencies, noisy diffs
@@ -44,6 +72,27 @@ This document tracks known technical debt, prioritization, and remediation plans
 - **Effort**: Small
 
 ## Medium Priority (P2)
+
+### ~~Duplicate Loading Spinner Implementations~~ → Resolved
+- **Description**: 6+ nearly identical loading spinner implementations across components
+- **Location**: Dashboard, ProfilePage, StoriesPage, DocumentPage, App, ResumeReviewPage
+- **Impact**: Code duplication, inconsistent behavior risk
+- **Remediation**: Extract reusable component
+- **Status**: Resolved (2026-03-25) — Created `src/components/ui/LoadingSpinner.tsx`
+
+### ~~Repetitive IPC Handler Boilerplate~~ → Resolved
+- **Description**: `electron/main.ts` was 727 lines with repetitive try-catch IPC handlers
+- **Location**: `electron/main.ts`
+- **Impact**: Hard to maintain, easy to introduce inconsistencies
+- **Remediation**: Create handler registry pattern
+- **Status**: Resolved (2026-03-25) — Created `electron/ipc-utils.ts`, reduced main.ts to 354 lines
+
+### ~~Dead Code in Agent Service~~ → Resolved
+- **Description**: Unimplemented stub methods (`useLocalModel`, `cacheToFileSystem`) and commented-out code
+- **Location**: `src/services/electron/agent.ts`
+- **Impact**: Confusing for contributors, dead code
+- **Remediation**: Remove unused methods
+- **Status**: Resolved (2026-03-25) — Removed stub methods and dead code
 
 ### Legacy `useElectron` Hook
 - **Description**: `src/hooks/useElectron.ts` is a legacy hook that was replaced by the service abstraction layer
@@ -65,6 +114,11 @@ This document tracks known technical debt, prioritization, and remediation plans
 
 ## Low Priority (P3)
 
+### Switch to Async File Operations
+- **Description**: `electron/storage.ts` uses synchronous file operations (`fs.readFileSync`, `fs.writeFileSync`)
+- **Impact**: Blocks main process, could cause UI freezes on large files
+- **Remediation**: Switch to `fs.promises` async API
+
 ### No Performance Monitoring
 - **Description**: No automated performance tracking or regression detection
 - **Remediation**: Add Performance API marks for key operations
@@ -81,6 +135,49 @@ This document tracks known technical debt, prioritization, and remediation plans
 - **Effort**: Small
 
 ## Resolved
+
+### Sensitive Data Logging (2026-03-25)
+- Removed API key logging from `electron/parser.ts`
+- Removed prompt/response logging from `electron/parser.ts` and `electron/agent/model.ts`
+- Added `electron/agent/logger.ts` for safe, opt-in file-based logging
+- Added `npm run electron:dev:logged` convenience script
+
+### Path Traversal Vulnerability (2026-03-25)
+- Added path validation in `shell.openPath()` handler
+- Validates paths are within `user-data/resumes` directory
+- Throws error for invalid paths
+
+### Type Definition Consolidation (2026-03-25)
+- Moved entity types to `electron/internal-types.ts`
+- `electron/storage.ts` now imports from internal-types
+- Eliminated duplicate definitions across 4 files
+
+### Interface Segregation (2026-03-25)
+- Split `IAgentService` into three focused interfaces:
+  - `ITaskExecutionService` - task execution and streaming
+  - `IResumeService` - resume parsing and analysis
+  - `IAssistantSessionService` - session management
+- `IAgentService` extends all three for backward compatibility
+
+### Error Handling Standardization (2026-03-25)
+- Created `src/services/errors.ts` with `ServiceError` class
+- Typed error codes: `UNAVAILABLE`, `NOT_FOUND`, `VALIDATION_ERROR`, etc.
+- Updated `ElectronDocumentService` to use standardized errors
+
+### LoadingSpinner Component (2026-03-25)
+- Created `src/components/ui/LoadingSpinner.tsx`
+- Replaced 6 duplicate implementations
+- Supports configurable message, size, and fullScreen props
+
+### IPC Handler Registry (2026-03-25)
+- Created `electron/ipc-utils.ts` with `registerIpcHandlers` utility
+- Reduced `electron/main.ts` from 727 to 354 lines
+- Consistent error handling across all handlers
+
+### Dead Code Removal (2026-03-25)
+- Removed `useLocalModel()` stub from `src/services/electron/agent.ts`
+- Removed `cacheToFileSystem()` stub
+- Removed commented-out constructor parameters
 
 ### CI/CD Pipeline (2026-02-14)
 - Created `.github/workflows/ci.yml` with 3 parallel jobs: lint & type check, test + coverage, build
