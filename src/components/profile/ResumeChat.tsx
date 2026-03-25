@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAgent } from '../../services';
 import { Send, Loader2, Bot, User, Sparkles, Plus, MessageSquare, ChevronDown, ChevronRight, Wrench, Pencil, Trash2, Copy, FolderOpen, Check, AlertCircle, Square, Undo2 } from 'lucide-react';

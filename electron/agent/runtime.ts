@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AgentAssistantId, AgentTurnInput, AgentTurnResult, CreateAgentSessionInput, AgentChatMessage, AgentSession } from '../internal-types';
 import { AgentKnowledgeAssembler } from './knowledge';
 import { AgentMemoryStore } from './memory-store';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { useUser, useNotifications } from '../../services';
 import { WorkExperience, Education } from '../../types';

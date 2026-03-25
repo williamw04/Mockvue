@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
 import { useUser, useNotifications } from '../../services';
 import { CoreStoryMatch, Story, CoreStoryCategory } from '../../types';

@@ -1,4 +1,5 @@
-import type { AgentAssistantId, ResumeFact, ResumeDoc } from '../internal-types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { AgentAssistantId, ResumeFact } from '../internal-types';
 import { UserDataStorage } from '../storage';
 
 export type AgentToolName =

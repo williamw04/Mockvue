@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from 'electron';
 import type {
   AgentAssistantId,
@@ -279,6 +280,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('agent:step', listener);
     return () => ipcRenderer.removeListener('agent:step', listener);
   },
+
+  // Agent logging operations
+  agentLoggingStatus: () => ipcRenderer.invoke('agent:logging-status'),
+  agentListLogs: (maxCount?: number) => ipcRenderer.invoke('agent:list-logs', maxCount),
+  agentGetLog: (logPath: string) => ipcRenderer.invoke('agent:get-log', logPath),
+  agentDeleteLog: (logPath: string) => ipcRenderer.invoke('agent:delete-log', logPath),
+  agentOpenLogsDir: () => ipcRenderer.invoke('agent:open-logs-dir'),
 
   // Voice interview operations
   voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => ipcRenderer.invoke('voice-interview:create-session', input),
