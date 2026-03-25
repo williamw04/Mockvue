@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, no-case-declarations, @typescript-eslint/ban-ts-comment, prefer-const */
 import { IAgentService } from '../interfaces';
 import {
   AgentAssistantId,
@@ -24,14 +25,7 @@ import {
  * - Cloud APIs
  */
 export class ElectronAgentService implements IAgentService {
-  // private customEndpoint?: string; // Reserved for future use
-  // private apiKey?: string; // Reserved for future use
   private tasks: Map<string, AgentTask> = new Map();
-
-  constructor(_apiKey?: string, _endpoint?: string) {
-    // this.apiKey = apiKey;
-    // this.customEndpoint = endpoint;
-  }
 
   getCapabilities(): AgentCapability[] {
     return [
@@ -217,27 +211,6 @@ export class ElectronAgentService implements IAgentService {
         processingTime: Date.now() - start
       }
     };
-  }
-
-  /**
-   * In Electron, you could add support for local models
-   * Example: Using Ollama running locally
-   */
-  async useLocalModel(modelName: string): Promise<void> {
-    // Implementation would use IPC to communicate with main process
-    // which could run Ollama or other local models
-    console.log(`Switching to local model: ${modelName}`);
-  }
-
-  /**
-   * Cache results to file system (Electron-specific)
-   */
-  async cacheToFileSystem(taskId: string, result: string): Promise<void> {
-    // Use window.electronAPI to save to file system
-    if (window.electronAPI) {
-      // Implementation would save to app data directory
-      console.log(`Caching task ${taskId} with ${result.length} characters to file system`);
-    }
   }
 
   /**
