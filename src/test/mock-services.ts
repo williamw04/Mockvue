@@ -6,6 +6,7 @@ import {
   IAgentService,
   INotificationService,
   IVoiceInterviewService,
+  ICoachingService,
 } from '../services/interfaces';
 
 export function createMockDocumentService(): IDocumentService {
@@ -202,6 +203,34 @@ export function createMockNotificationService(): INotificationService {
   };
 }
 
+export function createMockCoachingService(): ICoachingService {
+  return {
+    getSessionData: vi.fn().mockResolvedValue(null),
+    addGoal: vi.fn().mockResolvedValue({}),
+    updateGoal: vi.fn().mockResolvedValue(null),
+    addTodo: vi.fn().mockResolvedValue({}),
+    updateTodo: vi.fn().mockResolvedValue(null),
+    proposeChange: vi.fn().mockResolvedValue({}),
+    acceptChange: vi.fn().mockResolvedValue(null),
+    rejectChange: vi.fn().mockResolvedValue(null),
+    getPendingChanges: vi.fn().mockResolvedValue([]),
+    getChangeLog: vi.fn().mockResolvedValue([]),
+    createVersion: vi.fn().mockResolvedValue({}),
+    listVersions: vi.fn().mockResolvedValue([]),
+    getUserProfile: vi.fn().mockResolvedValue({
+      knownStrengths: [],
+      knownWeaknesses: [],
+      writingPreferences: {},
+    }),
+    updateUserProfile: vi.fn().mockResolvedValue({
+      knownStrengths: [],
+      knownWeaknesses: [],
+      writingPreferences: {},
+    }),
+    clearSessionData: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 export function createMockServices(): IAppServices {
   return {
     notifications: createMockNotificationService(),
@@ -209,5 +238,6 @@ export function createMockServices(): IAppServices {
     voiceInterview: createMockVoiceInterviewService(),
     user: createMockUserService(),
     documents: createMockDocumentService(),
+    coaching: createMockCoachingService(),
   };
 }

@@ -6,6 +6,7 @@ import { UserDataStorage, DocumentStorage } from './storage';
 import { extractText, parseResumeWithGemini, analyzeResumeBullets, chatWithResumeContext, analyzeAtsCompatibility } from './parser';
 import { AgentKnowledgeAssembler } from './agent/knowledge';
 import { AgentMemoryStore } from './agent/memory-store';
+import { CoachingStore } from './agent/coaching-store';
 import { AgentRuntime } from './agent/runtime';
 import { registerVoiceInterviewIpcHandlers, TextOnlyVoiceInterviewProvider, VoiceInterviewController } from './voice/index';
 import { VoiceInterviewSessionStore } from './voice/session-store';
@@ -16,6 +17,7 @@ let mainWindow: BrowserWindow | null = null;
 let userDataStorage: UserDataStorage;
 let documentStorage: DocumentStorage;
 let agentRuntime: AgentRuntime;
+let coachingStore: CoachingStore;
 let voiceInterviewController: VoiceInterviewController;
 
 function createWindow() {
@@ -54,6 +56,7 @@ app.whenReady().then(() => {
   userDataStorage = new UserDataStorage();
   documentStorage = new DocumentStorage();
   agentRuntime = new AgentRuntime(new AgentKnowledgeAssembler(userDataStorage), new AgentMemoryStore());
+  coachingStore = new CoachingStore();
   voiceInterviewController = new VoiceInterviewController(
     new VoiceInterviewSessionStore(),
     new TextOnlyVoiceInterviewProvider(),
@@ -127,6 +130,22 @@ app.whenReady().then(() => {
       });
     }),
     createHandler('agent:open-logs-dir', () => shell.openPath(agentLogger.getLogsDir())),
+
+    createHandler('coaching:get-session-data', (_, sessionId) => coachingStore.getSessionData(sessionId as string)),
+    createHandler('coaching:add-goal', (_, sessionId, input) => coachingStore.addGoal(sessionId as string, input as any)),
+    createHandler('coaching:update-goal', (_, sessionId, goalId, updates) => coachingStore.updateGoal(sessionId as string, goalId as string, updates as any)),
+    createHandler('coaching:add-todo', (_, sessionId, input) => coachingStore.addTodo(sessionId as string, input as any)),
+    createHandler('coaching:update-todo', (_, sessionId, todoId, updates) => coachingStore.updateTodo(sessionId as string, todoId as string, updates as any)),
+    createHandler('coaching:propose-change', (_, sessionId, input) => coachingStore.proposeChange(sessionId as string, input as any)),
+    createHandler('coaching:accept-change', (_, sessionId, changeId, modification) => coachingStore.acceptChange(sessionId as string, changeId as string, modification as string | undefined)),
+    createHandler('coaching:reject-change', (_, sessionId, changeId) => coachingStore.rejectChange(sessionId as string, changeId as string)),
+    createHandler('coaching:get-pending-changes', (_, sessionId) => coachingStore.getPendingChanges(sessionId as string)),
+    createHandler('coaching:get-change-log', (_, sessionId) => coachingStore.getChangeLog(sessionId as string)),
+    createHandler('coaching:create-version', (_, sessionId, input) => coachingStore.createVersion(sessionId as string, input as any)),
+    createHandler('coaching:list-versions', (_, sessionId) => coachingStore.listVersions(sessionId as string)),
+    createHandler('coaching:get-user-profile', () => coachingStore.getUserProfile()),
+    createHandler('coaching:update-user-profile', (_, updates) => coachingStore.updateUserProfile(updates as any)),
+    createHandler('coaching:clear-session-data', (_, sessionId) => coachingStore.clearSessionData(sessionId as string)),
   ]);
 
   ipcMain.on('agent:set-api-key', (_, apiKey: string) => {

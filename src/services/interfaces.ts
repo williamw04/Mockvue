@@ -28,7 +28,16 @@ import type {
   VoiceInterviewSession,
   VoiceTranscriptEvent,
   AppendVoiceTranscriptEventInput,
-  VoiceInterviewEvent
+  VoiceInterviewEvent,
+  CoachingSessionData,
+  CoachingGoal,
+  CoachingGoalType,
+  CoachingTodo,
+  ChangeAlternative,
+  StagedChange,
+  AcceptedChange,
+  ResumeVersion,
+  CoachingUserProfile,
 } from '../types';
 
 /**
@@ -362,6 +371,31 @@ export interface IDocumentService {
   searchDocuments(query: string): Promise<Document[]>;
 }
 
+export interface ICoachingService {
+  getSessionData(sessionId: string): Promise<CoachingSessionData>;
+
+  addGoal(sessionId: string, input: { type: CoachingGoalType; title: string; description: string; targetMetric?: string; targetValue?: number }): Promise<CoachingGoal>;
+  updateGoal(sessionId: string, goalId: string, updates: Partial<Pick<CoachingGoal, 'status' | 'progress' | 'currentValue' | 'completedAt'>>): Promise<CoachingGoal | null>;
+
+  addTodo(sessionId: string, input: { title: string; goalId?: string; description?: string; targetType?: string; targetId?: string; proposedBy: 'user' | 'agent' }): Promise<CoachingTodo>;
+  updateTodo(sessionId: string, todoId: string, updates: Partial<Pick<CoachingTodo, 'status' | 'completedAt'>>): Promise<CoachingTodo | null>;
+
+  proposeChange(sessionId: string, input: { todoId?: string; targetPath: string; targetType: string; operation: string; beforeValue: string; proposedValue: string; rationale: string; alternatives?: ChangeAlternative[] }): Promise<StagedChange>;
+  acceptChange(sessionId: string, changeId: string, modification?: string): Promise<AcceptedChange | null>;
+  rejectChange(sessionId: string, changeId: string): Promise<StagedChange | null>;
+  getPendingChanges(sessionId: string): Promise<StagedChange[]>;
+
+  getChangeLog(sessionId: string): Promise<AcceptedChange[]>;
+
+  createVersion(sessionId: string, input: { label: string; trigger: string; resumeData: Resume; analysisData: ResumeAnalysis | null; score: number }): Promise<ResumeVersion>;
+  listVersions(sessionId: string): Promise<ResumeVersion[]>;
+
+  getUserProfile(): Promise<CoachingUserProfile>;
+  updateUserProfile(updates: Partial<CoachingUserProfile>): Promise<CoachingUserProfile>;
+
+  clearSessionData(sessionId: string): Promise<void>;
+}
+
 /**
  * Combined services interface
  */
@@ -371,4 +405,5 @@ export interface IAppServices {
   voiceInterview: IVoiceInterviewService;
   user: IUserService;
   documents: IDocumentService;
+  coaching: ICoachingService;
 }

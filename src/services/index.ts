@@ -11,6 +11,7 @@ export type {
   IVoiceInterviewService,
   IUserService,
   IDocumentService,
+  ICoachingService,
 } from './interfaces';
 
 // Factory
@@ -25,6 +26,7 @@ export {
   useVoiceInterview,
   useUser,
   useDocuments,
+  useCoaching,
 } from './context';
 
 // Individual service implementations (for advanced usage)
@@ -34,6 +36,7 @@ export {
   ElectronVoiceInterviewService,
   ElectronUserService,
   ElectronDocumentService,
+  ElectronCoachingService,
 } from './electron';
 
 

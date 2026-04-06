@@ -6,8 +6,15 @@ import type {
   AgentTurnInput,
   AgentTurnResult,
   AppendVoiceTranscriptEventInput,
+  CoachingGoal,
+  CoachingSessionData,
+  CoachingTodo,
+  CoachingUserProfile,
   CreateAgentSessionInput,
   CreateVoiceInterviewSessionInput,
+  AcceptedChange,
+  ResumeVersion,
+  StagedChange,
   VoiceInterviewEvent,
   VoiceInterviewSession,
   VoiceTranscriptEvent,
@@ -186,6 +193,24 @@ export interface ElectronAPI {
   voiceInterviewGetTranscript: (sessionId: string) => Promise<VoiceTranscriptEvent[]>;
   voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => Promise<VoiceTranscriptEvent>;
   voiceInterviewGetEvents: (sessionId: string) => Promise<VoiceInterviewEvent[]>;
+
+  coaching: {
+    getSessionData: (sessionId: string) => Promise<CoachingSessionData>;
+    addGoal: (sessionId: string, input: any) => Promise<CoachingGoal>;
+    updateGoal: (sessionId: string, goalId: string, updates: any) => Promise<CoachingGoal | null>;
+    addTodo: (sessionId: string, input: any) => Promise<CoachingTodo>;
+    updateTodo: (sessionId: string, todoId: string, updates: any) => Promise<CoachingTodo | null>;
+    proposeChange: (sessionId: string, input: any) => Promise<StagedChange>;
+    acceptChange: (sessionId: string, changeId: string, modification?: string) => Promise<AcceptedChange | null>;
+    rejectChange: (sessionId: string, changeId: string) => Promise<StagedChange | null>;
+    getPendingChanges: (sessionId: string) => Promise<StagedChange[]>;
+    getChangeLog: (sessionId: string) => Promise<AcceptedChange[]>;
+    createVersion: (sessionId: string, input: any) => Promise<ResumeVersion>;
+    listVersions: (sessionId: string) => Promise<ResumeVersion[]>;
+    getUserProfile: () => Promise<CoachingUserProfile>;
+    updateUserProfile: (updates: any) => Promise<CoachingUserProfile>;
+    clearSessionData: (sessionId: string) => Promise<void>;
+  };
 }
 
 // Expose protected methods that allow the renderer process to use
@@ -300,6 +325,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   voiceInterviewGetTranscript: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-transcript', sessionId),
   voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => ipcRenderer.invoke('voice-interview:append-transcript-event', sessionId, input),
   voiceInterviewGetEvents: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-events', sessionId),
+
+  coaching: {
+    getSessionData: (sessionId: string) => ipcRenderer.invoke('coaching:get-session-data', sessionId),
+    addGoal: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:add-goal', sessionId, input),
+    updateGoal: (sessionId: string, goalId: string, updates: any) => ipcRenderer.invoke('coaching:update-goal', sessionId, goalId, updates),
+    addTodo: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:add-todo', sessionId, input),
+    updateTodo: (sessionId: string, todoId: string, updates: any) => ipcRenderer.invoke('coaching:update-todo', sessionId, todoId, updates),
+    proposeChange: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:propose-change', sessionId, input),
+    acceptChange: (sessionId: string, changeId: string, modification?: string) => ipcRenderer.invoke('coaching:accept-change', sessionId, changeId, modification),
+    rejectChange: (sessionId: string, changeId: string) => ipcRenderer.invoke('coaching:reject-change', sessionId, changeId),
+    getPendingChanges: (sessionId: string) => ipcRenderer.invoke('coaching:get-pending-changes', sessionId),
+    getChangeLog: (sessionId: string) => ipcRenderer.invoke('coaching:get-change-log', sessionId),
+    createVersion: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:create-version', sessionId, input),
+    listVersions: (sessionId: string) => ipcRenderer.invoke('coaching:list-versions', sessionId),
+    getUserProfile: () => ipcRenderer.invoke('coaching:get-user-profile'),
+    updateUserProfile: (updates: any) => ipcRenderer.invoke('coaching:update-user-profile', updates),
+    clearSessionData: (sessionId: string) => ipcRenderer.invoke('coaching:clear-session-data', sessionId),
+  },
 });
 
 declare global {

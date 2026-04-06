@@ -11,11 +11,13 @@ export class AgentRuntime {
   private readonly memoryStore: AgentMemoryStore;
   private readonly modelClient: AgentModelClient;
   private readonly knowledgeAssembler: AgentKnowledgeAssembler;
+  private readonly coachingStore: any | null;
 
-  constructor(knowledgeAssembler: AgentKnowledgeAssembler, memoryStore?: AgentMemoryStore, modelClient?: AgentModelClient) {
+  constructor(knowledgeAssembler: AgentKnowledgeAssembler, memoryStore?: AgentMemoryStore, modelClient?: AgentModelClient, coachingStore?: any) {
     this.knowledgeAssembler = knowledgeAssembler;
     this.memoryStore = memoryStore || new AgentMemoryStore();
     this.modelClient = modelClient || new AgentModelClient();
+    this.coachingStore = coachingStore ?? null;
   }
 
   createSession(input: CreateAgentSessionInput) {
@@ -60,6 +62,7 @@ export class AgentRuntime {
       },
       session.id,
       session.assistantId,
+      this.coachingStore,
     );
 
     const messages = this.memoryStore.getMessages(session.id);

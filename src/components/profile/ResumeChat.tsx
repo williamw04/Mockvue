@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useAgent } from '../../services';
-import { Send, Loader2, Bot, User, Sparkles, Plus, MessageSquare, ChevronDown, ChevronRight, Wrench, Pencil, Trash2, Copy, FolderOpen, Check, AlertCircle, Square, Undo2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useAgent, useCoaching, useUser } from '../../services';
+import { Send, Loader2, Bot, User, Sparkles, Plus, MessageSquare, ChevronDown, ChevronRight, Wrench, Pencil, Trash2, Copy, FolderOpen, Check, AlertCircle, Square, Undo2, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import type { AgentSession, ChatMessage, ResumeAnalysis, AgentTurnTrace, Resume, AgentStep } from '../../types';
+import type { AgentSession, ChatMessage, ResumeAnalysis, AgentTurnTrace, Resume, AgentStep, CoachingSessionData } from '../../types';
 
 interface ChatMessageWithTrace extends ChatMessage {
     trace?: AgentTurnTrace;
@@ -21,6 +21,151 @@ const suggestedQuestions = [
     'Rewrite my lowest-scored bullet with stronger impact verbs.',
     'What questions might an interviewer ask about my experience?',
 ];
+
+interface DetectedChangeProposal {
+    changeId: string;
+    beforeValue: string;
+    proposedValue: string;
+    rationale: string;
+}
+
+interface DetectedTodoTask {
+    todoId: string;
+    title: string;
+    status: string;
+}
+
+function tryParseJson(text: string): Record<string, unknown> | null {
+    try {
+        const parsed = JSON.parse(text);
+        return typeof parsed === 'object' && parsed !== null ? parsed as Record<string, unknown> : null;
+    } catch {
+        return null;
+    }
+}
+
+function extractJsonFromContent(content: string): Record<string, unknown>[] {
+    const results: Record<string, unknown>[] = [];
+
+    const codeBlockRegex = /```(?:json)?\s*\n?([\s\S]*?)```/g;
+    let match;
+    while ((match = codeBlockRegex.exec(content)) !== null) {
+        const parsed = tryParseJson(match[1].trim());
+        if (parsed) {
+            if (Array.isArray(parsed)) {
+                (parsed as unknown[]).forEach(item => {
+                    if (typeof item === 'object' && item !== null) results.push(item as Record<string, unknown>);
+                });
+            } else {
+                results.push(parsed);
+            }
+        }
+    }
+
+    const inlinePattern = /\{"[^"]*changeId"[^}]*\}|\{"[^"]*todoId"[^}]*\}/g;
+    while ((match = inlinePattern.exec(content)) !== null) {
+        let depth = 0;
+        const start = match.index;
+        for (let i = start; i < content.length; i++) {
+            if (content[i] === '{') depth++;
+            if (content[i] === '}') depth--;
+            if (depth === 0) {
+                const parsed = tryParseJson(content.substring(start, i + 1));
+                if (parsed) results.push(parsed);
+                break;
+            }
+        }
+    }
+
+    return results;
+}
+
+function detectChangeProposals(content: string): DetectedChangeProposal[] {
+    return extractJsonFromContent(content)
+        .filter(obj => 'changeId' in obj && 'beforeValue' in obj && 'proposedValue' in obj && 'rationale' in obj)
+        .map(obj => ({
+            changeId: String(obj.changeId),
+            beforeValue: String(obj.beforeValue),
+            proposedValue: String(obj.proposedValue),
+            rationale: String(obj.rationale),
+        }));
+}
+
+function detectTodoTasks(content: string): DetectedTodoTask[] {
+    return extractJsonFromContent(content)
+        .filter(obj => 'todoId' in obj && 'title' in obj && 'status' in obj)
+        .map(obj => ({
+            todoId: String(obj.todoId),
+            title: String(obj.title),
+            status: String(obj.status),
+        }));
+}
+
+function ChangeProposalCard({ proposal, onAccept, onReject, accepting }: {
+    proposal: DetectedChangeProposal;
+    onAccept: () => void;
+    onReject: () => void;
+    accepting: boolean;
+}) {
+    return (
+        <div className="mt-2 border border-blue-200 rounded-lg bg-blue-50 p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+                <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-xs font-medium text-blue-700">Proposed Change</span>
+            </div>
+            <div className="text-xs text-gray-600 mb-1.5 whitespace-pre-wrap">
+                <span className="text-red-500 line-through">{proposal.beforeValue}</span>
+            </div>
+            <div className="text-xs text-gray-600 mb-2 whitespace-pre-wrap">
+                <span className="text-green-600">{proposal.proposedValue}</span>
+            </div>
+            <p className="text-xs text-gray-500 mb-3 whitespace-pre-wrap">{proposal.rationale}</p>
+            <div className="flex gap-2">
+                <button
+                    onClick={onAccept}
+                    disabled={accepting}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-xs disabled:opacity-50"
+                >
+                    {accepting ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
+                    {accepting ? 'Applying...' : 'Accept'}
+                </button>
+                <button
+                    onClick={onReject}
+                    disabled={accepting}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-surface border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-xs disabled:opacity-50"
+                >
+                    <XCircle className="w-3 h-3" />
+                    Reject
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function TodoTaskCard({ todo, onComplete, completing }: {
+    todo: DetectedTodoTask;
+    onComplete: () => void;
+    completing: boolean;
+}) {
+    return (
+        <div className="mt-2 border border-amber-200 rounded-lg bg-amber-50 p-3">
+            <div className="flex items-center gap-1.5 mb-1">
+                <Check className="w-3.5 h-3.5 text-amber-600" />
+                <span className="text-xs font-medium text-amber-700">Task Created</span>
+                <span className="text-xs text-gray-400 ml-auto">{todo.status}</span>
+            </div>
+            <p className="text-sm text-gray-800 whitespace-pre-wrap">{todo.title}</p>
+            <button
+                onClick={onComplete}
+                disabled={completing || todo.status === 'completed'}
+                className="mt-2 flex items-center gap-1 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors text-xs disabled:opacity-50"
+            >
+                {completing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                {completing ? 'Completing...' : todo.status === 'completed' ? 'Completed' : 'Mark Complete'}
+            </button>
+        </div>
+    );
+}
 
 function TraceViewer({ trace }: { trace: AgentTurnTrace }) {
     const [expanded, setExpanded] = useState(false);
@@ -57,7 +202,7 @@ function TraceViewer({ trace }: { trace: AgentTurnTrace }) {
                                     {step.toolError ? (
                                         <span className="text-red-500">Error: {step.toolError}</span>
                                     ) : (
-                                        <span>✓ {Array.isArray(step.toolResult) ? `${step.toolResult.length} results` : 'success'}</span>
+                                        <span>{Array.isArray(step.toolResult) ? `${step.toolResult.length} results` : 'success'}</span>
                                     )}
                                 </div>
                             )}
@@ -150,6 +295,8 @@ function TypewriterText({ text, speed = 15 }: { text: string; speed?: number }) 
 
 export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: ResumeChatProps) {
     const agentService = useAgent();
+    const coachingService = useCoaching();
+    const userService = useUser();
     const envApiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
 
     const [messages, setMessages] = useState<ChatMessageWithTrace[]>([]);
@@ -170,6 +317,12 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
     const editInputRef = useRef<HTMLInputElement>(null);
     const currentSessionIdRef = useRef<string | null>(null);
 
+    const [coachingData, setCoachingData] = useState<CoachingSessionData | null>(null);
+    const [acceptingChange, setAcceptingChange] = useState<string | null>(null);
+    const [completingTodo, setCompletingTodo] = useState<string | null>(null);
+
+    const coachingSessionId = session?.id || null;
+
     useEffect(() => {
         currentSessionIdRef.current = session?.id || null;
     }, [session?.id]);
@@ -189,7 +342,7 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                 const sessions = await agentService.listAssistantSessions('resume-assistant');
 
                 if (!cancelled) {
-                    const sortedSessions = sessions.sort((a, b) => 
+                    const sortedSessions = sessions.sort((a, b) =>
                         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
                     );
                     setRecentSessions(sortedSessions);
@@ -224,6 +377,24 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
             cancelled = true;
         };
     }, [analysisContext, agentService]);
+
+    useEffect(() => {
+        if (!coachingSessionId) {
+            setCoachingData(null);
+            return;
+        }
+        let active = true;
+        const load = async () => {
+            try {
+                const data = await coachingService.getSessionData(coachingSessionId);
+                if (active) setCoachingData(data);
+            } catch {
+                if (active) setCoachingData(null);
+            }
+        };
+        load();
+        return () => { active = false; };
+    }, [coachingSessionId, coachingService]);
 
     useEffect(() => {
         if (envApiKey) {
@@ -261,6 +432,13 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
             unsubscribeStep();
         };
     }, []);
+
+    const messageDetections = useMemo(() => {
+        return messages.map(msg => ({
+            proposals: msg.role === 'assistant' ? detectChangeProposals(msg.content) : [],
+            todos: msg.role === 'assistant' ? detectTodoTasks(msg.content) : [],
+        }));
+    }, [messages]);
 
     const createNewSession = useCallback(async (forkFrom?: AgentSession) => {
         if (!analysisContext) return;
@@ -320,7 +498,7 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
             if (deleted) {
                 const newSessions = recentSessions.filter(s => s.id !== sessionId);
                 setRecentSessions(newSessions);
-                
+
                 if (session?.id === sessionId) {
                     if (newSessions.length > 0) {
                         await resumeSession(newSessions[0]);
@@ -393,10 +571,61 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
         }
     }, [sessionAnalysis, session, agentService, cancelled]);
 
+    const handleAcceptChange = useCallback(async (proposal: DetectedChangeProposal) => {
+        if (!coachingSessionId || !resumeContext) return;
+        setAcceptingChange(proposal.changeId);
+        try {
+            const accepted = await coachingService.acceptChange(coachingSessionId, proposal.changeId);
+            if (accepted) {
+                const currentResume = await userService.getResume();
+                if (currentResume) {
+                    const rawText = currentResume.rawText || '';
+                    const updatedText = rawText.replace(proposal.beforeValue, proposal.proposedValue);
+                    await userService.saveResume({ ...currentResume, rawText: updatedText });
+                }
+            }
+            const data = await coachingService.getSessionData(coachingSessionId);
+            setCoachingData(data);
+        } catch (err) {
+            console.error('Failed to accept change:', err);
+        } finally {
+            setAcceptingChange(null);
+        }
+    }, [coachingSessionId, resumeContext, coachingService, userService]);
+
+    const handleRejectChange = useCallback(async (proposal: DetectedChangeProposal) => {
+        if (!coachingSessionId || !session) return;
+        try {
+            await coachingService.rejectChange(coachingSessionId, proposal.changeId);
+            const data = await coachingService.getSessionData(coachingSessionId);
+            setCoachingData(data);
+            await sendMessage(`[Feedback] I rejected the proposed change from "${proposal.beforeValue}" to "${proposal.proposedValue}". Keeping the current version.`);
+        } catch (err) {
+            console.error('Failed to reject change:', err);
+        }
+    }, [coachingSessionId, session, coachingService, sendMessage]);
+
+    const handleCompleteTodo = useCallback(async (todo: DetectedTodoTask) => {
+        if (!coachingSessionId) return;
+        setCompletingTodo(todo.todoId);
+        try {
+            await coachingService.updateTodo(coachingSessionId, todo.todoId, {
+                status: 'completed',
+                completedAt: new Date().toISOString(),
+            });
+            const data = await coachingService.getSessionData(coachingSessionId);
+            setCoachingData(data);
+        } catch (err) {
+            console.error('Failed to complete todo:', err);
+        } finally {
+            setCompletingTodo(null);
+        }
+    }, [coachingSessionId, coachingService]);
+
     const handleStop = useCallback(() => {
         setCancelled(true);
         setSending(false);
-        
+
         if (streamingText) {
             const partialMsg: ChatMessageWithTrace = {
                 id: crypto.randomUUID(),
@@ -407,7 +636,7 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
             };
             setMessages(prev => [...prev, partialMsg]);
         }
-        
+
         setStreamingText('');
         setStreamingSteps([]);
     }, [streamingText, streamingSteps]);
@@ -459,15 +688,23 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                             </p>
                         </div>
                     </div>
-                    <button
-                        onClick={() => setShowSessionPicker(!showSessionPicker)}
-                        className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Session options"
-                    >
-                        <FolderOpen className="w-3.5 h-3.5" />
-                        <span>Chats</span>
-                        <ChevronDown className="w-3 h-3" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {coachingData && (coachingData.stagedChanges.length > 0 || coachingData.todos.filter(t => t.status === 'pending').length > 0) && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full">
+                                <Sparkles className="w-3 h-3" />
+                                {coachingData.stagedChanges.filter(c => c.status === 'pending').length + coachingData.todos.filter(t => t.status === 'pending').length} pending
+                            </span>
+                        )}
+                        <button
+                            onClick={() => setShowSessionPicker(!showSessionPicker)}
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Session options"
+                        >
+                            <FolderOpen className="w-3.5 h-3.5" />
+                            <span>Chats</span>
+                            <ChevronDown className="w-3 h-3" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -486,7 +723,7 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                         {recentSessions.map(s => (
                             <div key={s.id} className="relative">
                                 {editingSessionId === s.id ? (
-                                    <form 
+                                    <form
                                         onSubmit={(e) => { e.preventDefault(); handleRenameSubmit(s.id); }}
                                         className="flex items-center gap-1 px-2 py-1"
                                     >
@@ -500,7 +737,7 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                                         />
                                     </form>
                                 ) : (
-                                    <div 
+                                    <div
                                         className={`group flex items-center gap-2 px-2 py-1.5 text-xs rounded-lg transition-colors cursor-pointer ${
                                             s.id === session?.id
                                                 ? 'bg-blue-100 text-blue-700'
@@ -592,7 +829,7 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                                 ? 'bg-blue-600 text-white rounded-br-sm'
                                 : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                             } rounded-xl px-3 py-2 text-sm`}>
-{msg.role === 'user' ? (
+                            {msg.role === 'user' ? (
                                 <p className="whitespace-pre-wrap">{msg.content}</p>
                             ) : (
                                 <>
@@ -600,6 +837,23 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                                         <ReactMarkdown>{msg.content.replace(/\n/g, '\n\n')}</ReactMarkdown>
                                     </div>
                                     {msg.trace && <TraceViewer trace={msg.trace} />}
+                                    {messageDetections[index]?.proposals.map(proposal => (
+                                        <ChangeProposalCard
+                                            key={proposal.changeId}
+                                            proposal={proposal}
+                                            onAccept={() => handleAcceptChange(proposal)}
+                                            onReject={() => handleRejectChange(proposal)}
+                                            accepting={acceptingChange === proposal.changeId}
+                                        />
+                                    ))}
+                                    {messageDetections[index]?.todos.map(todo => (
+                                        <TodoTaskCard
+                                            key={todo.todoId}
+                                            todo={todo}
+                                            onComplete={() => handleCompleteTodo(todo)}
+                                            completing={completingTodo === todo.todoId}
+                                        />
+                                    ))}
                                 </>
                             )}
                         </div>
@@ -654,8 +908,8 @@ export function ResumeChat({ analysisContext, resumeContext, onSessionChange }: 
                         type="submit"
                         disabled={disabled || (!sending && !input.trim())}
                         className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                            sending 
-                                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                            sending
+                                ? 'bg-red-500 hover:bg-red-600 text-white'
                                 : 'bg-blue-600 hover:bg-blue-700 text-white'
                         }`}
                         title={sending ? 'Stop generating' : 'Send'}

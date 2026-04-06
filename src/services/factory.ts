@@ -13,6 +13,7 @@ import {
   ElectronVoiceInterviewService,
   ElectronUserService,
   ElectronDocumentService,
+  ElectronCoachingService,
 } from './electron';
 
 /**
@@ -26,6 +27,7 @@ export function createServices(): IAppServices {
     voiceInterview: new ElectronVoiceInterviewService(),
     user: new ElectronUserService(),
     documents: new ElectronDocumentService(),
+    coaching: new ElectronCoachingService(),
   };
 }
 

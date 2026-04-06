@@ -90,3 +90,8 @@ export function useDocuments() {
   const { documents } = useServices();
   return documents;
 }
+
+export function useCoaching() {
+  const { coaching } = useServices();
+  return coaching;
+}

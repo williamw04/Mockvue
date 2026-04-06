@@ -212,6 +212,116 @@ export interface AgentTurnResult {
   trace: AgentTurnTrace;
 }
 
+// Coaching Workspace Types
+
+export type CoachingGoalType = 'score_improvement' | 'weakness_elimination' | 'section_overhaul' | 'role_tailoring' | 'custom';
+export type CoachingGoalStatus = 'not_started' | 'in_progress' | 'completed' | 'abandoned';
+export type TodoStatus = 'pending' | 'in_progress' | 'completed' | 'blocked';
+export type StagedChangeStatus = 'pending' | 'accepted' | 'rejected' | 'modified';
+
+export interface CoachingGoal {
+  id: string;
+  sessionId: string;
+  type: CoachingGoalType;
+  title: string;
+  description: string;
+  targetMetric?: string;
+  targetValue?: number;
+  currentValue?: number;
+  status: CoachingGoalStatus;
+  progress: number;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface CoachingTodo {
+  id: string;
+  sessionId: string;
+  goalId?: string;
+  title: string;
+  description?: string;
+  targetType?: 'bullet' | 'section' | 'story' | 'general';
+  targetId?: string;
+  status: TodoStatus;
+  proposedBy: 'user' | 'agent';
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface ChangeAlternative {
+  id: string;
+  value: string;
+  label: string;
+  predictedScore?: number;
+}
+
+export interface StagedChange {
+  id: string;
+  sessionId: string;
+  todoId?: string;
+  targetPath: string;
+  targetType: 'bullet' | 'summary' | 'skill' | 'section';
+  operation: 'replace' | 'insert' | 'delete';
+  beforeValue: string;
+  proposedValue: string;
+  rationale: string;
+  alternatives?: ChangeAlternative[];
+  selectedAlternativeId?: string;
+  status: StagedChangeStatus;
+  createdAt: string;
+  decidedAt?: string;
+}
+
+export interface AcceptedChange {
+  id: string;
+  sessionId: string;
+  stagedChangeId: string;
+  targetPath: string;
+  beforeValue: string;
+  afterValue: string;
+  scoreBefore?: number;
+  scoreAfter?: number;
+  decision: 'accepted' | 'modified';
+  userModification?: string;
+  createdAt: string;
+}
+
+export interface ResumeVersion {
+  id: string;
+  sessionId: string;
+  label: string;
+  trigger: 'manual' | 'session-start' | 'pre-change';
+  resumeData: unknown;
+  analysisData: unknown;
+  score: number;
+  createdAt: string;
+}
+
+export interface CoachingUserProfile {
+  targetRole?: string;
+  targetIndustry?: string;
+  targetCompanies?: string[];
+  personalBrand?: string;
+  presentationStyle?: string;
+  writingPreferences: {
+    tone?: string;
+    bulletStyle?: 'concise' | 'detailed' | 'balanced';
+    avoidPhrases?: string[];
+  };
+  knownStrengths: string[];
+  knownWeaknesses: string[];
+}
+
+export interface CoachingSessionData {
+  sessionId: string;
+  goals: CoachingGoal[];
+  todos: CoachingTodo[];
+  stagedChanges: StagedChange[];
+  changeLog: AcceptedChange[];
+  versions: ResumeVersion[];
+  userProfile: CoachingUserProfile;
+}
+
 export type VoiceInterviewMode = 'text-only' | 'stt-llm-tts' | 'realtime-s2s';
 
 export type VoiceInterviewSessionStatus = 'draft' | 'active' | 'paused' | 'ended' | 'error';
