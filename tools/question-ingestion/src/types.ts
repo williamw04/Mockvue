@@ -5,7 +5,11 @@ export type SourceRiskLevel = 'low' | 'medium' | 'high';
 export interface QuestionIngestionConfig {
   outputDir: string;
   cacheDir: string;
-  defaultSourceNames: string[];
+  dbPath: string;
+  companyName: string;
+  sourceNames: string[];
+  headless: boolean;
+  rateLimitMs: number;
 }
 
 export interface QuestionSourceDefinition {
