@@ -20,21 +20,21 @@ This file serves as your navigation map. It points you to the right context for 
 ### First-Time Setup
 1. Read `ARCHITECTURE.md` for the system-wide domain map and platform architecture
 2. Review `docs/DESIGN.md` for architectural patterns and constraints
-3. Check `docs/design-docs/core-beliefs.md` for foundational principles
+3. Check `docs/core-beliefs.md` for foundational principles
 
 ### Before Starting Work
 1. Identify the affected domain(s) from `ARCHITECTURE.md`
 2. Check `docs/QUALITY_SCORE.md` for current quality baseline
-3. Review relevant product specs in `docs/product-specs/`
-4. For complex work, check `docs/exec-plans/active/` for ongoing initiatives
+3. Review relevant feature docs in `docs/features/<feature-name>/`
+4. For complex work, check feature folder for exec-plan.md
 
 ## Where to Find Information
 
 ### Product & Design
-- **Product Specifications**: `docs/product-specs/index.md`
-  - What features exist, user requirements, acceptance criteria
-- **Design Decisions**: `docs/design-docs/index.md`
-  - Why architectural choices were made
+- **Feature Documentation**: `docs/features/index.md`
+  - Each feature folder contains product-spec.md, design.md, exec-plan.md
+- **Cross-Cutting Docs**: `docs/core-beliefs.md`, `docs/service-abstraction.md`
+  - Foundational principles and architecture decisions
 
 ### Architecture & Code
 - **System Architecture**: `ARCHITECTURE.md`
@@ -53,11 +53,11 @@ This file serves as your navigation map. It points you to the right context for 
   - Component patterns, Tailwind conventions, Radix UI usage
 
 ### Implementation Planning
-- **Active Plans**: `docs/exec-plans/active/`
+- **Active Plans**: `docs/features/<feature-name>/exec-plan.md`
   - Current initiatives, progress tracking, decision logs
-- **Completed Plans**: `docs/exec-plans/completed/`
+- **Completed Plans**: `docs/features/completed/`
   - Historical context, lessons learned
-- **Tech Debt**: `docs/exec-plans/tech-debt-tracker.md`
+- **Tech Debt**: `docs/tech-debt-tracker.md`
   - Known issues, prioritization, remediation plans
 
 ### Existing Guides (Legacy)
@@ -73,8 +73,8 @@ Located in `docs/references/`:
 ## Working in This Repository
 
 ### Development Workflow
-1. **Understand the Task**: Read related product specs and design docs
-2. **Plan the Work**: For complex tasks, create an execution plan in `docs/exec-plans/active/`
+1. **Understand the Task**: Read related feature docs in `docs/features/<feature-name>/`
+2. **Plan the Work**: For complex tasks, create an execution plan in the feature folder
 3. **Implement**: Follow architectural constraints from `ARCHITECTURE.md`
 4. **Validate**: Run `npm run lint` and test on both platforms
 5. **Document**: Update relevant docs as part of the same PR
@@ -131,16 +131,16 @@ Electron Services
 
 | Need | Location |
 |------|----------|
-| What to build | `docs/product-specs/` |
-| Why it's designed this way | `docs/design-docs/` |
+| What to build | `docs/features/<feature-name>/product-spec.md` |
+| Why it's designed this way | `docs/features/<feature-name>/design.md` |
 | How the system is organized | `ARCHITECTURE.md` |
 | Architectural patterns | `docs/DESIGN.md` |
 | Quality expectations | `docs/QUALITY_SCORE.md` |
-| Current work in progress | `docs/exec-plans/active/` |
+| Current work in progress | `docs/features/<feature-name>/exec-plan.md` |
 | Security patterns | `docs/SECURITY.md` |
 | Frontend patterns | `docs/FRONTEND.md` |
 | Reliability standards | `docs/RELIABILITY.md` |
-| Tech debt backlog | `docs/exec-plans/tech-debt-tracker.md` |
+| Tech debt backlog | `docs/tech-debt-tracker.md` |
 
 ---
 
