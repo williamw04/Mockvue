@@ -39,6 +39,14 @@ export async function runIngestCommand(options: CliOptions): Promise<IngestionRe
     console.log(`Running adapter: ${sourceName}`);
 
     try {
+      storage.upsertSource({
+        name: sourceName,
+        kind: 'community',
+        riskLevel: 'medium',
+        enabled: true,
+        description: `Adapter for ${sourceName}`,
+      });
+
       const result = await adapter.run({
         source: {
           name: sourceName,
