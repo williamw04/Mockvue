@@ -3,7 +3,7 @@ import { Storage } from '../storage.js';
 import { getBrowserPool, closeBrowserPool } from '../browser.js';
 import { getAdapter } from '../adapters/index.js';
 import { normalizeQuestions } from '../normalize.js';
-import type { IngestionResult, QuestionObservation, IngestionRun } from '../types.js';
+import type { IngestionResult, QuestionObservation, IngestionRun, QuestionSourceDefinition } from '../types.js';
 
 export async function runIngestCommand(options: CliOptions): Promise<IngestionResult> {
   const config = loadConfig(options);
@@ -36,17 +36,20 @@ export async function runIngestCommand(options: CliOptions): Promise<IngestionRe
       continue;
     }
 
+    const source: QuestionSourceDefinition = {
+      name: sourceName,
+      kind: 'community' as const,
+      riskLevel: 'medium' as const,
+      enabled: true,
+      description: `Adapter for ${sourceName}`,
+    };
+    storage.upsertSource(source);
+
     console.log(`Running adapter: ${sourceName}`);
 
     try {
       const result = await adapter.run({
-        source: {
-          name: sourceName,
-          kind: 'community',
-          riskLevel: 'medium',
-          enabled: true,
-          description: `Adapter for ${sourceName}`,
-        },
+        source,
         now,
         companyName: config.companyName,
         browserPool,
