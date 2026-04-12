@@ -39,14 +39,17 @@ export async function runIngestCommand(options: CliOptions): Promise<IngestionRe
     console.log(`Running adapter: ${sourceName}`);
 
     try {
+      const source = {
+        name: sourceName,
+        kind: 'community' as const,
+        riskLevel: 'medium' as const,
+        enabled: true,
+        description: `Adapter for ${sourceName}`,
+      };
+      storage.upsertSource(source);
+
       const result = await adapter.run({
-        source: {
-          name: sourceName,
-          kind: 'community',
-          riskLevel: 'medium',
-          enabled: true,
-          description: `Adapter for ${sourceName}`,
-        },
+        source,
         now,
         companyName: config.companyName,
         browserPool,
