@@ -1,12 +1,12 @@
 
 # Agent Operating Guide
 
-**Version:** 1.0.0  
-**Last Updated:** 2026-02-16
+**Version:** 2.0.0
+**Last Updated:** 2026-04-14
 
 ## Purpose
 
-This file serves as your navigation map. It points you to the right context for your current task. This is NOT a comprehensive instruction manual—it's a table of contents.
+This file serves as your navigation map. It points you to the right context for your current task. This is NOT a comprehensive instruction manual -- it's a table of contents.
 
 ## Core Principles
 
@@ -18,90 +18,68 @@ This file serves as your navigation map. It points you to the right context for 
 ## Getting Started
 
 ### First-Time Setup
-1. Read `ARCHITECTURE.md` for the system-wide domain map and platform architecture
-2. Review `docs/DESIGN.md` for architectural patterns and constraints
-3. Check `docs/core-beliefs.md` for foundational principles
+1. Read `docs/PRODUCT_VISION.md` to understand what Mockvue is and why it exists
+2. Read `docs/FEATURE_PURPOSES.md` to understand each feature's role
+3. Read `ARCHITECTURE.md` for the system architecture and service layer
+4. Review `docs/FRONTEND.md` for styling conventions
 
 ### Before Starting Work
-1. Identify the affected domain(s) from `ARCHITECTURE.md`
-2. Check `docs/QUALITY_SCORE.md` for current quality baseline
-3. Review relevant feature docs in `docs/features/<feature-name>/`
-4. For complex work, check feature folder for exec-plan.md
+1. Check `docs/FEATURE_PURPOSES.md` to understand the feature's purpose
+2. Identify the affected service domain(s) from `ARCHITECTURE.md`
+3. Review `docs/FRONTEND.md` for styling patterns
+4. Check `docs/tech-debt-tracker.md` for known issues in the area
 
 ## Where to Find Information
 
-### Product & Design
-- **Feature Documentation**: `docs/features/index.md`
-  - Each feature folder contains product-spec.md, design.md, exec-plan.md
-- **Cross-Cutting Docs**: `docs/core-beliefs.md`, `docs/service-abstraction.md`
-  - Foundational principles and architecture decisions
+### Product Vision
+- **What is Mockvue**: `docs/PRODUCT_VISION.md` -- product definition, core loop, design principles
+- **Feature Purposes**: `docs/FEATURE_PURPOSES.md` -- why each feature exists, user stories, current state
+- **Feature Index**: `docs/features/index.md` -- links to per-feature specs
 
 ### Architecture & Code
-- **System Architecture**: `ARCHITECTURE.md`
-  - Domain boundaries, platform abstraction, service layer
-- **Architectural Patterns**: `docs/DESIGN.md`
-  - Service abstraction, cross-platform patterns, state management
-- **Quality Standards**: `docs/QUALITY_SCORE.md`
-  - Test coverage requirements, quality grades by domain
-- **Security Requirements**: `docs/SECURITY.md`
-  - Electron security, data validation, boundary enforcement
-- **Reliability Patterns**: `docs/RELIABILITY.md`
-  - Error handling, auto-save, offline support
+- **System Architecture**: `ARCHITECTURE.md` -- service layer, routing, dependency rules
+- **Frontend Patterns**: `docs/FRONTEND.md` -- design system, component patterns, styling conventions
+- **Design Patterns**: `docs/DESIGN.md` -- service abstraction, state management, error handling
+- **Quality Standards**: `docs/QUALITY_SCORE.md` -- test coverage, quality grades
+- **Tech Debt**: `docs/tech-debt-tracker.md` -- known issues, prioritization
 
-### Frontend Development
-- **Frontend Guide**: `docs/FRONTEND.md`
-  - Component patterns, Tailwind conventions, Radix UI usage
-
-### Implementation Planning
-- **Active Plans**: `docs/features/<feature-name>/exec-plan.md`
-  - Current initiatives, progress tracking, decision logs
-- **Completed Plans**: `docs/features/completed/`
-  - Historical context, lessons learned
-- **Tech Debt**: `docs/tech-debt-tracker.md`
-  - Known issues, prioritization, remediation plans
-
-### Existing Guides (Legacy)
-- **Service Usage**: `docs/guide/SERVICES_USAGE.md`
-- **Electron Setup**: `docs/guide/ELECTRON_SETUP.md`
-- **Testing Guide**: `docs/guide/TESTING_GUIDE.md`
-
-### Reference Materials
-Located in `docs/references/`:
-- Technology-specific guides formatted for LLM consumption
-- Third-party library quick references
+### Archived Documentation
+Old documentation that was stale or inconsistent is in `docs/features/archive/`. May contain useful historical context but should not be trusted as accurate.
 
 ## Working in This Repository
 
 ### Development Workflow
-1. **Understand the Task**: Read related feature docs in `docs/features/<feature-name>/`
-2. **Plan the Work**: For complex tasks, create an execution plan in the feature folder
+1. **Understand the Task**: Check `docs/FEATURE_PURPOSES.md` for the feature's purpose
+2. **Plan the Work**: For complex tasks, create a spec in `docs/features/<feature-name>/`
 3. **Implement**: Follow architectural constraints from `ARCHITECTURE.md`
-4. **Validate**: Run `npm run lint` and test on both platforms
-5. **Document**: Update relevant docs as part of the same PR
+4. **Style**: Match patterns from `docs/FRONTEND.md`
+5. **Validate**: Run `npm run lint` and `npm test`
+6. **Document**: Update relevant docs as part of the same PR
 
 ### Key Technology
 - **React 18** + **TypeScript** with **Vite** build system
-- **Electron 28** for desktop
-- **Tailwind CSS** + **Radix UI** for styling and components
-- **Service Abstraction Layer** for cross-platform code reuse
+- **Electron** for desktop
+- **Tailwind CSS** + **Radix UI** (via shadcn/ui) for styling and components
+- **Gemini AI** agent with tool-calling for AI features
+- **Service Abstraction Layer** for platform-agnostic code
 
-### Style & Theme Reference
-The **document editor** (`src/components/documents/`) defines the canonical style and text patterns for the project. All new UI must match its look and feel. See `docs/FRONTEND.md` for the full design system extracted from these components.
+### Style Reference
+See `docs/FRONTEND.md` for the full design system. Key rules:
 
-Key style rules:
-- **Light-mode only** — no dark mode, no ThemeContext usage
+- **Light-mode only** -- no dark mode, no ThemeContext usage
 - Page backgrounds: `bg-gray-100`
-- Cards/panels: `bg-surface` (#fafbfc, softer than pure white)
-- Secondary buttons: `bg-surface border-gray-200 hover:bg-gray-50 text-gray-700`
+- Cards/panels: `bg-surface` (#fafbfc) with `rounded-2xl shadow-lg border border-gray-100`
+- Navigation: TopNavBar (floating glassmorphic pill), NOT a sidebar
 - Primary actions: `bg-blue-600 hover:bg-blue-700 text-white rounded-lg`
+- Gradient accent: `bg-gradient-to-br from-blue-500 to-purple-600` (avatars, feature CTAs)
 - Icons: Lucide React, `w-4 h-4` (small) / `w-5 h-5` (default)
-- System font stack, `text-3xl font-bold` for titles, `text-sm` for body
+- System font stack, `text-3xl font-bold` for page titles, `text-sm` for body
 
 ### When Implementation Fails
 If you're stuck:
 1. Check if required service methods exist in `src/services/interfaces.ts`
 2. Verify platform-specific implementations exist in `src/services/electron/`
-3. Look for similar patterns in completed work
+3. Look for similar patterns in existing components
 4. If capability is missing: document the gap, implement the service method first
 
 ## Key Constraints
@@ -110,17 +88,25 @@ If you're stuck:
 Cross-platform through service abstraction:
 ```
 React Components (Platform Agnostic)
-         ↓
+         |
 Service Abstraction Layer (interfaces.ts)
-         ↓
+         |
 Electron Services
 ```
 
-### Service Domains
-- **Documents** (`IDocumentService`): CRUD, search, persistence
-- **Users** (`IUserService`): Profiles, onboarding, stories, interviews
-- **Agent** (`IAgentService`): AI features (summarize, rewrite, expand, etc.)
-- **Notifications** (`INotificationService`): Cross-platform notifications
+### Service Domains (6 services)
+- **Notifications** (`INotificationService`): System notifications
+- **Agent** (`IAgentService`): AI features, combines `ITaskExecutionService` + `IResumeService` + `IAssistantSessionService`
+- **Voice Interview** (`IVoiceInterviewService`): Voice interview sessions (infrastructure only, no UI)
+- **User** (`IUserService`): Profiles, onboarding, resumes, stories, interview responses, candidate profiles, analysis caching
+- **Documents** (`IDocumentService`): Document CRUD, search
+- **Coaching** (`ICoachingService`): Goals, todos, staged changes, versions, user coaching profile
+
+### AI Agent
+- Single Gemini model with configurable system prompts per assistant type
+- 16 tools for resume data, coaching, memory, and change management
+- NOT a multi-agent pipeline
+- Lives in `electron/agent/`: runtime, tools, prompts, knowledge, memory-store, coaching-store
 
 ### Code Quality
 - All service contracts defined in `src/services/interfaces.ts`
@@ -131,18 +117,16 @@ Electron Services
 
 | Need | Location |
 |------|----------|
-| What to build | `docs/features/<feature-name>/product-spec.md` |
-| Why it's designed this way | `docs/features/<feature-name>/design.md` |
+| What is Mockvue | `docs/PRODUCT_VISION.md` |
+| Why each feature exists | `docs/FEATURE_PURPOSES.md` |
+| What to build (per feature) | `docs/features/<feature-name>/product-spec.md` |
 | How the system is organized | `ARCHITECTURE.md` |
+| Styling and UI patterns | `docs/FRONTEND.md` |
 | Architectural patterns | `docs/DESIGN.md` |
 | Quality expectations | `docs/QUALITY_SCORE.md` |
-| Current work in progress | `docs/features/<feature-name>/exec-plan.md` |
-| Security patterns | `docs/SECURITY.md` |
-| Frontend patterns | `docs/FRONTEND.md` |
-| Reliability standards | `docs/RELIABILITY.md` |
 | Tech debt backlog | `docs/tech-debt-tracker.md` |
+| Old/archived docs | `docs/features/archive/` |
 
 ---
 
-**Remember**: This file is your starting point. Navigate to specific documentation as needed for your task. Don't try to hold everything in context—use the structured docs to find what you need.
-
+**Remember**: This file is your starting point. Navigate to specific documentation as needed for your task. Don't try to hold everything in context -- use the structured docs to find what you need.
