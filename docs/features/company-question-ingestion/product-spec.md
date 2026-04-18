@@ -1,7 +1,8 @@
 # Feature: Company Question Ingestion Pipeline
 
-**Status**: Planned
-**Last Updated**: 2026-03-13
+**Status**: In Progress
+**Last Updated**: 2026-04-17
+**Downstream Consumer**: [Prep Sheets](../prep-sheets/product-spec.md)
 
 ## User Story
 As a job seeker, I want Mockvue to surface company-specific interview questions so that I can practice against realistic prompts for my target companies and roles.
@@ -50,9 +51,58 @@ The pipeline should support:
 
 ## Primary Consumers
 
-- Behavioral Assistant
-- Future Mock Interview Simulator
-- Future company/role-tailored prep views
+- **Prep Sheets** — Company Snapshot section (values, mission), Question Mapping section (interview questions), Technical Prep section (technical questions)
+- **Behavioral Assistant** — Future AI coaching feature
+- **Mock Interview Simulator** — Future practice feature
+
+## Downstream Consumer: Prep Sheets
+
+The scraper pipeline feeds the **Prep Sheets** feature directly:
+
+| Scraper Output | Prep Sheet Section | Source Adapter |
+|----------------|-------------------|----------------|
+| Company values/mission | Company Snapshot | `careers.ts` |
+| Interview format notes | Company Snapshot | `glassdoor.ts` |
+| Behavioral interview questions | Question Mapping | `glassdoor.ts`, `reddit.ts` |
+| Technical/coding questions | Technical Prep | `leetcode.ts` |
+| Role requirements (from job postings) | Role Breakdown | `careers.ts` |
+
+### Data Flow
+
+```
+[Scraper Pipeline]                 [Prep Sheets Feature]
+tools/question-ingestion/          docs/features/prep-sheets/
+         |                                    |
+         v                                    v
+   ingestion.db (SQLite)         Prep Sheet Creation Wizard
+         |                                    |
+         | [export-bundle script]             |
+         +-------------------------->---------+
+                                              |
+                                              v
+                                     ScrapedCompanyData
+                                              |
+                                              v
+                                     Autofill Company Snapshot,
+                                     Question Mapping, Technical Prep
+```
+
+### Export Format
+
+The scraper exports company data in a format compatible with Prep Sheets:
+
+```typescript
+interface ScrapedCompanyExport {
+  companyName: string;
+  values: string[];           // → Company Snapshot
+  mission?: string;           // → Company Snapshot
+  interviewQuestions: string[];  // → Question Mapping
+  technicalQuestions: string[];  // → Technical Prep
+  roleRequirements: string[];    // → Role Breakdown
+  lastFetchedAt: string;
+  sources: string[];          // provenance
+}
+```
 
 ## Success Metrics
 

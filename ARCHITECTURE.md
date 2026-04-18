@@ -1,7 +1,7 @@
 # Architecture
 
-**Version**: 1.1.0  
-**Last Updated**: 2026-02-16
+**Version**: 2.0.0
+**Last Updated**: 2026-04-14
 
 ## Overview
 
@@ -10,58 +10,85 @@ Mockvue is an **Electron desktop application** using a React codebase. The key a
 ## Platform Architecture
 
 ```
-┌───────────────────────────────────────────────────────┐
-│              React Application (UI Layer)               │
-│    Components, Hooks, Routing - Platform Agnostic      │
-└─────────────────────────┬─────────────────────────────┘
-                          │
-                          ▼
-┌───────────────────────────────────────────────────────┐
-│            Service Abstraction Layer                    │
-│               (src/services/)                          │
-│  ┌────────────┬───────────┬──────────┬─────────────┐  │
-│  │ Documents  │   Users   │  Agent   │ Notifications│  │
-│  │  Service   │  Service  │ Service  │   Service    │  │
-│  └────────────┴───────────┴──────────┴─────────────┘  │
-└─────────────────────────┬─────────────────────────────┘
-                          │
-                          ▼
-               ┌─────────────────────┐
-               │  Electron Platform  │
-               │   (services/        │
-               │    electron/)       │
-               └─────────────────────┘
-                          │
-                          ▼
-               ┌─────────────────────┐
-               │  IPC + Node.js      │
-               │  File System        │
-               │  Native Dialogs     │
-               └─────────────────────┘
++-------------------------------------------------------+
+|              React Application (UI Layer)              |
+|    Components, Hooks, Routing - Platform Agnostic      |
++-----------------------------+-------------------------+
+                              |
+                              v
++-------------------------------------------------------+
+|            Service Abstraction Layer                    |
+|               (src/services/)                          |
+|  +------------+---------+---------+------------------+ |
+|  | Documents  |  User   |  Agent  |  Notifications   | |
+|  |  Service   | Service | Service |    Service        | |
+|  +------------+---------+---------+------------------+ |
+|  +------------+---------+---------+------------------+ |
+|  | Coaching   | Voice   |         |                  | |
+|  |  Service   |Interview|         |                  | |
+|  +------------+---------+---------+------------------+ |
++-----------------------------+-------------------------+
+                              |
+                              v
+               +---------------------+
+               |  Electron Platform  |
+               |   (services/        |
+               |    electron/)       |
+               +---------------------+
+                              |
+                              v
+               +---------------------+
+               |  IPC + Node.js      |
+               |  File System        |
+               |  Native Dialogs     |
+               +---------------------+
 ```
 
 ## Domain Map
 
-### Documents Domain
-- **Purpose**: Document CRUD operations, full-text search, persistence
-- **Service Interface**: `IDocumentService`
-- **Key Operations**: create, read, update, delete, search
-- **Storage**: File system (Electron)
-- **Dependencies**: None (foundational)
+### Prep Sheets Domain
+- **Purpose**: Company-specific interview cheat sheets with 11 structured sections, autofilled from scraped data and job descriptions
+- **Service Interface**: `IPrepSheetService` (replaces `IDocumentService`)
+- **Key Operations**: prep sheet CRUD, scraped data retrieval, JD parsing, section editing
+- **Storage**: File system (Electron) — JSON files per sheet
+- **Dependencies**: Users (story references), Company Question Ingestion (scraper data)
+- **Sections**: Company Snapshot, Role Breakdown, Story Bank, Question Mapping, Company Alignment, Strengths/Weaknesses, Key Talking Points, Questions for Interviewer, Technical Prep, Logistics, Post-Interview Reflection
 
 ### Users Domain
-- **Purpose**: User profiles, onboarding flow, resume/story management, interview responses
+- **Purpose**: User profiles, onboarding flow, resume/story management, interview responses, analysis caching
 - **Service Interface**: `IUserService`
-- **Key Operations**: profile management, onboarding, CRUD for stories/resumes/interviews
+- **Key Operations**: profile management, onboarding, CRUD for stories/resumes/interviews, candidate profile, resume analysis caching, ATS analysis caching
 - **Storage**: File system (Electron)
 - **Dependencies**: None
 
 ### Agent Domain (AI)
-- **Purpose**: AI-powered features for document editing, content generation, and resume parsing
-- **Service Interface**: `IAgentService`
-- **Key Operations**: summarize, rewrite, expand, translate, brainstorm, outline, parseResume
-- **Capabilities**: Task execution, streaming, task history, PDF parsing via Gemini
-- **Dependencies**: Documents (for context)
+- **Purpose**: AI-powered features via a single Gemini model with tool-calling
+- **Service Interface**: `IAgentService` (extends `ITaskExecutionService` + `IResumeService` + `IAssistantSessionService`)
+- **Key Operations**: resume analysis, ATS analysis, chat with resume, assistant session CRUD, turn execution with streaming
+- **Runtime**: `electron/agent/` -- single Gemini model with configurable prompts per assistant type
+- **Tools**: 16 tools for resume data, coaching, memory, and change management
+- **NOT** a multi-agent pipeline -- one model, different system prompts
+- **Dependencies**: Documents, Users (for data access)
+
+### Agent Tools (16 total)
+| Tool | Purpose |
+|------|---------|
+| `resume_get` | Get complete resume data |
+| `resume_search` | Search resume data by keyword |
+| `bullet_get_weakest` | Get lowest-scoring bullets |
+| `bullet_get_all` | Get all bullet analyses with filters |
+| `trigger_points_get` | Get trigger points from analysis |
+| `story_get_all` | Get all STAR stories |
+| `memory_lookup` | Retrieve session memory |
+| `memory_save` | Store session memory |
+| `memory_clear` | Clear session memory |
+| `goal_create` | Create coaching goal |
+| `todo_create` | Create action item |
+| `todo_complete` | Mark todo as done |
+| `change_propose` | Propose resume edit with alternatives |
+| `profile_get` | Get coaching profile |
+| `profile_update` | Update preferences (role, style, etc.) |
+| `version_create` | Save resume version snapshot |
 
 ### Notifications Domain
 - **Purpose**: Cross-platform user notifications
@@ -70,68 +97,97 @@ Mockvue is an **Electron desktop application** using a React codebase. The key a
 - **Platform Behavior**: Native notifications (Electron)
 - **Dependencies**: None
 
+### Coaching Domain
+- **Purpose**: Coaching workspace for tracking goals, todos, staged resume changes, version history, and user preferences
+- **Service Interface**: `ICoachingService`
+- **Key Operations**: goal CRUD, todo CRUD, change proposals (accept/reject/modify), change log, resume versioning, user profile
+- **Storage**: File system (`electron/agent/coaching-store.ts`)
+- **Dependencies**: Agent (tools call coaching store), Users (resume data)
+
+### Voice Interview Domain
+- **Purpose**: Infrastructure for voice-based mock interview sessions
+- **Service Interface**: `IVoiceInterviewService`
+- **Key Operations**: session lifecycle (create, start, pause, resume, end), transcript management, events
+- **Status**: Infrastructure only -- no UI, no real voice provider, deprioritized
+- **Dependencies**: None
+
 ## Package Structure
 
 ```
 /
-├── AGENTS.md                       # Agent navigation map (you are here via it)
+├── AGENTS.md                       # Agent navigation map
 ├── ARCHITECTURE.md                 # This file
-├── README.md                       # Human-facing project overview
-├── package.json                    # Dependencies and scripts
-├── docs/                           # Structured documentation
-│   ├── design-docs/                # Architectural decisions
-│   ├── product-specs/              # Feature specifications
-│   ├── exec-plans/                 # Execution plans
-│   ├── references/                 # LLM-optimized reference docs
-│   ├── generated/                  # Auto-generated docs
-│   ├── guide/                      # Legacy setup/usage guides
-│   ├── ai-feature-summary/        # Phase completion summaries
-│   ├── DESIGN.md                   # Architectural patterns
+├── docs/
+│   ├── PRODUCT_VISION.md           # Product definition and core loop
+│   ├── FEATURE_PURPOSES.md         # Feature purposes and user stories
 │   ├── FRONTEND.md                 # Frontend conventions
+│   ├── DESIGN.md                   # Architectural patterns
 │   ├── QUALITY_SCORE.md            # Quality tracking
 │   ├── SECURITY.md                 # Security patterns
-│   └── RELIABILITY.md              # Reliability patterns
+│   ├── RELIABILITY.md              # Reliability patterns
+│   ├── core-beliefs.md             # Foundational principles
+│   ├── tech-debt-tracker.md        # Known issues
+│   ├── features/                   # Per-feature documentation
+│   │   ├── index.md
+│   │   ├── core-stories/
+│   │   ├── dashboard/
+│   │   ├── document/
+│   │   ├── practice-tools/
+│   │   ├── resume-architect/
+│   │   ├── archive/                # Stale documentation
+│   │   └── completed/              # Cross-cutting completed work
+│   └── guide/                      # Legacy setup/usage guides
 ├── src/
 │   ├── App.tsx                     # Root component with routing
 │   ├── main.tsx                    # Entry point with ServicesProvider
 │   ├── types.ts                    # Shared TypeScript type definitions
-│   ├── components/                 # React components (platform-agnostic)
+│   ├── components/
+│   │   ├── TopNavBar.tsx           # Floating glassmorphic navigation
 │   │   ├── Dashboard.tsx           # Main dashboard view
 │   │   ├── ProfilePage.tsx         # User profile & resume viewer
-│   │   ├── AIAssistant.tsx         # AI assistant interface
-│   │   ├── StoriesPage.tsx         # Story management
-│   │   ├── Sidebar.tsx             # Navigation sidebar
-│   │   ├── ThemeToggle.tsx         # (deprecated — dark mode removed)
-│   │   ├── ProgressChart.tsx       # Progress visualization
-│   │   ├── DailyTasks.tsx          # Task management
+│   │   ├── StoriesPage.tsx         # Core stories grid + STAR editor
+│   │   ├── ResumeReviewPage.tsx    # 4-tab resume analysis interface
+│   │   ├── ErrorBoundary.tsx       # App-level error boundary
 │   │   ├── documents/              # Document editor components
-│   │   │   └── DocumentPage.tsx    # Document editing view
-│   │   ├── onboarding/            # Onboarding flow
-│   │   │   └── OnboardingFlow.tsx  # Multi-step onboarding
-│   │   └── ui/                     # Reusable UI primitives (shadcn-style)
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── badge.tsx
-│   │       └── dropdown-menu.tsx
-│   ├── services/                   # Service Abstraction Layer ⭐
-│   │   ├── interfaces.ts           # Service contracts (IDocumentService, etc.)
+│   │   ├── onboarding/             # 5-step onboarding flow
+│   │   ├── profile/                # Resume Architect sub-components
+│   │   └── ui/                     # Reusable UI primitives (shadcn)
+│   ├── services/
+│   │   ├── interfaces.ts           # Service contracts (6 interfaces)
 │   │   ├── factory.ts              # Platform detection & service creation
 │   │   ├── context.tsx             # React context provider & hooks
 │   │   ├── index.ts                # Public API exports
-│   │   ├── electron/               # Electron implementations
-│   │   │   ├── document.ts
-│   │   │   ├── user.ts
-│   │   │   ├── agent.ts
-│   │   │   ├── notifications.ts
-│   │   │   └── index.ts
-│   │   │   └── index.ts
-│   └── utils/
-│       └── platform.ts             # Platform detection utilities
-├── electron/                       # Electron main process
+│   │   └── electron/               # Electron implementations
+│   │       ├── agent.ts            # AI agent service
+│   │       ├── coaching.ts         # Coaching workspace service
+│   │       ├── documents.ts        # Document service
+│   │       ├── notifications.ts    # Notification service
+│   │       ├── user.ts             # User service
+│   │       ├── voiceInterview.ts   # Voice interview service
+│   │       └── index.ts
+│   ├── test/                       # Test utilities and mocks
+│   └── utils/                      # Platform detection, seeds, etc.
+├── electron/                        # Electron main process
 │   ├── main.ts                     # Main process entry + IPC handlers
 │   ├── preload.ts                  # Preload script (contextBridge)
-│   ├── parser.ts                   # Resume PDF parsing (pdf-parse + Gemini)
-│   └── storage.ts                  # File system storage
+│   ├── storage.ts                  # File system storage
+│   ├── parser.ts                   # Resume PDF parsing (Gemini)
+│   ├── ipc-utils.ts                # IPC handler registry
+│   ├── agent/                      # AI agent runtime
+│   │   ├── runtime.ts              # AgentRuntime class
+│   │   ├── model.ts                # Gemini integration + tool-calling loop
+│   │   ├── tools.ts                # 16 tool definitions + executor
+│   │   ├── prompts.ts              # System prompts per assistant type
+│   │   ├── knowledge.ts            # ResumeDoc builder (normalized read model)
+│   │   ├── memory-store.ts         # Session/message/memory persistence
+│   │   ├── coaching-store.ts       # Goals, todos, changes, versions
+│   │   └── logger.ts               # Opt-in file-based logging
+│   └── voice/                      # Voice interview infrastructure
+│       ├── controller.ts           # Session lifecycle
+│       ├── provider.ts             # Provider adapter interface
+│       ├── text-only-provider.ts   # Text-only stub
+│       ├── session-store.ts        # In-memory session storage
+│       └── ipc.ts                  # IPC handlers
 └── public/                         # Static assets
 ```
 
@@ -141,36 +197,31 @@ Mockvue is an **Electron desktop application** using a React codebase. The key a
 All service capabilities are defined as TypeScript interfaces in `src/services/interfaces.ts`. Electron implementations satisfy this contract:
 
 ```typescript
-// Service contracts
-IDocumentService  → ElectronDocumentService
-IUserService      → ElectronUserService
-IAgentService     → ElectronAgentService
-INotificationService → ElectronNotificationService
-```
-
-### Service Factory
-The `factory.ts` module creates the Electron service instances:
-
-```typescript
-const services = createServices(); // Returns IAppServices (Electron implementations)
+INotificationService     -> ElectronNotificationService
+IAgentService            -> ElectronAgentService
+IVoiceInterviewService   -> ElectronVoiceInterviewService
+IUserService             -> ElectronUserService
+IDocumentService         -> ElectronDocumentService
+ICoachingService         -> ElectronCoachingService
 ```
 
 ### React Integration
 Services are provided through React Context and consumed via hooks:
 
 ```typescript
-// Available hooks (from src/services/context.tsx)
-useServices()       // All services
-useDocuments()      // IDocumentService
-useUser()           // IUserService
-useAgent()          // IAgentService
-useNotifications()  // INotificationService
+useServices()        // All services
+useNotifications()   // INotificationService
+useAgent()           // IAgentService
+useVoiceInterview()  // IVoiceInterviewService
+useUser()            // IUserService
+useDocuments()       // IDocumentService
+useCoaching()        // ICoachingService
 ```
 
 ## Routing Architecture
 
 - **Router**: `HashRouter` for `file://` protocol compatibility (Electron standard)
-- **Routes**: `/` (Dashboard), `/profile`, `/document/:id`, `/stories`, `/ai-assistant`, `/onboarding`
+- **Routes**: `/` (Dashboard), `/profile`, `/document/:id`, `/stories`, `/resume-review`, `/onboarding`
 - **Protection**: `ProtectedRoute` wrapper checks onboarding completion
 
 ## Dependency Rules
@@ -184,26 +235,7 @@ useNotifications()  // INotificationService
 ### Platform Boundary
 - Components NEVER import from `src/services/electron/` directly
 - Components only interact with services via hooks from `src/services/context.tsx`
-- Platform-specific code is strictly isolated in `src/services/{platform}/`
-
-## Evolution Guidelines
-
-### Adding a New Service
-1. Define the interface in `src/services/interfaces.ts`
-2. Add to `IAppServices` combined interface
-3. Create `src/services/electron/{service}.ts` implementation
-4. Register in `src/services/factory.ts`
-5. Add hook in `src/services/context.tsx`
-6. Export from `src/services/index.ts`
-7. Update this document
-
-### Adding a New Feature
-1. Check `docs/product-specs/` for requirements
-2. Determine which service domain(s) are affected
-3. Add service methods to interface if needed
-4. Implement for both platforms
-5. Build UI components using service hooks
-6. Update documentation
+- Platform-specific code is strictly isolated in `src/services/electron/`
 
 ## Validation Commands
 
@@ -215,20 +247,11 @@ npm run lint
 npx tsc --noEmit
 
 # Development (electron)
-npm run dev
-
-# Development (electron)
 npm run electron:dev
 
 # Production build
 npm run build
+
+# Run tests
+npm test
 ```
-
-## References
-
-- See `docs/DESIGN.md` for architectural patterns and conventions
-- See `docs/FRONTEND.md` for UI component patterns
-- See `docs/QUALITY_SCORE.md` for quality expectations
-- See `docs/SECURITY.md` for Electron security model
-- See `docs/guide/ARCHITECTURE.md` for legacy architecture docs
-- See `docs/guide/SERVICES_USAGE.md` for service usage examples
