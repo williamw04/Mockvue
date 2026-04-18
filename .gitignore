@@ -37,6 +37,3 @@ build/electron/
 .env
 .env.*
 !.env.example
-
-# Git worktrees
-worktrees/
