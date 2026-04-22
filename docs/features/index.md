@@ -2,42 +2,32 @@
 
 **Last Updated**: 2026-04-17
 
-## Core Documents
+## Core documents
 
-- [Product Vision](../PRODUCT_VISION.md) - What Mockvue is, who it's for, the core loop
-- [Feature Purposes](../FEATURE_PURPOSES.md) - Why each feature exists and what it does for the user
+- [Product Vision](../PRODUCT_VISION.md) — What Mockvue is, who it’s for, the core loop
+- [Feature Purposes](../FEATURE_PURPOSES.md) — Narrative “why” and user-level behavior for each feature (keep this aligned with specs below)
 
-## Active Features
+## Active feature specs
 
-| Feature | Purpose | Status |
-|---------|---------|--------|
-| [Onboarding](./user-onboarding/) | Get user from zero to profile + resume + story matches | Built |
-| [Dashboard](./dashboard/) | Guided roadmap through interview prep stages | Needs rewrite |
-| [Resume Architect](./resume-architect/) | AI coaching for resume analysis and improvement | Built, actively improving |
-| [Core Stories](./core-stories/) | 10 STAR-method stories mapped to behavioral categories | Built, needs redesign |
-| [Prep Sheets](./prep-sheets/) | Company-specific interview cheat sheets with scraped data autofill | Planned (replacing Documents) |
-| [Practice Tools](./practice-tools/) | Flashcards, simulator, AI mock interviews | Planned |
-| [Company Question Ingestion](./company-question-ingestion/) | Scraper pipeline for company values and interview questions | In Progress |
+Each folder has a **`product-spec.md`**. Optional **`design.md`** / **`exec-plan.md`** appear when there is active architecture or phased delivery work.
 
-## Per-Feature Documentation
+| Feature                    | Folder                                                       | Spec status                                  |
+| -------------------------- | ------------------------------------------------------------ | -------------------------------------------- |
+| User Onboarding            | [user-onboarding/](./user-onboarding/)                       | Built; open questions tracked in spec        |
+| Dashboard                  | [dashboard/](./dashboard/)                                   | Vision + rewrite; see spec                   |
+| Resume Architect           | [resume-architect/](./resume-architect/)                     | Built; boundaries with agent TBD in spec     |
+| Core Stories               | [core-stories/](./core-stories/)                             | Built; integration/scoring TBD in spec       |
+| Prep Sheets                | [prep-sheets/](./prep-sheets/)                               | In progress (replaces legacy Documents)      |
+| Practice Tools             | [practice-tools/](./practice-tools/)                         | Planned; MVP modality TBD                    |
+| Company Question Ingestion | [company-question-ingestion/](./company-question-ingestion/) | In progress (scraper + data for Prep Sheets) |
 
-Each feature folder contains:
-```
-feature-name/
-├── product-spec.md     # Detailed requirements and acceptance criteria
-├── design.md           # Architecture decisions (if needed)
-└── exec-plan.md        # Implementation phases (if needed)
-```
+## How to solidify product direction (workflow)
 
-## Completed Projects
+1. **Start from** [Feature Purposes](../FEATURE_PURPOSES.md) for a single coherent story per feature.
+2. **Drill into** the feature's `product-spec.md` and resolve **Open questions** into concrete decisions (surveys, roadmap emphasis, section counts, MVP scope).
+3. **Sync** Feature Purposes + product-spec when decisions change so the index and narrative don't diverge.
+4. **Archive** superseded ideas under [archive/](./archive/) rather than deleting history.
 
-Cross-cutting completed work in [completed/](./completed/):
-- Initial Scaffold, Remove Dark Mode, Code Review Remediation
+## Archived documentation
 
-## Archived Documentation
-
-Old documentation that was stale or inconsistent with the codebase is in [archive/](./archive/). These docs describe features as they were planned or partially implemented, and may contain useful historical context.
-
-Archived document feature docs:
-- [document-editor/](./archive/document-editor/) - Old Q&A document feature (replaced by Prep Sheets)
-- [document-management/](./archive/document-management/) - Old document management feature (replaced by Prep Sheets)
+[archive/](./archive/) — Older or superseded plans; useful for context, not guaranteed current.
