@@ -1,24 +1,161 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 import { useState, useEffect, useMemo } from 'react';
-// use-navigate removed
 import { useUser, useNotifications } from '../services';
-import { Story, Resume, CoreStoryCategory, CoreStoryMatch } from '../types';
+import type { Story, Resume, CoreStoryCategory, CoreStoryMatch } from '../types';
 import { TopNavBar } from './TopNavBar';
 import { LoadingSpinner } from './ui/LoadingSpinner';
 
-// The 10 Core Story categories with metadata
-const CORE_STORIES: { category: CoreStoryCategory; title: string; icon: string; description: string }[] = [
-  { category: 'conflict', title: 'The Conflict Story', icon: '🤝', description: 'Describe a time you disagreed with a peer or supervisor and resolved it.' },
-  { category: 'failure', title: 'The Failure Story', icon: '📉', description: 'Share a genuine mistake and what you learned from it.' },
-  { category: 'leadership', title: 'The Leadership Story', icon: '👑', description: 'A time you took the lead to mobilize others, formal title or not.' },
-  { category: 'adaptability', title: 'The Adaptability Story', icon: '🌪️', description: 'A time priorities shifted rapidly and you had to adapt.' },
-  { category: 'tight-deadline', title: 'The Tight Deadline Story', icon: '⏱️', description: 'A time you were overwhelmed and had to prioritize.' },
-  { category: 'difficult-customer', title: 'The Difficult Customer Story', icon: '😠', description: 'A time you handled a difficult stakeholder or customer.' },
-  { category: 'data-driven-decision', title: 'Data-Driven Decision', icon: '📊', description: 'A time you made a choice with incomplete or complex data.' },
-  { category: 'above-and-beyond', title: 'Above and Beyond', icon: '🚀', description: 'A time you exceeded expectations intrinsically.' },
-  { category: 'persuasion', title: 'The Persuasion Story', icon: '🗣️', description: 'A time you used logic or rapport to convince a skeptic.' },
-  { category: 'proudest-accomplishment', title: 'Proudest Accomplishment', icon: '🏆', description: 'Your "Hero Story" highlighting your best work.' },
+const CORE_STORIES: {
+  category: CoreStoryCategory;
+  name: string;
+  icon: string;
+  description: string;
+  target: number;
+}[] = [
+  {
+    category: 'conflict',
+    name: 'Conflict',
+    icon: '↔',
+    description: 'A disagreement with a peer or supervisor and how you resolved it.',
+    target: 1,
+  },
+  {
+    category: 'failure',
+    name: 'Failure / Learning',
+    icon: '↻',
+    description: 'A genuine mistake and what you learned from it.',
+    target: 1,
+  },
+  {
+    category: 'leadership',
+    name: 'Leadership',
+    icon: '◈',
+    description: 'A time you took the lead, formal title or not.',
+    target: 2,
+  },
+  {
+    category: 'adaptability',
+    name: 'Adaptability',
+    icon: '∿',
+    description: 'A time priorities shifted rapidly and you adapted.',
+    target: 1,
+  },
+  {
+    category: 'tight-deadline',
+    name: 'Tight Deadline',
+    icon: '⏱',
+    description: 'A time you were overwhelmed and had to prioritize.',
+    target: 1,
+  },
+  {
+    category: 'difficult-customer',
+    name: 'Difficult Customer',
+    icon: '◎',
+    description: 'A time you handled a difficult stakeholder or customer.',
+    target: 1,
+  },
+  {
+    category: 'data-driven-decision',
+    name: 'Data-Driven Decision',
+    icon: '⬡',
+    description: 'A choice made with incomplete or complex data.',
+    target: 1,
+  },
+  {
+    category: 'above-and-beyond',
+    name: 'Above and Beyond',
+    icon: '↑',
+    description: 'A time you exceeded expectations intrinsically.',
+    target: 1,
+  },
+  {
+    category: 'persuasion',
+    name: 'Persuasion',
+    icon: '⇌',
+    description: 'A time you used logic or rapport to convince a skeptic.',
+    target: 1,
+  },
+  {
+    category: 'proudest-accomplishment',
+    name: 'Proudest Accomplishment',
+    icon: '⊕',
+    description: 'Your "Hero Story" highlighting your best work.',
+    target: 1,
+  },
 ];
+
+type CategoryStatus = 'strong' | 'ok' | 'weak' | 'missing';
+
+const STATUS_CONFIG: Record<
+  CategoryStatus,
+  { label: string; bg: string; border: string; dot: string; text: string }
+> = {
+  strong: {
+    label: 'Strong',
+    bg: 'bg-[#f0fdf4]',
+    border: 'border-[#86efac]',
+    dot: 'bg-[#3d8a4a]',
+    text: 'text-[#166534]',
+  },
+  ok: {
+    label: 'OK',
+    bg: 'bg-[#fff7ed]',
+    border: 'border-[#fed7aa]',
+    dot: 'bg-[#c7851a]',
+    text: 'text-[#9a3412]',
+  },
+  weak: {
+    label: 'Thin',
+    bg: 'bg-[#fffbeb]',
+    border: 'border-[#fde68a]',
+    dot: 'bg-[#d97706]',
+    text: 'text-[#92400e]',
+  },
+  missing: {
+    label: 'Missing',
+    bg: 'bg-[#fafaf8]',
+    border: 'border-rule',
+    dot: 'bg-ink-3',
+    text: 'text-ink-3',
+  },
+};
+
+function computeStatus(count: number, target: number, hasResultMetrics: boolean): CategoryStatus {
+  if (count === 0) return 'missing';
+  if (count >= target && hasResultMetrics) return 'strong';
+  if (count >= target) return 'ok';
+  return 'weak';
+}
+
+function hasMetrics(text: string): boolean {
+  return /\d/.test(text);
+}
+
+function StrengthBar({ pct }: { pct: number }) {
+  const color = pct >= 80 ? '#3d8a4a' : pct >= 60 ? '#d9532b' : '#c7851a';
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="w-12 h-1 bg-rule">
+        <div
+          className="h-full transition-all duration-500"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+      <div className="font-mono text-[10px] text-ink-3 w-5">{pct}</div>
+    </div>
+  );
+}
+
+function computeStoryStrength(story: Story): number {
+  let score = 50;
+  if (story.title.length > 10) score += 10;
+  if (story.situation.length > 30) score += 8;
+  if (story.task.length > 20) score += 8;
+  if (story.action.length > 40) score += 12;
+  if (hasMetrics(story.result)) score += 20;
+  if (story.result.length > 30) score += 10;
+  if (!story.action.toLowerCase().includes('we')) score += 5;
+  return Math.min(100, score);
+}
 
 export default function StoriesPage() {
   const userService = useUser();
@@ -28,42 +165,52 @@ export default function StoriesPage() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Detail view state
   const [selectedCategory, setSelectedCategory] = useState<CoreStoryCategory | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Story>>({});
 
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [allStories, userResume] = await Promise.all([
+          userService.getStories(),
+          userService.getResume(),
+        ]);
+        setStories(allStories);
+        setResume(userResume);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        await notifications.showError('Failed to load stories');
+      } finally {
+        setLoading(false);
+      }
+    };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [allStories, userResume] = await Promise.all([
-        userService.getStories(),
-        userService.getResume(),
-      ]);
-      setStories(allStories);
-      setResume(userResume);
-    } catch (error) {
-      console.error('Error loading data:', error);
-      await notifications.showError('Failed to load stories');
-    } finally {
-      setLoading(false);
-    }
+  const getStoriesForCategory = (category: CoreStoryCategory) => {
+    return stories.filter((s) => s.coreCategory === category);
   };
 
-  // Helper to find an existing story for a category
-  const getStoryForCategory = (category: CoreStoryCategory) => {
-    return stories.find(s => s.coreCategory === category) || null;
-  };
-
-  // Helper to find an AI match for a category
   const getAiMatchForCategory = (category: CoreStoryCategory): CoreStoryMatch | null => {
     if (!resume?.coreStoryMatches) return null;
-    return resume.coreStoryMatches.find(m => m.category === category) || null;
+    return resume.coreStoryMatches.find((m) => m.category === category) || null;
   };
+
+  const getCategoryStatus = (category: CoreStoryCategory): CategoryStatus => {
+    const categoryStories = getStoriesForCategory(category);
+    const count = categoryStories.length;
+    const hasMetricsInResult = categoryStories.some((s) => hasMetrics(s.result));
+    const meta = CORE_STORIES.find((c) => c.category === category)!;
+    return computeStatus(count, meta.target, hasMetricsInResult);
+  };
+
+  const builtCount = useMemo(() => {
+    return CORE_STORIES.filter((c) => getCategoryStatus(c.category) !== 'missing').length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stories]);
 
   const handleCategoryClick = (category: CoreStoryCategory) => {
     setSelectedCategory(category);
@@ -71,16 +218,15 @@ export default function StoriesPage() {
   };
 
   const handleEdit = (category: CoreStoryCategory) => {
-    const existingStory = getStoryForCategory(category);
-    const meta = CORE_STORIES.find(c => c.category === category)!;
+    const existingStories = getStoriesForCategory(category);
+    const meta = CORE_STORIES.find((c) => c.category === category)!;
 
-    if (existingStory) {
-      setEditForm(existingStory);
+    if (existingStories.length > 0) {
+      setEditForm(existingStories[0]);
     } else {
-      // Initialize new story form
       setEditForm({
         id: crypto.randomUUID(),
-        title: meta.title,
+        title: meta.name,
         coreCategory: category,
         situation: '',
         task: '',
@@ -97,15 +243,17 @@ export default function StoriesPage() {
     if (!selectedCategory || !editForm.title) return;
 
     try {
-      const isNew = !stories.find(s => s.id === editForm.id);
+      const isNew = !stories.find((s) => s.id === editForm.id);
 
       let savedStory: Story;
       if (isNew) {
-        savedStory = await userService.createStory(editForm as Omit<Story, 'id' | 'userId' | 'createdAt' | 'updatedAt'>);
+        savedStory = await userService.createStory(
+          editForm as Omit<Story, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
+        );
         setStories([...stories, savedStory]);
       } else {
         savedStory = await userService.updateStory(editForm.id!, editForm);
-        setStories(stories.map(s => s.id === savedStory.id ? savedStory : s));
+        setStories(stories.map((s) => (s.id === savedStory.id ? savedStory : s)));
       }
 
       setIsEditing(false);
@@ -116,11 +264,12 @@ export default function StoriesPage() {
     }
   };
 
-  const selectedMeta = useMemo(() =>
-    CORE_STORIES.find(c => c.category === selectedCategory),
-    [selectedCategory]);
+  const selectedMeta = useMemo(
+    () => CORE_STORIES.find((c) => c.category === selectedCategory),
+    [selectedCategory]
+  );
 
-  const existingSelectedStory = selectedCategory ? getStoryForCategory(selectedCategory) : null;
+  const selectedStories = selectedCategory ? getStoriesForCategory(selectedCategory) : [];
   const aiMatch = selectedCategory ? getAiMatchForCategory(selectedCategory) : null;
 
   if (loading) {
@@ -128,212 +277,369 @@ export default function StoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 flex">
+    <div className="min-h-screen bg-bg text-ink flex flex-col">
       <TopNavBar />
 
-      {/* Main Content Area */}
-      <div className="flex-1 pt-20 px-8 pb-12 overflow-y-auto w-full md:w-1/2">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Behavioral Core Stories</h1>
-            <p className="text-lg text-gray-600 mt-2">
-              Master these 10 versatile themes to cover 90% of behavioral interview questions.
-            </p>
-          </div>
+      <div className="flex-1 pt-14 flex overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-7 py-7 pb-14">
+          <div className="max-w-[900px]">
+            <div className="mb-6">
+              <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-1.5">
+                The Rule of 10
+              </div>
+              <h1 className="font-serif text-[32px] font-normal tracking-tight m-0">
+                Your Story Library
+              </h1>
+              <p className="text-[13px] text-ink-3 mt-1.5">
+                Cover all 10 categories before your first final round.
+              </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {CORE_STORIES.map(meta => {
-              const story = getStoryForCategory(meta.category);
-              const match = getAiMatchForCategory(meta.category);
-              const isSelected = selectedCategory === meta.category;
-
-              return (
-                <div
-                  key={meta.category}
-                  onClick={() => handleCategoryClick(meta.category)}
-                  className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all ${isSelected
-                    ? 'border-blue-600 bg-blue-50/50 shadow-md'
-                    : 'border-transparent bg-white shadow-sm hover:shadow-md hover:border-blue-200'
-                    }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">{meta.icon}</span>
-                      <h3 className="font-semibold text-gray-900">{meta.title}</h3>
-                    </div>
-                    {story ? (
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
-                    ) : match ? (
-                      <span className="shrink-0 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold tracking-wider uppercase">AI Suggestion</span>
-                    ) : (
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-xs">!</span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500 line-clamp-2">{meta.description}</p>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="flex-1 h-1.5 bg-rule rounded-sm">
+                  <div
+                    className="h-full bg-accent-hi rounded-sm transition-all duration-500"
+                    style={{ width: `${(builtCount / 10) * 100}%` }}
+                  />
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Side Panel for Details / Editing */}
-      <div className="w-full md:w-1/2 border-l border-gray-200 bg-white pt-20 h-screen overflow-y-auto shadow-2xl z-10 hidden md:block">
-        {!selectedCategory ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="text-6xl mb-4 text-gray-300">📖</div>
-            <h2 className="text-xl font-semibold text-gray-700">Select a Core Story</h2>
-            <p className="text-gray-500 mt-2 max-w-sm">Choose a category from the matrix to view suggestions and draft your STAR response.</p>
-          </div>
-        ) : (
-          <div className="p-8 pb-32">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-4xl">{selectedMeta?.icon}</span>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">{selectedMeta?.title}</h2>
-                <p className="text-gray-500">{selectedMeta?.description}</p>
+                <div className="font-mono text-[11px] text-accent-hi font-semibold">
+                  {builtCount}/10
+                </div>
               </div>
             </div>
 
-            {/* AI Suggestion Box */}
-            {!isEditing && aiMatch && !existingSelectedStory && (
-              <div className="mb-8 p-5 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 rounded-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500 opacity-5 rounded-bl-full" />
-                <div className="relative">
-                  <div className="flex items-center gap-2 text-purple-700 font-semibold mb-2">
-                    <span className="text-lg">✨</span>
-                    <span>AI Recommended Match</span>
-                  </div>
-                  <h4 className="font-medium text-gray-900 mb-1">{aiMatch.relatedExperienceId}</h4>
-                  <p className="text-gray-600 text-sm">{aiMatch.reasoning}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {CORE_STORIES.map((meta) => {
+                const categoryStories = stories.filter((s) => s.coreCategory === meta.category);
+                const count = categoryStories.length;
+                const hasMetricsInResult = categoryStories.some((s) => hasMetrics(s.result));
+                const status = computeStatus(count, meta.target, hasMetricsInResult);
+                const ss = STATUS_CONFIG[status];
+                const isSelected = selectedCategory === meta.category;
 
-                  <button
-                    onClick={() => handleEdit(selectedCategory)}
-                    className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+                return (
+                  <div
+                    key={meta.category}
+                    onClick={() => handleCategoryClick(meta.category)}
+                    className={`${ss.bg} border ${isSelected ? 'border-accent-hi shadow-[0_0_0_2px_rgba(217,83,43,0.15)]' : ss.border} px-4 py-4 cursor-pointer transition-all duration-150`}
                   >
-                    Draft this Story
-                  </button>
-                </div>
+                    <div className="flex items-start justify-between mb-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-2 h-2 rounded-sm ${ss.dot} shrink-0`} />
+                        <div className="text-[14px] font-semibold text-ink">{meta.name}</div>
+                      </div>
+                      <div
+                        className={`font-mono text-[10px] tracking-[0.05em] px-1.5 py-0.5 bg-white/60 border ${ss.border} ${ss.text}`}
+                      >
+                        {ss.label.toUpperCase()}
+                      </div>
+                    </div>
+
+                    {categoryStories.length > 0 ? (
+                      <div className="flex flex-col gap-1.5">
+                        {categoryStories.map((st) => (
+                          <div
+                            key={st.id}
+                            className="px-2.5 py-1.5 bg-white/70 border border-white/50 flex items-center gap-2.5"
+                          >
+                            <div className="flex-1 text-[12px] text-ink font-medium">
+                              {st.title}
+                            </div>
+                            <StrengthBar pct={computeStoryStrength(st)} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-2.5 flex items-center gap-2">
+                        <div className="text-[12px] text-ink-3 italic">No story yet</div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(meta.category);
+                          }}
+                          className="bg-transparent border border-dashed border-ink-3 px-2.5 py-0.5 text-[11px] text-ink-3 cursor-pointer hover:bg-white/50 transition-colors"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <aside className="w-[300px] border-l border-rule bg-card overflow-y-auto px-5 py-6">
+          {selectedCategory ? (
+            <CategoryDetailPanel
+              meta={selectedMeta!}
+              stories={selectedStories}
+              aiMatch={aiMatch}
+              onEdit={() => handleEdit(selectedCategory)}
+              isEditing={isEditing}
+              editForm={editForm}
+              setEditForm={setEditForm}
+              onSave={handleSave}
+              onCancel={() => setIsEditing(false)}
+            />
+          ) : (
+            <LibraryStatsPanel stories={stories} />
+          )}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function CategoryDetailPanel({
+  meta,
+  stories,
+  aiMatch,
+  onEdit,
+  isEditing,
+  editForm,
+  setEditForm,
+  onSave,
+  onCancel,
+}: {
+  meta: {
+    category: CoreStoryCategory;
+    name: string;
+    icon: string;
+    description: string;
+    target: number;
+  };
+  stories: Story[];
+  aiMatch: CoreStoryMatch | null;
+  onEdit: () => void;
+  isEditing: boolean;
+  editForm: Partial<Story>;
+  setEditForm: React.Dispatch<React.SetStateAction<Partial<Story>>>;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const status = computeStatus(
+    stories.length,
+    meta.target,
+    stories.some((s) => hasMetrics(s.result))
+  );
+  const ss = STATUS_CONFIG[status];
+
+  if (isEditing) {
+    return (
+      <div>
+        <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-2">
+          Editing Story
+        </div>
+        <h3 className="font-serif text-[24px] font-medium tracking-tight m-0 mb-4">{meta.name}</h3>
+
+        <div className="mb-4">
+          <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-1.5">
+            Story Title
+          </div>
+          <input
+            type="text"
+            value={editForm.title || ''}
+            onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
+            className="w-full px-3 py-2 border border-rule bg-card outline-none text-ink font-serif text-[15px] font-medium focus:border-accent-hi"
+            placeholder="Give it a memorable name"
+          />
+        </div>
+
+        {[
+          {
+            key: 'situation',
+            label: 'Situation',
+            hint: 'Set the scene. What was broken, unclear, or at risk?',
+          },
+          {
+            key: 'task',
+            label: 'Task',
+            hint: 'What were you specifically responsible for solving?',
+          },
+          {
+            key: 'action',
+            label: 'Action',
+            hint: 'What did YOU do? Be specific. Use "I" not "we".',
+          },
+          { key: 'result', label: 'Result', hint: 'What changed? A number makes this land.' },
+        ].map((field) => (
+          <div key={field.key} className="mb-4">
+            <div className="flex items-baseline gap-2.5 mb-1.5">
+              <div className="font-mono text-[14px] text-accent-hi font-bold w-4">
+                {field.key.toUpperCase()}
+              </div>
+              <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase">
+                {field.label}
+              </div>
+            </div>
+            <div className="text-[11px] text-ink-3 italic mb-1">{field.hint}</div>
+            <textarea
+              value={(editForm as Record<string, string>)[field.key] || ''}
+              onChange={(e) => setEditForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+              className={`w-full px-3 py-3 text-[13px] leading-relaxed border outline-none resize-none min-h-[68px] ${
+                field.key === 'result' && editForm.result && !hasMetrics(editForm.result)
+                  ? 'border-accent-hi bg-accent-lo'
+                  : 'border-rule bg-card'
+              }`}
+            />
+            {field.key === 'result' && editForm.result && !hasMetrics(editForm.result) && (
+              <div className="font-mono text-[11px] text-accent-hi mt-1 tracking-[0.05em]">
+                ↑ No number detected — try adding a %, $, or timeframe.
               </div>
             )}
+          </div>
+        ))}
 
-            {/* Read / Edit View */}
-            {isEditing ? (
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Story Title</label>
-                  <input
-                    type="text"
-                    value={editForm.title || ''}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    placeholder="e.g. Launched v2.0 API Migration"
-                  />
-                </div>
+        <div className="flex gap-2.5 mt-4">
+          <button
+            onClick={onSave}
+            className="bg-accent-hi text-white border-none px-5 py-2.5 text-[14px] font-semibold cursor-pointer"
+          >
+            Save to Story Bank ✓
+          </button>
+          <button
+            onClick={onCancel}
+            className="bg-transparent text-ink-3 border border-rule px-4 py-2.5 text-[13px] cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-                {/* S.T.A.R. fields */}
-                {Object.entries({
-                  situation: { label: 'Situation', color: 'blue', desc: 'What was the background? What challenge existed?' },
-                  task: { label: 'Task', color: 'purple', desc: 'What was your specific responsibility?' },
-                  action: { label: 'Action', color: 'green', desc: 'What steps did you take? Be specific.' },
-                  result: { label: 'Result', color: 'orange', desc: 'What was the impact? Quantify if possible.' }
-                }).map(([key, meta]) => (
-                  <div key={key}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className={`w-6 h-6 rounded-full bg-${meta.color}-600 flex items-center justify-center text-white font-bold text-xs`}>
-                        {meta.label[0]}
-                      </div>
-                      <label className="text-sm font-semibold text-gray-800">{meta.label}</label>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-2">{meta.desc}</p>
-                    <textarea
-                      value={(editForm as any)[key] || ''}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, [key]: e.target.value }))}
-                      rows={key === 'action' ? 4 : 3}
-                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-${meta.color}-500 focus:border-transparent outline-none text-sm`}
-                      placeholder={`Draft your ${meta.label.toLowerCase()}...`}
-                    />
-                  </div>
-                ))}
+  return (
+    <div>
+      <div className="mb-5">
+        <div className={`font-mono text-[10px] tracking-[0.15em] ${ss.text} uppercase mb-1.5`}>
+          {ss.label.toUpperCase()} · {stories.length} OF {meta.target} STORIES
+        </div>
+        <h3 className="font-serif text-[24px] font-medium tracking-tight m-0">{meta.name}</h3>
+      </div>
 
-                <div className="flex gap-3 pt-4 sticky bottom-0 bg-white py-4 border-t border-gray-100">
-                  <button
-                    onClick={handleSave}
-                    className="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm"
-                  >
-                    Save Story
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="flex-1 px-6 py-2.5 rounded-lg font-semibold transition-colors bg-gray-100 hover:bg-gray-200 text-gray-700"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : existingSelectedStory ? (
-              <div className="space-y-8 relative">
+      {stories.length > 0 ? (
+        <div className="flex flex-col gap-4">
+          {stories.map((st) => (
+            <div key={st.id} className="bg-bg border border-rule px-3.5 py-3.5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[13px] font-semibold text-ink">{st.title}</div>
                 <button
-                  onClick={() => handleEdit(selectedCategory)}
-                  className="absolute top-0 right-0 px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                  onClick={onEdit}
+                  className="font-mono text-[10px] text-ink-3 hover:text-accent-hi transition-colors"
                 >
                   Edit
                 </button>
+              </div>
 
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 pr-16">{existingSelectedStory.title}</h3>
-                </div>
-
-                {Object.entries({
-                  situation: { label: 'Situation', color: 'blue' },
-                  task: { label: 'Task', color: 'purple' },
-                  action: { label: 'Action', color: 'green' },
-                  result: { label: 'Result', color: 'orange' }
-                }).map(([key, meta]) => (
-                  <div key={key}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className={`w-6 h-6 rounded-full bg-${meta.color}-600 flex items-center justify-center text-white font-bold text-xs`}>
-                        {meta.label[0]}
-                      </div>
-                      <h4 className="text-base font-semibold text-gray-800">{meta.label}</h4>
+              <div className="grid grid-cols-[16px_1fr] gap-y-1.5 gap-x-2 text-[12px]">
+                {[
+                  ['S', st.situation],
+                  ['T', st.task],
+                  ['A', st.action],
+                  ['R', st.result],
+                ].map(([k, v]) => (
+                  <div key={k} className="contents">
+                    <div className="font-mono text-[10px] text-accent-hi font-bold pt-0.5">{k}</div>
+                    <div
+                      className={`leading-relaxed ${k === 'R' ? 'text-ink font-medium' : 'text-ink-2'}`}
+                    >
+                      {v || <span className="text-ink-3 italic">—</span>}
                     </div>
-                    <p className="text-gray-700 leading-relaxed text-sm ml-8 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                      {(existingSelectedStory as any)[key] || <span className="text-gray-400 italic">No content written yet.</span>}
-                    </p>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">You haven't drafted a story for this core competency yet.</p>
-                <button
-                  onClick={() => handleEdit(selectedCategory)}
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm"
-                >
-                  Draft Story Now
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
-      {/* Mobile-only Panel View (simplistic for current Electron use, but good for responsiveness) */}
-      <div className={`md:hidden fixed inset-0 z-40 bg-white pt-20 transition-transform ${selectedCategory ? 'translate-x-0' : 'translate-x-full'}`}>
-        {selectedCategory && (
-          <div className="p-6 overflow-y-auto h-full pb-32">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="mb-6 text-blue-600 font-medium"
-            >
-              ← Back to Matrix
-            </button>
-            {/* Same content essentially goes here, but for brevity we rely on desktop view primarily in Electron */}
-            <div className="text-center p-8 text-gray-500">
-              Mobile view placeholder: Resize window wider to view the editor side-panel.
+              {st.tags.length > 0 && (
+                <div className="mt-2.5 pt-2.5 border-t border-dotted border-rule flex gap-1.5">
+                  {st.tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="font-mono text-[10px] px-1.5 py-0.5 bg-card border border-rule text-ink-3"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : aiMatch ? (
+        <div className="bg-accent-lo border-l-3 border-accent-hi px-3.5 py-4 mb-5">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="font-mono text-[11px] text-accent-hi font-semibold">
+              AI Recommended Match
             </div>
           </div>
-        )}
+          <div className="text-[13px] font-medium text-ink mb-1">{aiMatch.relatedExperienceId}</div>
+          <div className="text-[12px] text-ink-2">{aiMatch.reasoning}</div>
+          <button
+            onClick={onEdit}
+            className="mt-3 bg-accent-hi text-white border-none px-4 py-2 text-[12px] font-semibold cursor-pointer"
+          >
+            Draft this Story
+          </button>
+        </div>
+      ) : (
+        <div className="py-5 text-center">
+          <div className="font-serif text-[15px] text-ink-3 italic mb-3">
+            No stories in this category yet.
+          </div>
+          <button
+            onClick={onEdit}
+            className="bg-accent-hi text-white border-none px-4 py-2.5 text-[12px] font-semibold cursor-pointer"
+          >
+            + Build a {meta.name} story
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LibraryStatsPanel({ stories }: { stories: Story[] }) {
+  const counts: Record<CategoryStatus, number> = {
+    strong: 0,
+    ok: 0,
+    weak: 0,
+    missing: 0,
+  };
+
+  CORE_STORIES.forEach((c) => {
+    const categoryStories = stories.filter((s) => s.coreCategory === c.category);
+    const count = categoryStories.length;
+    const hasMetricsInResult = categoryStories.some((s) => hasMetrics(s.result));
+    const status = computeStatus(count, c.target, hasMetricsInResult);
+    counts[status]++;
+  });
+
+  return (
+    <div>
+      <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-3.5">
+        Overview
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 mb-6">
+        {[
+          { label: 'Strong', count: counts.strong, c: '#3d8a4a', bg: '#f0fdf4' },
+          { label: 'OK', count: counts.ok, c: '#c7851a', bg: '#fff7ed' },
+          { label: 'Thin', count: counts.weak, c: '#d97706', bg: '#fffbeb' },
+          { label: 'Missing', count: counts.missing, c: '#8a857d', bg: '#fafaf8' },
+        ].map((x) => (
+          <div key={x.label} className="px-3 py-3 bg-[${x.bg}] border border-rule text-center">
+            <div className="font-serif text-[32px] font-normal leading-none" style={{ color: x.c }}>
+              {x.count}
+            </div>
+            <div className="font-mono text-[9px] mt-1 tracking-[0.15em]" style={{ color: x.c }}>
+              {x.label.toUpperCase()}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-accent-lo border-l-3 border-accent-hi px-3.5 py-3.5 text-[13px] leading-relaxed">
+        <b className="text-ink">Click any category</b> to see its stories, or add a new one.
       </div>
     </div>
   );

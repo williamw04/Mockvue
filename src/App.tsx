@@ -1,15 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Dashboard } from "./components/Dashboard";
-import OnboardingFlow from "./components/onboarding/OnboardingFlow";
-import StoriesPage from "./components/StoriesPage";
-import DocumentPage from "./components/documents/DocumentPage";
-import ProfilePage from "./components/ProfilePage";
-import ResumeReviewPage from "./components/ResumeReviewPage";
-import { LoadingSpinner } from "./components/ui/LoadingSpinner";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { useUser } from "./services";
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Dashboard } from './components/Dashboard';
+import OnboardingFlow from './components/onboarding/OnboardingFlow';
+import StoriesPage from './components/StoriesPage';
+import DocumentPage from './components/documents/DocumentPage';
+import ProfilePage from './components/ProfilePage';
+import ResumeReviewPage from './components/ResumeReviewPage';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import CheatSheetListPage from './components/documents/CheatSheetListPage';
+import CreateSheetWizard from './components/documents/CreateSheetWizard';
+import { useUser } from './services';
 
 // Use HashRouter for Electron compatibility
 const Router = HashRouter;
@@ -17,7 +19,7 @@ const Router = HashRouter;
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const userService = useUser();
   const [loading, setLoading] = useState(true);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
 
   useEffect(() => {
     checkOnboarding();
@@ -25,12 +27,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const checkOnboarding = async () => {
     try {
-      const profile = await userService.getUserProfile();
+      await userService.getUserProfile();
 
-      setOnboardingComplete(profile?.onboardingCompleted || false);
+      // Temporarily bypass onboarding check
+      setOnboardingComplete(true);
     } catch (error) {
       console.error('Error checking onboarding:', error);
-      setOnboardingComplete(false);
+      // Temporarily bypass onboarding check
+      setOnboardingComplete(true);
     } finally {
       setLoading(false);
     }
@@ -73,7 +77,15 @@ function App() {
             path="/document"
             element={
               <ProtectedRoute>
-                <DocumentPage />
+                <CheatSheetListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document/new"
+            element={
+              <ProtectedRoute>
+                <CreateSheetWizard />
               </ProtectedRoute>
             }
           />
