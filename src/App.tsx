@@ -1,18 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Dashboard } from "./components/Dashboard";
-import OnboardingFlow from "./components/onboarding/OnboardingFlow";
-import StoriesPage from "./components/StoriesPage";
-import DocumentPage from "./components/documents/DocumentPage";
-import ProfilePage from "./components/ProfilePage";
-import ResumeReviewPage from "./components/ResumeReviewPage";
-import PracticePage from "./components/PracticePage";
-import VoiceInterviewPracticePage from "./components/VoiceInterviewPracticePage";
-import { LoadingSpinner } from "./components/ui/LoadingSpinner";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import CheatSheetListPage from "./components/documents/CheatSheetListPage";
-import { useUser } from "./services";
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Dashboard } from './components/Dashboard';
+import OnboardingFlow from './components/onboarding/OnboardingFlow';
+import StoriesPage from './components/StoriesPage';
+import DocumentPage from './components/documents/DocumentPage';
+import ProfilePage from './components/ProfilePage';
+import ResumeReviewPage from './components/ResumeReviewPage';
+import PracticePage from './components/PracticePage';
+import VoiceInterviewPracticePage from './components/VoiceInterviewPracticePage';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import CheatSheetListPage from './components/documents/CheatSheetListPage';
+import CreateSheetWizard from './components/documents/CreateSheetWizard';
+import { useUser } from './services';
 
 // Use HashRouter for Electron compatibility
 const Router = HashRouter;
@@ -79,6 +80,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CheatSheetListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document/new"
+            element={
+              <ProtectedRoute>
+                <CreateSheetWizard />
               </ProtectedRoute>
             }
           />

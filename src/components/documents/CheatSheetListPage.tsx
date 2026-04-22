@@ -12,10 +12,13 @@ export default function CheatSheetListPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    documentService.getDocuments().then((docs) => {
-      setDocuments(docs);
-      setLoading(false);
-    }).catch(console.error);
+    documentService
+      .getDocuments()
+      .then((docs) => {
+        setDocuments(docs);
+        setLoading(false);
+      })
+      .catch(console.error);
   }, [documentService]);
 
   if (loading) return <LoadingSpinner />;
@@ -28,7 +31,7 @@ export default function CheatSheetListPage() {
           <h1 className="font-serif text-[44px] font-normal tracking-tight m-0 leading-tight">
             Cheat Sheets
           </h1>
-          <button 
+          <button
             onClick={() => navigate('/document/new')}
             className="bg-accent-hi text-white border-none px-4.5 py-2.5 text-[13px] font-semibold cursor-pointer font-sans hover:opacity-90 transition-opacity"
           >
@@ -37,8 +40,12 @@ export default function CheatSheetListPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {documents.map(doc => (
-            <Link key={doc.id} to={`/document/${doc.id}`} className="block bg-card border border-rule p-6 hover:border-ink/30 transition-colors cursor-pointer group">
+          {documents.map((doc) => (
+            <Link
+              key={doc.id}
+              to={`/document/${doc.id}`}
+              className="block bg-card border border-rule p-6 hover:border-ink/30 transition-colors cursor-pointer group"
+            >
               <div className="font-mono text-[10px] text-accent-hi tracking-widest uppercase mb-2">
                 {doc.tags?.[0] || 'Prep Sheet'}
               </div>
@@ -56,7 +63,9 @@ export default function CheatSheetListPage() {
           {documents.length === 0 && (
             <div className="col-span-full py-16 text-center border border-rule border-dashed bg-card text-ink-3">
               <div className="font-serif text-xl mb-2 text-ink-2">No Cheat Sheets yet</div>
-              <div className="text-[14px]">Create your first prep sheet to start getting ready.</div>
+              <div className="text-[14px]">
+                Create your first prep sheet to start getting ready.
+              </div>
             </div>
           )}
         </div>

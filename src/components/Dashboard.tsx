@@ -6,12 +6,42 @@ import { UserProfile } from '../types';
 // Mock Data from shared.jsx
 const MV_DATA = {
   loop: [
-    { id: 'onboard',  label: 'Onboarding',     caption: 'Profile & first resume pass',      status: 'done',    pct: 100 },
-    { id: 'resume',   label: 'Resume',         caption: 'Analyze & tighten bullet points',  status: 'active',  pct: 64 },
-    { id: 'stories',  label: 'Core Stories',   caption: 'Build your library of 10',         status: 'active',  pct: 60 },
-    { id: 'sheets',   label: 'Cheat Sheets',   caption: 'Map stories to each company',      status: 'next',    pct: 33 },
-    { id: 'practice', label: 'Practice',       caption: 'Flashcards, mocks, voice agent',   status: 'locked',  pct: 0 },
-    { id: 'ready',    label: 'Interview',      caption: 'Walk in prepared',                 status: 'locked',  pct: 0 },
+    {
+      id: 'onboard',
+      label: 'Onboarding',
+      caption: 'Profile & first resume pass',
+      status: 'done',
+      pct: 100,
+    },
+    {
+      id: 'resume',
+      label: 'Resume',
+      caption: 'Analyze & tighten bullet points',
+      status: 'active',
+      pct: 64,
+    },
+    {
+      id: 'stories',
+      label: 'Core Stories',
+      caption: 'Build your library of 10',
+      status: 'active',
+      pct: 60,
+    },
+    {
+      id: 'sheets',
+      label: 'Cheat Sheets',
+      caption: 'Map stories to each company',
+      status: 'next',
+      pct: 33,
+    },
+    {
+      id: 'practice',
+      label: 'Practice',
+      caption: 'Flashcards, mocks, voice agent',
+      status: 'locked',
+      pct: 0,
+    },
+    { id: 'ready', label: 'Interview', caption: 'Walk in prepared', status: 'locked', pct: 0 },
   ],
   stories: {
     built: 6,
@@ -36,20 +66,59 @@ const MV_DATA = {
     vulnerabilities: 3,
   },
   companies: [
-    { name: 'Northwind Media', role: 'Sr. PM, Playback', when: 'Thu · 2:00 PM', days: 3, ready: 82, stage: 'final round', tone: 'ember' },
-    { name: 'Atlas Logistics', role: 'PM, Routing', when: 'Next Tue · 10:30 AM', days: 7, ready: 54, stage: 'hiring manager', tone: 'cobalt' },
-    { name: 'Pennant', role: 'Staff PM', when: 'Apr 29 · 11:00 AM', days: 10, ready: 31, stage: 'recruiter screen', tone: 'moss' },
+    {
+      name: 'Northwind Media',
+      role: 'Sr. PM, Playback',
+      when: 'Thu · 2:00 PM',
+      days: 3,
+      ready: 82,
+      stage: 'final round',
+      tone: 'ember',
+    },
+    {
+      name: 'Atlas Logistics',
+      role: 'PM, Routing',
+      when: 'Next Tue · 10:30 AM',
+      days: 7,
+      ready: 54,
+      stage: 'hiring manager',
+      tone: 'cobalt',
+    },
+    {
+      name: 'Pennant',
+      role: 'Staff PM',
+      when: 'Apr 29 · 11:00 AM',
+      days: 10,
+      ready: 31,
+      stage: 'recruiter screen',
+      tone: 'moss',
+    },
   ],
   activity: [
-    { kind: 'resume', text: 'Rewrote bullet: "Led redesign" → "Led redesign of $4.2M checkout flow; +18% conversion"', when: '12m ago' },
-    { kind: 'story',  text: 'New story saved · Technical Challenge · "Vendor migration"', when: '1h ago' },
-    { kind: 'sheet',  text: 'Created cheat sheet · Northwind Media', when: 'Yesterday' },
+    {
+      kind: 'resume',
+      text: 'Rewrote bullet: "Led redesign" → "Led redesign of $4.2M checkout flow; +18% conversion"',
+      when: '12m ago',
+    },
+    {
+      kind: 'story',
+      text: 'New story saved · Technical Challenge · "Vendor migration"',
+      when: '1h ago',
+    },
+    { kind: 'sheet', text: 'Created cheat sheet · Northwind Media', when: 'Yesterday' },
     { kind: 'resume', text: 'AI flagged 3 vague verbs in Experience §', when: 'Yesterday' },
   ],
 };
 
 // SVG Ring Component
-function MVRing({ pct, size = 40, stroke = 3, color = '#1a1814', track = 'rgba(26,24,20,0.09)', children }: any) {
+function MVRing({
+  pct,
+  size = 40,
+  stroke = 3,
+  color = '#1a1814',
+  track = 'rgba(26,24,20,0.09)',
+  children,
+}: any) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   return (
@@ -57,13 +126,23 @@ function MVRing({ pct, size = 40, stroke = 3, color = '#1a1814', track = 'rgba(2
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke} />
         <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} strokeLinecap="round"
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - pct / 100)}
+          strokeLinecap="round"
           style={{ transition: 'stroke-dashoffset .6s' }}
         />
       </svg>
       {children && (
-        <div className="absolute inset-0 flex items-center justify-center font-semibold" style={{ fontSize: size * 0.28 }}>
+        <div
+          className="absolute inset-0 flex items-center justify-center font-semibold"
+          style={{ fontSize: size * 0.28 }}
+        >
           {children}
         </div>
       )}
@@ -72,13 +151,24 @@ function MVRing({ pct, size = 40, stroke = 3, color = '#1a1814', track = 'rgba(2
 }
 
 function MVDot({ c, size = 8 }: { c: string; size?: number }) {
-  return <span style={{ display: 'inline-block', width: size, height: size, borderRadius: size, background: c, flexShrink: 0 }} />;
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        width: size,
+        height: size,
+        borderRadius: size,
+        background: c,
+        flexShrink: 0,
+      }}
+    />
+  );
 }
 
 export function Dashboard() {
   const [activeStep, setActiveStep] = useState('stories');
   const steps = MV_DATA.loop;
-  
+
   // Real data integrations
   const userService = useUser();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -105,7 +195,9 @@ export function Dashboard() {
       {/* Linear Roadmap */}
       <div className="px-14 py-6 pb-3 relative">
         <div className="flex items-baseline justify-between mb-6">
-          <div className="text-[13px] font-semibold text-ink-2 tracking-wide uppercase">The Core Loop</div>
+          <div className="text-[13px] font-semibold text-ink-2 tracking-wide uppercase">
+            The Core Loop
+          </div>
           <div className="font-mono text-[11px] text-ink-3">2 of 6 complete · 38% overall</div>
         </div>
         <Roadmap steps={steps} active={activeStep} onSelect={setActiveStep} />
@@ -161,10 +253,23 @@ function Roadmap({ steps, active, onSelect }: any) {
                 ) : (
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-semibold transition-colors"
-                    style={{ background: bg, border: `2px solid ${border}`, color: done ? '#fff' : color }}
+                    style={{
+                      background: bg,
+                      border: `2px solid ${border}`,
+                      color: done ? '#fff' : color,
+                    }}
                   >
-                    {done ? '✓' : locked ? (
-                      <svg width="11" height="13" viewBox="0 0 11 13" fill="none" stroke="currentColor" strokeWidth="1.4">
+                    {done ? (
+                      '✓'
+                    ) : locked ? (
+                      <svg
+                        width="11"
+                        height="13"
+                        viewBox="0 0 11 13"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.4"
+                      >
                         <rect x="1.5" y="5.5" width="8" height="6" rx="1" />
                         <path d="M3 5.5V3.5a2.5 2.5 0 015 0v2" />
                       </svg>
@@ -181,9 +286,7 @@ function Roadmap({ steps, active, onSelect }: any) {
                 <div className={`text-[14px] font-semibold ${locked ? 'text-ink-3' : 'text-ink'}`}>
                   {s.label}
                 </div>
-                <div className="text-[12px] text-ink-3 mt-0.5 max-w-[150px]">
-                  {s.caption}
-                </div>
+                <div className="text-[12px] text-ink-3 mt-0.5 max-w-[150px]">{s.caption}</div>
               </div>
             </button>
           );
@@ -268,9 +371,12 @@ function StoriesDetail() {
         })}
       </div>
       <div className="mt-3.5 p-3 bg-accent-lo text-[13px] flex items-center gap-2.5">
-        <div className="font-mono text-[10px] text-accent-hi tracking-widest font-semibold">COACH</div>
+        <div className="font-mono text-[10px] text-accent-hi tracking-widest font-semibold">
+          COACH
+        </div>
         <div className="text-ink">
-          You're missing <b className="font-semibold">Conflict</b> and <b className="font-semibold">Customer Obsession</b> — both likely at Northwind.
+          You're missing <b className="font-semibold">Conflict</b> and{' '}
+          <b className="font-semibold">Customer Obsession</b> — both likely at Northwind.
         </div>
       </div>
     </div>
@@ -283,7 +389,12 @@ function ResumeDetail() {
     <div className="mt-7 grid grid-cols-3 gap-4">
       <StatBlock big={r.score} small={`/ ${r.target} target`} label="ATS Score" color="#d9532b" />
       <StatBlock big={r.hotZones} small="impressive" label="Hot Zones" color="#3d8a4a" />
-      <StatBlock big={r.vulnerabilities} small="need work" label="Vulnerabilities" color="#c7851a" />
+      <StatBlock
+        big={r.vulnerabilities}
+        small="need work"
+        label="Vulnerabilities"
+        color="#c7851a"
+      />
     </div>
   );
 }
@@ -301,7 +412,9 @@ function StatBlock({ big, small, label, color }: any) {
     <div className="border border-rule p-3.5">
       <div className="text-[10px] tracking-widest text-ink-3 font-mono mb-2 uppercase">{label}</div>
       <div className="flex items-baseline gap-2">
-        <div className="font-serif text-[40px] font-normal leading-none" style={{ color }}>{big}</div>
+        <div className="font-serif text-[40px] font-normal leading-none" style={{ color }}>
+          {big}
+        </div>
         <div className="text-[12px] text-ink-3">{small}</div>
       </div>
     </div>
@@ -311,19 +424,34 @@ function StatBlock({ big, small, label, color }: any) {
 function UpcomingInterviews() {
   return (
     <div>
-      <div className="text-[13px] font-semibold text-ink-2 tracking-wide uppercase mb-3.5">Upcoming</div>
+      <div className="text-[13px] font-semibold text-ink-2 tracking-wide uppercase mb-3.5">
+        Upcoming
+      </div>
       <div className="flex flex-col gap-2.5">
         {MV_DATA.companies.map((c, i) => (
-          <div key={c.name} className="bg-card border border-rule px-4 py-3.5 flex items-center gap-3.5 hover:bg-bg transition-colors cursor-pointer">
-            <div className={`w-11 h-11 flex items-center justify-center font-serif text-lg text-white ${i === 0 ? 'bg-accent-hi' : 'bg-ink'}`}>
-              {c.name.split(' ').map((w) => w[0]).join('').slice(0, 2)}
+          <div
+            key={c.name}
+            className="bg-card border border-rule px-4 py-3.5 flex items-center gap-3.5 hover:bg-bg transition-colors cursor-pointer"
+          >
+            <div
+              className={`w-11 h-11 flex items-center justify-center font-serif text-lg text-white ${i === 0 ? 'bg-accent-hi' : 'bg-ink'}`}
+            >
+              {c.name
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .slice(0, 2)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[14px] font-semibold text-ink truncate">{c.name}</div>
-              <div className="text-[12px] text-ink-3 truncate">{c.role} · {c.stage}</div>
+              <div className="text-[12px] text-ink-3 truncate">
+                {c.role} · {c.stage}
+              </div>
             </div>
             <div className="text-right">
-              <div className={`font-mono text-[11px] font-semibold ${c.days <= 3 ? 'text-accent-hi' : 'text-ink-2'}`}>
+              <div
+                className={`font-mono text-[11px] font-semibold ${c.days <= 3 ? 'text-accent-hi' : 'text-ink-2'}`}
+              >
                 {c.days}d
               </div>
               <div className="text-[10px] text-ink-3 mt-0.5">{c.ready}% ready</div>
@@ -338,11 +466,18 @@ function UpcomingInterviews() {
 function RecentActivity() {
   return (
     <div>
-      <div className="text-[13px] font-semibold text-ink-2 tracking-wide uppercase mb-3.5">Recent</div>
+      <div className="text-[13px] font-semibold text-ink-2 tracking-wide uppercase mb-3.5">
+        Recent
+      </div>
       <div className="flex flex-col gap-0.5">
         {MV_DATA.activity.map((a, i) => (
-          <div key={i} className={`py-2.5 flex gap-3 ${i < MV_DATA.activity.length - 1 ? 'border-b border-rule' : ''}`}>
-            <div className="font-mono text-[10px] text-ink-3 w-[54px] shrink-0 pt-0.5">{a.when}</div>
+          <div
+            key={i}
+            className={`py-2.5 flex gap-3 ${i < MV_DATA.activity.length - 1 ? 'border-b border-rule' : ''}`}
+          >
+            <div className="font-mono text-[10px] text-ink-3 w-[54px] shrink-0 pt-0.5">
+              {a.when}
+            </div>
             <div className="text-[13px] text-ink-2 leading-relaxed">{a.text}</div>
           </div>
         ))}

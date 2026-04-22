@@ -38,7 +38,7 @@ export function TopNavBar() {
         </div>
         <div className="font-serif text-xl font-medium tracking-tight text-ink">Mockvue</div>
       </div>
-      
+
       <nav className="flex gap-7 text-[14px] text-ink-2 ml-8">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '');
