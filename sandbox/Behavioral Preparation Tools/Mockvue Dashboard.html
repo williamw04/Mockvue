@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Mockvue · Dashboard Explorations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin:0; padding:0; height:100%; background:#f0eee9; }
+  * { box-sizing: border-box; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="components/shared.jsx"></script>
+<script type="text/babel" src="components/dash-roadmap.jsx"></script>
+<script type="text/babel" src="components/dash-grid.jsx"></script>
+<script type="text/babel" src="components/dash-orbital.jsx"></script>
+<script type="text/babel" src="components/dash-editorial.jsx"></script>
+<script type="text/babel" src="components/sheet-data.jsx"></script>
+<script type="text/babel" src="components/sheet-workbook.jsx"></script>
+<script type="text/babel" src="components/sheet-strategyboard.jsx"></script>
+<script type="text/babel" src="components/sheet-carddeck.jsx"></script>
+<script type="text/babel" src="components/color-swatches.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="dashboards" title="Dashboard — the guided roadmap"
+        subtitle="Four takes on the core-loop dashboard. Click any artboard to open it full-size.">
+        <DCArtboard id="roadmap" label="A · Linear Roadmap — the showpiece" width={1280} height={900}>
+          <MVDashRoadmap/>
+        </DCArtboard>
+        <DCArtboard id="grid" label="B · Editorial Grid — analyst brief" width={1280} height={1200}>
+          <MVDashGrid/>
+        </DCArtboard>
+        <DCArtboard id="orbital" label="C · Constellation — spatial metaphor" width={1280} height={820}>
+          <MVDashOrbital/>
+        </DCArtboard>
+        <DCArtboard id="editorial" label="D · Field Notebook — coach as editor" width={1280} height={1200}>
+          <MVDashEditorial/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="sheets" title="Company Cheat Sheets — three treatments"
+        subtitle="Three takes on the 10-section behavioral cheat sheet template. Same content, different ergonomics.">
+        <DCArtboard id="workbook" label="A · Living Workbook — long-form, nav'd" width={1280} height={900}>
+          <MVSheetWorkbook/>
+        </DCArtboard>
+        <DCArtboard id="strategyboard" label="B · Strategy Board — one screen, at-a-glance" width={1280} height={1400}>
+          <MVSheetStrategyBoard/>
+        </DCArtboard>
+        <DCArtboard id="carddeck" label="C · Index Card Deck — night-before review" width={1280} height={820}>
+          <MVSheetCardDeck/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="palette" title="Color / accent exploration"
+        subtitle="Same shell, different accents. Each tone shifts the mood of the product.">
+        <DCArtboard id="ember"    label="Ember — urgency"    width={320} height={620}><MVColorSwatch accentKey="ember"/></DCArtboard>
+        <DCArtboard id="moss"     label="Moss — confidence"  width={320} height={620}><MVColorSwatch accentKey="moss"/></DCArtboard>
+        <DCArtboard id="cobalt"   label="Cobalt — corporate" width={320} height={620}><MVColorSwatch accentKey="cobalt"/></DCArtboard>
+        <DCArtboard id="graphite" label="Graphite — editorial" width={320} height={620}><MVColorSwatch accentKey="graphite"/></DCArtboard>
+        <DCArtboard id="clay"     label="Clay — craft"       width={320} height={620}><MVColorSwatch accentKey="clay"/></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
