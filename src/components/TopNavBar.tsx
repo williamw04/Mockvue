@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
   { label: 'Dashboard', path: '/' },
-  { label: 'Resume', path: '/resume-review' },
+  { label: 'Resume Architect', path: '/resume-architect' },
   { label: 'Stories', path: '/stories' },
   { label: 'Cheat Sheets', path: '/document' },
   { label: 'Practice', path: '/practice' },
@@ -41,7 +41,8 @@ export function TopNavBar() {
 
       <nav className="flex gap-7 text-[14px] text-ink-2 ml-8">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '');
+          const isActive =
+            location.pathname === item.path || (item.path === '/' && location.pathname === '');
           return (
             <button
               key={item.path}

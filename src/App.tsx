@@ -6,7 +6,7 @@ import OnboardingFlow from './components/onboarding/OnboardingFlow';
 import StoriesPage from './components/StoriesPage';
 import DocumentPage from './components/documents/DocumentPage';
 import ProfilePage from './components/ProfilePage';
-import ResumeReviewPage from './components/ResumeReviewPage';
+import ResumeArchitectPage from './components/resume-architect/ResumeArchitectPage';
 import PracticePage from './components/PracticePage';
 import VoiceInterviewPracticePage from './components/VoiceInterviewPracticePage';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
@@ -108,10 +108,10 @@ function App() {
             }
           />
           <Route
-            path="/resume-review"
+            path="/resume-architect"
             element={
               <ProtectedRoute>
-                <ResumeReviewPage />
+                <ResumeArchitectPage />
               </ProtectedRoute>
             }
           />
