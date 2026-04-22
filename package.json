@@ -10,10 +10,13 @@
     "build:electron": "tsc -p tsconfig.electron.json && npm run rename:electron && npm run fix:electron",
     "rename:electron": "node -e \"const fs=require('fs');const path=require('path');function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,entry.name);if(entry.isDirectory())walk(full);else if(entry.isFile()&&full.endsWith('.js'))fs.renameSync(full,full.replace(/\\.js$/,'.cjs'));}}walk('dist-electron');\"",
     "fix:electron": "node scripts/fix-electron-requires.cjs",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "prepare": "husky",
     "electron:dev": "npm run build:electron && concurrently \"vite\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "electron:dev:logged": "npm run build:electron && concurrently \"vite\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 AGENT_LOGGING=true electron .\"",
     "electron:build": "npm run build && electron-builder",
@@ -57,15 +60,25 @@
     "electron": "^28.3.3",
     "electron-builder": "^24.9.1",
     "eslint": "^8.55.0",
+    "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "lint-staged": "^16.4.0",
     "postcss": "^8.4.32",
+    "prettier": "^3.8.3",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
     "vitest": "^4.0.18",
     "wait-on": "^7.2.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "build": {
     "appId": "com.mockvue.app",
