@@ -77,11 +77,11 @@ Help users analyze and improve their resume through AI-powered coaching. The age
 1. **Bullet Analysis** - Every resume bullet gets an impact score (1-10) and issue tags (weak verb, no metrics, passive voice, bad structure, too brief). Each bullet gets a suggested rewrite.
 2. **Trigger Points** - Identifies aspects of the resume that interviewers will ask about. User rates their comfort level for each (have story / comfortable / not comfortable).
 3. **ATS Compatibility** - Algorithmic checks on PDF formatting (single-column, fonts, headings, graphics, chronology). Scores 0-100 with pass/warning/fail per check.
-4. **AI Coaching Chat** - A Gemini-powered agent with access to 16 tools. It reads the user's resume, proposes specific edits, tracks goals and todos, and saves resume version snapshots. Users accept, reject, or modify proposed changes.
+4. **AI Coaching Chat** - A Gemini-powered agent with access to tools. It reads the user's resume, proposes specific edits, tracks goals and todos, and saves resume version snapshots. Users accept, reject, or modify proposed changes.
 5. **Coaching Workspace** - Sidebar showing goals (with progress), todos (with status), and version history.
 
 ### The AI Agent
-It's a single Gemini model with a system prompt and 16 tools. NOT a multi-agent pipeline. The tools let it:
+It's a single Gemini model with a system prompt and tools. NOT a multi-agent pipeline. The tools let it:
 - Read resume data, bullet analyses, trigger points, stories
 - Search across all user data by keyword
 - Create goals, todos, and track progress

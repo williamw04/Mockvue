@@ -7,8 +7,11 @@ import StoriesPage from "./components/StoriesPage";
 import DocumentPage from "./components/documents/DocumentPage";
 import ProfilePage from "./components/ProfilePage";
 import ResumeReviewPage from "./components/ResumeReviewPage";
+import PracticePage from "./components/PracticePage";
+import VoiceInterviewPracticePage from "./components/VoiceInterviewPracticePage";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import CheatSheetListPage from "./components/documents/CheatSheetListPage";
 import { useUser } from "./services";
 
 // Use HashRouter for Electron compatibility
@@ -17,7 +20,7 @@ const Router = HashRouter;
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const userService = useUser();
   const [loading, setLoading] = useState(true);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
 
   useEffect(() => {
     checkOnboarding();
@@ -25,12 +28,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const checkOnboarding = async () => {
     try {
-      const profile = await userService.getUserProfile();
+      await userService.getUserProfile();
 
-      setOnboardingComplete(profile?.onboardingCompleted || false);
+      // Temporarily bypass onboarding check
+      setOnboardingComplete(true);
     } catch (error) {
       console.error('Error checking onboarding:', error);
-      setOnboardingComplete(false);
+      // Temporarily bypass onboarding check
+      setOnboardingComplete(true);
     } finally {
       setLoading(false);
     }
@@ -73,7 +78,7 @@ function App() {
             path="/document"
             element={
               <ProtectedRoute>
-                <DocumentPage />
+                <CheatSheetListPage />
               </ProtectedRoute>
             }
           />
@@ -98,6 +103,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <ResumeReviewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practice"
+            element={
+              <ProtectedRoute>
+                <PracticePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practice/voice"
+            element={
+              <ProtectedRoute>
+                <VoiceInterviewPracticePage />
               </ProtectedRoute>
             }
           />

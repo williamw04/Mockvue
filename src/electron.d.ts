@@ -117,6 +117,29 @@ export interface ElectronAPI {
   voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => Promise<VoiceTranscriptEvent>;
   voiceInterviewGetEvents: (sessionId: string) => Promise<VoiceInterviewEvent[]>;
 
+  // Voice interview streaming operations (STT-LLM-TTS pipeline)
+  voiceInterviewStreamingCreate: (input: { sessionId: string; deepgramApiKey: string; geminiApiKey: string; interviewConfig: unknown }) => Promise<{ success: boolean; sessionId: string }>;
+  voiceInterviewStreamingStart: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingSendAudio: (sessionId: string, audioBase64: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingPause: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingResume: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingInterrupt: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingEnd: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingGetState: (sessionId: string) => Promise<{ pipelineState: string; isReady: boolean }>;
+  voiceInterviewStreamingListActive: () => Promise<string[]>;
+
+  // Voice interview streaming event listeners
+  onVoiceInterviewCandidateTranscript: (callback: (sessionId: string, text: string, isFinal: boolean) => void) => () => void;
+  onVoiceInterviewInterviewerResponse: (callback: (sessionId: string, text: string) => void) => () => void;
+  onVoiceInterviewAudioOutput: (callback: (sessionId: string, audioBase64: string) => void) => () => void;
+  onVoiceInterviewStateChange: (callback: (sessionId: string, state: unknown) => void) => () => void;
+  onVoiceInterviewPhaseChange: (callback: (sessionId: string, from: string, to: string) => void) => () => void;
+  onVoiceInterviewSpeechStarted: (callback: (sessionId: string) => void) => () => void;
+  onVoiceInterviewSpeechEnded: (callback: (sessionId: string) => void) => () => void;
+  onVoiceInterviewError: (callback: (sessionId: string, error: string) => void) => () => void;
+  onVoiceInterviewSessionReady: (callback: (sessionId: string) => void) => () => void;
+  onVoiceInterviewSessionEnded: (callback: (sessionId: string) => void) => () => void;
+
   // Document operations
   getDocuments: () => Promise<Document[]>;
   getDocument: (id: string) => Promise<Document | null>;

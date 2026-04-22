@@ -18,34 +18,49 @@ export interface AgentLogSession {
 }
 
 class AgentLogger {
-  private logsDir: string;
+  private logsDir: string | null = null;
   private enabled: boolean;
   private currentSession: AgentLogSession | null = null;
   private currentLogFile: string | null = null;
+  private initialized: boolean = false;
 
   constructor() {
-    const userDataPath = app.getPath('userData');
-    this.logsDir = path.join(userDataPath, 'agent-logs');
     this.enabled = process.env.AGENT_LOGGING === 'true' || process.env.AGENT_LOGGING === '1';
+  }
+
+  private initialize(): void {
+    if (this.initialized) return;
     
-    if (this.enabled) {
-      this.ensureLogsDirectory();
-      console.log('[AgentLogger] Logging enabled. Logs directory:', this.logsDir);
+    try {
+      const userDataPath = app.getPath('userData');
+      this.logsDir = path.join(userDataPath, 'agent-logs');
+      this.initialized = true;
+      
+      if (this.enabled) {
+        this.ensureLogsDirectory();
+        console.log('[AgentLogger] Logging enabled. Logs directory:', this.logsDir);
+      }
+    } catch {
+      // App not ready yet, will initialize later
+      this.logsDir = null;
     }
   }
 
   private ensureLogsDirectory(): void {
+    if (!this.logsDir) return;
     if (!fs.existsSync(this.logsDir)) {
       fs.mkdirSync(this.logsDir, { recursive: true });
     }
   }
 
   isEnabled(): boolean {
+    this.initialize();
     return this.enabled;
   }
 
   startSession(sessionId: string, assistantId: string): void {
-    if (!this.enabled) return;
+    this.initialize();
+    if (!this.enabled || !this.logsDir) return;
 
     this.currentSession = {
       sessionId,
@@ -56,13 +71,14 @@ class AgentLogger {
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     this.currentLogFile = path.join(
-      this.logsDir, 
+      this.logsDir!,
       `session-${sessionId.substring(0, 8)}-${timestamp}.json`
     );
   }
 
   log(entry: Omit<AgentLogEntry, 'timestamp' | 'sessionId' | 'assistantId'>): void {
-    if (!this.enabled || !this.currentSession) return;
+    this.initialize();
+    if (!this.enabled || !this.currentSession || !this.logsDir) return;
 
     const fullEntry: AgentLogEntry = {
       timestamp: new Date().toISOString(),
@@ -136,7 +152,8 @@ class AgentLogger {
   }
 
   endSession(): void {
-    if (!this.enabled || !this.currentSession || !this.currentLogFile) return;
+    this.initialize();
+    if (!this.enabled || !this.currentSession || !this.currentLogFile || !this.logsDir) return;
 
     this.flushToFile();
     this.currentSession = null;
@@ -144,7 +161,7 @@ class AgentLogger {
   }
 
   private flushToFile(): void {
-    if (!this.currentSession || !this.currentLogFile) return;
+    if (!this.currentSession || !this.currentLogFile || !this.logsDir) return;
 
     const content = JSON.stringify(this.currentSession, null, 2);
     fs.writeFileSync(this.currentLogFile, content, 'utf-8');
@@ -181,11 +198,13 @@ class AgentLogger {
   }
 
   getLogsDir(): string {
-    return this.logsDir;
+    this.initialize();
+    return this.logsDir || '';
   }
 
   listRecentLogs(maxCount: number = 10): string[] {
-    if (!fs.existsSync(this.logsDir)) {
+    this.initialize();
+    if (!this.logsDir || !fs.existsSync(this.logsDir)) {
       return [];
     }
 
@@ -195,7 +214,7 @@ class AgentLogger {
       .reverse()
       .slice(0, maxCount);
 
-    return files.map(f => path.join(this.logsDir, f));
+    return files.map(f => path.join(this.logsDir!, f));
   }
 }
 

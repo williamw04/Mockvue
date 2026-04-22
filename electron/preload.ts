@@ -194,6 +194,29 @@ export interface ElectronAPI {
   voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => Promise<VoiceTranscriptEvent>;
   voiceInterviewGetEvents: (sessionId: string) => Promise<VoiceInterviewEvent[]>;
 
+  // Voice interview streaming operations (STT-LLM-TTS pipeline)
+  voiceInterviewStreamingCreate: (input: any) => Promise<{ success: boolean; sessionId: string }>;
+  voiceInterviewStreamingStart: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingSendAudio: (sessionId: string, audioBase64: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingPause: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingResume: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingInterrupt: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingEnd: (sessionId: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingGetState: (sessionId: string) => Promise<{ pipelineState: string; isReady: boolean }>;
+  voiceInterviewStreamingListActive: () => Promise<string[]>;
+
+  // Voice interview streaming event listeners
+  onVoiceInterviewCandidateTranscript: (callback: (sessionId: string, text: string, isFinal: boolean) => void) => () => void;
+  onVoiceInterviewInterviewerResponse: (callback: (sessionId: string, text: string) => void) => () => void;
+  onVoiceInterviewAudioOutput: (callback: (sessionId: string, audioBase64: string) => void) => () => void;
+  onVoiceInterviewStateChange: (callback: (sessionId: string, state: any) => void) => () => void;
+  onVoiceInterviewPhaseChange: (callback: (sessionId: string, from: string, to: string) => void) => () => void;
+  onVoiceInterviewSpeechStarted: (callback: (sessionId: string) => void) => () => void;
+  onVoiceInterviewSpeechEnded: (callback: (sessionId: string) => void) => () => void;
+  onVoiceInterviewError: (callback: (sessionId: string, error: string) => void) => () => void;
+  onVoiceInterviewSessionReady: (callback: (sessionId: string) => void) => () => void;
+  onVoiceInterviewSessionEnded: (callback: (sessionId: string) => void) => () => void;
+
   coaching: {
     getSessionData: (sessionId: string) => Promise<CoachingSessionData>;
     addGoal: (sessionId: string, input: any) => Promise<CoachingGoal>;
@@ -325,6 +348,73 @@ contextBridge.exposeInMainWorld('electronAPI', {
   voiceInterviewGetTranscript: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-transcript', sessionId),
   voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => ipcRenderer.invoke('voice-interview:append-transcript-event', sessionId, input),
   voiceInterviewGetEvents: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-events', sessionId),
+
+  // Voice interview streaming operations (STT-LLM-TTS pipeline)
+  voiceInterviewStreamingCreate: (input: any) => ipcRenderer.invoke('voice-interview-streaming:create', input),
+  voiceInterviewStreamingStart: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:start', sessionId),
+  voiceInterviewStreamingSendAudio: (sessionId: string, audioBase64: string) => 
+    ipcRenderer.invoke('voice-interview-streaming:send-audio', { sessionId, audioBase64 }),
+  voiceInterviewStreamingPause: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:pause', sessionId),
+  voiceInterviewStreamingResume: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:resume', sessionId),
+  voiceInterviewStreamingInterrupt: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:interrupt', sessionId),
+  voiceInterviewStreamingEnd: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:end', sessionId),
+  voiceInterviewStreamingGetState: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:get-state', sessionId),
+  voiceInterviewStreamingListActive: () => ipcRenderer.invoke('voice-interview-streaming:list-active'),
+
+  // Voice interview streaming event listeners
+  onVoiceInterviewCandidateTranscript: (callback: (sessionId: string, text: string, isFinal: boolean) => void) => {
+    const listener = (_event: any, data: { sessionId: string; text: string; isFinal: boolean }) => 
+      callback(data.sessionId, data.text, data.isFinal);
+    ipcRenderer.on('voice-interview:candidate-transcript', listener);
+    return () => ipcRenderer.removeListener('voice-interview:candidate-transcript', listener);
+  },
+  onVoiceInterviewInterviewerResponse: (callback: (sessionId: string, text: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string; text: string }) => callback(data.sessionId, data.text);
+    ipcRenderer.on('voice-interview:interviewer-response', listener);
+    return () => ipcRenderer.removeListener('voice-interview:interviewer-response', listener);
+  },
+  onVoiceInterviewAudioOutput: (callback: (sessionId: string, audioBase64: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string; audioBase64: string }) => 
+      callback(data.sessionId, data.audioBase64);
+    ipcRenderer.on('voice-interview:audio-output', listener);
+    return () => ipcRenderer.removeListener('voice-interview:audio-output', listener);
+  },
+  onVoiceInterviewStateChange: (callback: (sessionId: string, state: any) => void) => {
+    const listener = (_event: any, data: { sessionId: string; state: any }) => callback(data.sessionId, data.state);
+    ipcRenderer.on('voice-interview:state-change', listener);
+    return () => ipcRenderer.removeListener('voice-interview:state-change', listener);
+  },
+  onVoiceInterviewPhaseChange: (callback: (sessionId: string, from: string, to: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string; from: string; to: string }) => 
+      callback(data.sessionId, data.from, data.to);
+    ipcRenderer.on('voice-interview:phase-change', listener);
+    return () => ipcRenderer.removeListener('voice-interview:phase-change', listener);
+  },
+  onVoiceInterviewSpeechStarted: (callback: (sessionId: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string }) => callback(data.sessionId);
+    ipcRenderer.on('voice-interview:speech-started', listener);
+    return () => ipcRenderer.removeListener('voice-interview:speech-started', listener);
+  },
+  onVoiceInterviewSpeechEnded: (callback: (sessionId: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string }) => callback(data.sessionId);
+    ipcRenderer.on('voice-interview:speech-ended', listener);
+    return () => ipcRenderer.removeListener('voice-interview:speech-ended', listener);
+  },
+  onVoiceInterviewError: (callback: (sessionId: string, error: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string; error: string }) => callback(data.sessionId, data.error);
+    ipcRenderer.on('voice-interview:error', listener);
+    return () => ipcRenderer.removeListener('voice-interview:error', listener);
+  },
+  onVoiceInterviewSessionReady: (callback: (sessionId: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string }) => callback(data.sessionId);
+    ipcRenderer.on('voice-interview:session-ready', listener);
+    return () => ipcRenderer.removeListener('voice-interview:session-ready', listener);
+  },
+  onVoiceInterviewSessionEnded: (callback: (sessionId: string) => void) => {
+    const listener = (_event: any, data: { sessionId: string }) => callback(data.sessionId);
+    ipcRenderer.on('voice-interview:session-ended', listener);
+    return () => ipcRenderer.removeListener('voice-interview:session-ended', listener);
+  },
 
   coaching: {
     getSessionData: (sessionId: string) => ipcRenderer.invoke('coaching:get-session-data', sessionId),
