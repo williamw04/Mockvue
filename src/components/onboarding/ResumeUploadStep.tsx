@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { useUser, useNotifications } from '../../services';
 import { WorkExperience, Education } from '../../types';
@@ -11,16 +12,15 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
   const notifications = useNotifications();
 
   const [workExperiences, setWorkExperiences] = useState<Partial<WorkExperience>[]>([
-    { company: '', position: '', startDate: '', endDate: '', description: '', achievements: [''] }
+    { company: '', position: '', startDate: '', endDate: '', description: '', achievements: [''] },
   ]);
   const [education, setEducation] = useState<Partial<Education>[]>([
-    { school: '', degree: '', field: '', startDate: '', endDate: '' }
+    { school: '', degree: '', field: '', startDate: '', endDate: '' },
   ]);
   const [projects, setProjects] = useState<any[]>([]);
   const [skills, setSkills] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Parsing State
   const [file, setFile] = useState<{ path: string; name: string } | null>(null);
   const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isParsing, setIsParsing] = useState(false);
@@ -51,7 +51,6 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
 
       if (response.success && response.data) {
         const data = response.data;
-        // Populate state with parsed data
         if (data.workExperience && data.workExperience.length > 0) {
           setWorkExperiences(data.workExperience);
         }
@@ -70,7 +69,6 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
 
         setParseStatus('success');
 
-        // Store raw text and PDF path from response
         if (response.rawText) setRawText(response.rawText);
         if (response.pdfPath) setResumePdfPath(response.pdfPath);
 
@@ -90,11 +88,22 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
   const addWorkExperience = () => {
     setWorkExperiences([
       ...workExperiences,
-      { company: '', position: '', startDate: '', endDate: '', description: '', achievements: [''] },
+      {
+        company: '',
+        position: '',
+        startDate: '',
+        endDate: '',
+        description: '',
+        achievements: [''],
+      },
     ]);
   };
 
-  const updateWorkExperience = (index: number, field: keyof WorkExperience, value: string | string[]) => {
+  const updateWorkExperience = (
+    index: number,
+    field: keyof WorkExperience,
+    value: string | string[]
+  ) => {
     const updated = [...workExperiences];
     updated[index] = { ...updated[index], [field]: value };
     setWorkExperiences(updated);
@@ -169,98 +178,99 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="text-center mb-8">
-        <div className="text-5xl mb-4">📄</div>
-        <h1 className="text-3xl font-bold mb-2 text-gray-900">Add Your Resume</h1>
-        <p className="text-lg text-gray-600">
+      <div className="text-center mb-10">
+        <h1 className="font-serif text-5xl tracking-tight mb-4">Add Your Resume</h1>
+        <p className="text-ink-2 text-base">
           Upload a PDF to auto-fill, or enter your details manually below
         </p>
       </div>
 
-      {/* Upload Section — always visible at top */}
-      <div className="rounded-2xl p-6 mb-6 bg-surface shadow-lg border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">⚡ Quick Fill with AI</h3>
+      <div className="bg-card border border-rule p-8 mb-8">
+        <div className="font-mono text-[10px] text-accent-hi tracking-widest uppercase mb-2">
+          Quick Fill with AI
+        </div>
+        <h3 className="font-serif text-xl mb-6">Upload Your Resume</h3>
+
         <div className="flex flex-col sm:flex-row gap-4 items-start">
-          {/* File selector */}
           <div className="flex-1 w-full">
             <button
               onClick={handleFileSelect}
               disabled={isParsing}
-              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors text-sm font-medium"
+              className="w-full px-4 py-3 border-2 border-dashed border-rule text-ink-2 hover:border-accent-hi hover:text-accent-hi transition-colors text-sm font-medium bg-bg"
             >
-              {file ? `📄 ${file.name}` : '📁 Choose PDF Resume...'}
+              {file ? file.name : 'Choose PDF Resume...'}
             </button>
           </div>
 
-          {/* API Key */}
           <div className="flex-1 w-full">
             <input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Gemini API Key"
-              className="w-full px-4 py-3 border rounded-lg text-sm bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full px-4 py-3 border bg-bg border-rule text-ink placeholder-ink-3 focus:border-accent-hi focus:outline-none"
             />
           </div>
 
-          {/* Parse button */}
           <button
             onClick={handleParse}
             disabled={!file || !apiKey || isParsing}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors whitespace-nowrap text-sm"
+            className="bg-accent-hi text-white border-none px-6 py-3 text-[13px] font-semibold cursor-pointer disabled:bg-ink-3 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {isParsing ? '⏳ Parsing...' : '🚀 Parse'}
+            {isParsing ? 'Parsing...' : 'Parse'}
           </button>
         </div>
 
-        {/* Status messages */}
         {parseStatus === 'success' && (
-          <div className="mt-3 text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-200">
-            ✅ Resume parsed successfully! Review and edit the details below.
+          <div className="mt-4 text-sm text-ink bg-accent-lo p-4 border border-rule">
+            Resume parsed successfully! Review and edit the details below.
           </div>
         )}
         {parseStatus === 'error' && (
-          <div className="mt-3 text-sm text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
-            ❌ Parsing failed. Please check your API key and try again, or enter details manually.
+          <div className="mt-4 text-sm text-ink bg-bg p-4 border border-rule">
+            Parsing failed. Please check your API key and try again, or enter details manually.
           </div>
         )}
 
-        <p className="text-xs text-gray-400 mt-3">
+        <p className="text-xs text-ink-3 mt-4">
           Your API key is sent only to Google for parsing and is not stored.
         </p>
       </div>
 
-      {/* Manual Entry Section — always visible */}
-      <div className="rounded-2xl p-8 bg-surface shadow-xl">
-        <div className="space-y-8">
-          {/* Work Experience */}
+      <div className="bg-card border border-rule p-10">
+        <div className="space-y-10">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-gray-900">💼 Work Experience</h3>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="font-mono text-[10px] text-ink-3 tracking-widest uppercase mb-1">
+                  Experience
+                </div>
+                <h3 className="font-serif text-xl">Work Experience</h3>
+              </div>
               <button
                 onClick={addWorkExperience}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                className="bg-transparent text-ink border border-rule px-4 py-2 text-[13px] cursor-pointer hover:bg-accent-lo"
               >
                 + Add Experience
               </button>
             </div>
 
             {workExperiences.map((exp, expIndex) => (
-              <div key={expIndex} className="p-6 rounded-lg mb-4 bg-gray-50">
+              <div key={expIndex} className="p-6 mb-4 bg-bg border border-rule">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <input
                     type="text"
-                    placeholder="Company *"
+                    placeholder="Company"
                     value={exp.company || ''}
                     onChange={(e) => updateWorkExperience(expIndex, 'company', e.target.value)}
-                    className="px-4 py-2 rounded-lg border bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="px-4 py-2 border bg-card border-rule text-ink placeholder-ink-3 focus:border-accent-hi focus:outline-none"
                   />
                   <input
                     type="text"
-                    placeholder="Position *"
+                    placeholder="Position"
                     value={exp.position || ''}
                     onChange={(e) => updateWorkExperience(expIndex, 'position', e.target.value)}
-                    className="px-4 py-2 rounded-lg border bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="px-4 py-2 border bg-card border-rule text-ink placeholder-ink-3 focus:border-accent-hi focus:outline-none"
                   />
                 </div>
 
@@ -270,19 +280,19 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
                     placeholder="Start Date"
                     value={exp.startDate || ''}
                     onChange={(e) => updateWorkExperience(expIndex, 'startDate', e.target.value)}
-                    className="px-4 py-2 rounded-lg border bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="px-4 py-2 border bg-card border-rule text-ink placeholder-ink-3 focus:border-accent-hi focus:outline-none"
                   />
                   <input
                     type="month"
                     placeholder="End Date (leave empty if current)"
                     value={exp.endDate || ''}
                     onChange={(e) => updateWorkExperience(expIndex, 'endDate', e.target.value)}
-                    className="px-4 py-2 rounded-lg border bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="px-4 py-2 border bg-card border-rule text-ink placeholder-ink-3 focus:border-accent-hi focus:outline-none"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Key Achievements</label>
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-ink-2">Key Achievements</label>
                   {(exp.achievements || ['']).map((achievement, achIndex) => (
                     <input
                       key={achIndex}
@@ -290,12 +300,12 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
                       placeholder="e.g., Led team of 5 engineers to deliver feature ahead of schedule"
                       value={achievement}
                       onChange={(e) => updateAchievement(expIndex, achIndex, e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-4 py-2 border bg-card border-rule text-ink placeholder-ink-3 focus:border-accent-hi focus:outline-none"
                     />
                   ))}
                   <button
                     onClick={() => addAchievement(expIndex)}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    className="text-sm text-accent-hi font-medium"
                   >
                     + Add achievement
                   </button>
@@ -304,24 +314,25 @@ export default function ResumeUploadStep({ onComplete }: ResumeUploadStepProps) 
             ))}
           </div>
 
-          {/* Skills */}
           <div>
-            <h3 className="text-xl font-semibold mb-4 text-gray-900">🛠️ Skills</h3>
+            <div className="font-mono text-[10px] text-ink-3 tracking-widest uppercase mb-1">
+              Skills
+            </div>
+            <h3 className="font-serif text-xl mb-4">Your Skills</h3>
             <textarea
               placeholder="Enter your skills separated by commas (e.g., Python, React, Leadership, Communication)"
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-lg border bg-surface border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full px-4 py-3 border bg-bg border-rule text-ink placeholder-ink-3 focus:border-accent-hi focus:outline-none"
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-4">
             <button
               onClick={handleSave}
               disabled={isSaving || workExperiences.every((exp) => !exp.company && !exp.position)}
-              className="flex-1 px-6 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-lg"
+              className="flex-1 bg-accent-hi text-white border-none px-6 py-3 text-[13px] font-semibold cursor-pointer disabled:bg-ink-3 disabled:cursor-not-allowed"
             >
               {isSaving ? 'Saving...' : 'Continue'}
             </button>

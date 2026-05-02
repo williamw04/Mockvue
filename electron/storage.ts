@@ -1,107 +1,49 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * User Data Storage Manager for Electron
  * Handles user profile, resume, stories, and interview responses
+ * 
+ * Uses async file operations to avoid blocking the main process.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
+import type {
+  UserProfile,
+  WorkExperience,
+  Education,
+  Project,
+  Resume,
+  Story,
+  InterviewResponse,
+  DocumentQuestion,
+  Document,
+} from './internal-types';
 
-export interface UserProfile {
-  id: string;
-  name: string;
-  email?: string;
-  targetRole?: string;
-  targetCompany?: string;
-  onboardingCompleted: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+export type {
+  UserProfile,
+  WorkExperience,
+  Education,
+  Project,
+  Resume,
+  Story,
+  InterviewResponse,
+  DocumentQuestion,
+  Document,
+};
 
-export interface WorkExperience {
-  id: string;
-  company: string;
-  position: string;
-  startDate: string;
-  endDate?: string;
-  description: string;
-  achievements: string[];
-}
+const fsp = fs.promises;
 
-export interface Education {
-  id: string;
-  school: string;
-  degree: string;
-  field: string;
-  startDate: string;
-  endDate: string;
-  gpa?: string;
-}
-
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  role: string;
-  technologies: string[];
-  url?: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface Resume {
-  id: string;
-  userId: string;
-  workExperiences: WorkExperience[];
-  education: Education[];
-  skills: string[];
-  projects: Project[];
-  summary?: string;
-  rawText?: string;
-  resumePdfPath?: string;
-  coreStoryMatches?: any[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Story {
-  id: string;
-  userId: string;
-  title: string;
-  situation: string;
-  task: string;
-  action: string;
-  result: string;
-  tags: string[];
-  relatedExperienceId?: string;
-  coreCategory?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface InterviewResponse {
-  id: string;
-  userId: string;
-  question: string;
-  response: string;
-  storyIds: string[];
-  tags: string[];
-  isPracticed: boolean;
-  lastPracticedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-/**
- * User Data Storage Manager for Electron
- * Handles user profile, resume, stories, and interview responses
- */
 export class UserDataStorage {
   private userDataDir: string;
   private userProfileFile: string;
   private resumeFile: string;
   private storiesFile: string;
   private responsesFile: string;
+  private candidateProfileFile: string;
+  private resumeAnalysisFile: string;
+  private atsAnalysisFile: string;
 
   constructor() {
     const userDataPath = app.getPath('userData');
@@ -110,6 +52,9 @@ export class UserDataStorage {
     this.resumeFile = path.join(this.userDataDir, 'resume.json');
     this.storiesFile = path.join(this.userDataDir, 'stories.json');
     this.responsesFile = path.join(this.userDataDir, 'responses.json');
+    this.candidateProfileFile = path.join(this.userDataDir, 'candidate-profile.json');
+    this.resumeAnalysisFile = path.join(this.userDataDir, 'resume-analysis.json');
+    this.atsAnalysisFile = path.join(this.userDataDir, 'ats-analysis.json');
 
     this.ensureDirectories();
   }
@@ -124,14 +69,23 @@ export class UserDataStorage {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
+  private async readFileSafe(filePath: string): Promise<string | null> {
+    try {
+      return await fsp.readFile(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  private async writeFile(filePath: string, data: string): Promise<void> {
+    await fsp.writeFile(filePath, data, 'utf-8');
+  }
+
   // User Profile Methods
   async getUserProfile(): Promise<UserProfile | null> {
     try {
-      if (fs.existsSync(this.userProfileFile)) {
-        const data = fs.readFileSync(this.userProfileFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return null;
+      const data = await this.readFileSafe(this.userProfileFile);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting user profile:', error);
       return null;
@@ -154,7 +108,7 @@ export class UserDataStorage {
         updatedAt: now,
       };
 
-      fs.writeFileSync(this.userProfileFile, JSON.stringify(updated, null, 2), 'utf-8');
+      await this.writeFile(this.userProfileFile, JSON.stringify(updated, null, 2));
       return updated;
     } catch (error) {
       console.error('Error saving user profile:', error);
@@ -172,11 +126,8 @@ export class UserDataStorage {
   // Resume Methods
   async getResume(): Promise<Resume | null> {
     try {
-      if (fs.existsSync(this.resumeFile)) {
-        const data = fs.readFileSync(this.resumeFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return null;
+      const data = await this.readFileSafe(this.resumeFile);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting resume:', error);
       return null;
@@ -204,7 +155,7 @@ export class UserDataStorage {
         updatedAt: now,
       };
 
-      fs.writeFileSync(this.resumeFile, JSON.stringify(updated, null, 2), 'utf-8');
+      await this.writeFile(this.resumeFile, JSON.stringify(updated, null, 2));
       return updated;
     } catch (error) {
       console.error('Error saving resume:', error);
@@ -215,11 +166,8 @@ export class UserDataStorage {
   // Story Methods
   async getStories(): Promise<Story[]> {
     try {
-      if (fs.existsSync(this.storiesFile)) {
-        const data = fs.readFileSync(this.storiesFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return [];
+      const data = await this.readFileSafe(this.storiesFile);
+      return data ? JSON.parse(data) : [];
     } catch (error) {
       console.error('Error getting stories:', error);
       return [];
@@ -246,7 +194,7 @@ export class UserDataStorage {
       };
 
       stories.push(newStory);
-      fs.writeFileSync(this.storiesFile, JSON.stringify(stories, null, 2), 'utf-8');
+      await this.writeFile(this.storiesFile, JSON.stringify(stories, null, 2));
       return newStory;
     } catch (error) {
       console.error('Error creating story:', error);
@@ -273,7 +221,7 @@ export class UserDataStorage {
       };
 
       stories[index] = updated;
-      fs.writeFileSync(this.storiesFile, JSON.stringify(stories, null, 2), 'utf-8');
+      await this.writeFile(this.storiesFile, JSON.stringify(stories, null, 2));
       return updated;
     } catch (error) {
       console.error('Error updating story:', error);
@@ -285,7 +233,7 @@ export class UserDataStorage {
     try {
       const stories = await this.getStories();
       const filtered = stories.filter(s => s.id !== id);
-      fs.writeFileSync(this.storiesFile, JSON.stringify(filtered, null, 2), 'utf-8');
+      await this.writeFile(this.storiesFile, JSON.stringify(filtered, null, 2));
     } catch (error) {
       console.error('Error deleting story:', error);
       throw error;
@@ -295,11 +243,8 @@ export class UserDataStorage {
   // Interview Response Methods
   async getInterviewResponses(): Promise<InterviewResponse[]> {
     try {
-      if (fs.existsSync(this.responsesFile)) {
-        const data = fs.readFileSync(this.responsesFile, 'utf-8');
-        return JSON.parse(data);
-      }
-      return [];
+      const data = await this.readFileSafe(this.responsesFile);
+      return data ? JSON.parse(data) : [];
     } catch (error) {
       console.error('Error getting interview responses:', error);
       return [];
@@ -321,7 +266,7 @@ export class UserDataStorage {
       };
 
       responses.push(newResponse);
-      fs.writeFileSync(this.responsesFile, JSON.stringify(responses, null, 2), 'utf-8');
+      await this.writeFile(this.responsesFile, JSON.stringify(responses, null, 2));
       return newResponse;
     } catch (error) {
       console.error('Error creating interview response:', error);
@@ -348,7 +293,7 @@ export class UserDataStorage {
       };
 
       responses[index] = updated;
-      fs.writeFileSync(this.responsesFile, JSON.stringify(responses, null, 2), 'utf-8');
+      await this.writeFile(this.responsesFile, JSON.stringify(responses, null, 2));
       return updated;
     } catch (error) {
       console.error('Error updating interview response:', error);
@@ -360,37 +305,83 @@ export class UserDataStorage {
     try {
       const responses = await this.getInterviewResponses();
       const filtered = responses.filter(r => r.id !== id);
-      fs.writeFileSync(this.responsesFile, JSON.stringify(filtered, null, 2), 'utf-8');
+      await this.writeFile(this.responsesFile, JSON.stringify(filtered, null, 2));
     } catch (error) {
       console.error('Error deleting interview response:', error);
       throw error;
     }
   }
+
+  // Candidate Profile Methods (Resume Architect output)
+  async getCandidateProfile(): Promise<any | null> {
+    try {
+      const data = await this.readFileSafe(this.candidateProfileFile);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error getting candidate profile:', error);
+      return null;
+    }
+  }
+
+  async saveCandidateProfile(profile: any): Promise<any> {
+    try {
+      const now = new Date().toISOString();
+      const updated = {
+        ...profile,
+        updatedAt: now,
+        createdAt: profile.createdAt || now,
+      };
+      await this.writeFile(this.candidateProfileFile, JSON.stringify(updated, null, 2));
+      return updated;
+    } catch (error) {
+      console.error('Error saving candidate profile:', error);
+      throw error;
+    }
+  }
+
+  // Resume Analysis Methods (cached analysis results)
+  async getResumeAnalysis(): Promise<any | null> {
+    try {
+      const data = await this.readFileSafe(this.resumeAnalysisFile);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error getting resume analysis:', error);
+      return null;
+    }
+  }
+
+  async saveResumeAnalysis(analysis: any): Promise<any> {
+    try {
+      await this.writeFile(this.resumeAnalysisFile, JSON.stringify(analysis, null, 2));
+      return analysis;
+    } catch (error) {
+      console.error('Error saving resume analysis:', error);
+      throw error;
+    }
+  }
+
+  // ATS Analysis Methods (cached analysis results)
+  async getAtsAnalysis(): Promise<any | null> {
+    try {
+      const data = await this.readFileSafe(this.atsAnalysisFile);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error getting ATS analysis:', error);
+      return null;
+    }
+  }
+
+  async saveAtsAnalysis(analysis: any): Promise<any> {
+    try {
+      await this.writeFile(this.atsAnalysisFile, JSON.stringify(analysis, null, 2));
+      return analysis;
+    } catch (error) {
+      console.error('Error saving ATS analysis:', error);
+      throw error;
+    }
+  }
 }
 
-export interface DocumentQuestion {
-  id: string;
-  text: string;
-  response: string;
-  isExpanded: boolean;
-}
-
-export interface Document {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string;
-  questions: DocumentQuestion[];
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  lastModified: string;
-}
-
-/**
- * Document Storage Manager for Electron
- * Handles Q&A document persistence
- */
 export class DocumentStorage {
   private documentsDir: string;
   private documentsFile: string;
@@ -413,17 +404,26 @@ export class DocumentStorage {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
+  private async readFileSafe(filePath: string): Promise<string | null> {
+    try {
+      return await fsp.readFile(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  private async writeFile(filePath: string, data: string): Promise<void> {
+    await fsp.writeFile(filePath, data, 'utf-8');
+  }
+
   async getDocuments(): Promise<Document[]> {
     try {
-      if (fs.existsSync(this.documentsFile)) {
-        const data = fs.readFileSync(this.documentsFile, 'utf-8');
-        const documents = JSON.parse(data);
-        // Sort by last modified (most recent first)
-        return documents.sort((a: Document, b: Document) =>
-          new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
-        );
-      }
-      return [];
+      const data = await this.readFileSafe(this.documentsFile);
+      if (!data) return [];
+      const documents = JSON.parse(data);
+      return documents.sort((a: Document, b: Document) =>
+        new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+      );
     } catch (error) {
       console.error('Error getting documents:', error);
       return [];
@@ -447,7 +447,7 @@ export class DocumentStorage {
 
       const newDocument: Document = {
         id: this.generateId(),
-        userId: 'user-1', // Will be updated with actual user ID
+        userId: 'user-1',
         title: data.title,
         description: data.description,
         questions: data.questions || [],
@@ -458,7 +458,7 @@ export class DocumentStorage {
       };
 
       documents.push(newDocument);
-      fs.writeFileSync(this.documentsFile, JSON.stringify(documents, null, 2), 'utf-8');
+      await this.writeFile(this.documentsFile, JSON.stringify(documents, null, 2));
       return newDocument;
     } catch (error) {
       console.error('Error creating document:', error);
@@ -486,7 +486,7 @@ export class DocumentStorage {
       };
 
       documents[index] = updated;
-      fs.writeFileSync(this.documentsFile, JSON.stringify(documents, null, 2), 'utf-8');
+      await this.writeFile(this.documentsFile, JSON.stringify(documents, null, 2));
       return updated;
     } catch (error) {
       console.error('Error updating document:', error);
@@ -498,7 +498,7 @@ export class DocumentStorage {
     try {
       const documents = await this.getDocuments();
       const filtered = documents.filter(d => d.id !== id);
-      fs.writeFileSync(this.documentsFile, JSON.stringify(filtered, null, 2), 'utf-8');
+      await this.writeFile(this.documentsFile, JSON.stringify(filtered, null, 2));
     } catch (error) {
       console.error('Error deleting document:', error);
       throw error;

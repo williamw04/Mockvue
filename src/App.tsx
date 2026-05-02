@@ -1,12 +1,19 @@
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Dashboard } from "./components/Dashboard";
-import { AIAssistant } from "./components/AIAssistant";
-import OnboardingFlow from "./components/onboarding/OnboardingFlow";
-import StoriesPage from "./components/StoriesPage";
-import DocumentPage from "./components/documents/DocumentPage";
-import ProfilePage from "./components/ProfilePage";
-import { useUser } from "./services";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Dashboard } from './components/Dashboard';
+import OnboardingFlow from './components/onboarding/OnboardingFlow';
+import StoriesPage from './components/StoriesPage';
+import DocumentPage from './components/documents/DocumentPage';
+import ProfilePage from './components/ProfilePage';
+import ResumeArchitectPage from './components/resume-architect/ResumeArchitectPage';
+import PracticePage from './components/PracticePage';
+import VoiceInterviewPracticePage from './components/VoiceInterviewPracticePage';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import CheatSheetListPage from './components/documents/CheatSheetListPage';
+import CreateSheetWizard from './components/documents/CreateSheetWizard';
+import { useUser } from './services';
 
 // Use HashRouter for Electron compatibility
 const Router = HashRouter;
@@ -14,7 +21,7 @@ const Router = HashRouter;
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const userService = useUser();
   const [loading, setLoading] = useState(true);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
 
   useEffect(() => {
     checkOnboarding();
@@ -22,26 +29,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const checkOnboarding = async () => {
     try {
-      let profile = await userService.getUserProfile();
+      await userService.getUserProfile();
 
-      setOnboardingComplete(profile?.onboardingCompleted || false);
+      // Temporarily bypass onboarding check
+      setOnboardingComplete(true);
     } catch (error) {
       console.error('Error checking onboarding:', error);
-      setOnboardingComplete(false);
+      // Temporarily bypass onboarding check
+      setOnboardingComplete(true);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!onboardingComplete) {
@@ -53,59 +55,85 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/onboarding" element={<OnboardingFlow />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/ai-assistant"
-          element={
-            <ProtectedRoute>
-              <AIAssistant />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/stories"
-          element={
-            <ProtectedRoute>
-              <StoriesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/document"
-          element={
-            <ProtectedRoute>
-              <DocumentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/document/:id"
-          element={
-            <ProtectedRoute>
-              <DocumentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/onboarding" element={<OnboardingFlow />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stories"
+            element={
+              <ProtectedRoute>
+                <StoriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document"
+            element={
+              <ProtectedRoute>
+                <CheatSheetListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document/new"
+            element={
+              <ProtectedRoute>
+                <CreateSheetWizard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document/:id"
+            element={
+              <ProtectedRoute>
+                <DocumentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resume-architect"
+            element={
+              <ProtectedRoute>
+                <ResumeArchitectPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practice"
+            element={
+              <ProtectedRoute>
+                <PracticePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practice/voice"
+            element={
+              <ProtectedRoute>
+                <VoiceInterviewPracticePage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

@@ -1,0 +1,77 @@
+% Modern Resume Template - Two-column layout with contemporary styling
+% Uses placeholders that will be replaced with Resume data
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[left=0.75in,top=0.6in,right=0.75in,bottom=0.6in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tabularx}
+
+% Font settings
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Color definitions
+\definecolor{accentcolor}{RGB}{40,40,40}
+
+% Section formatting
+\titleformat{\section}{\color{accentcolor}\bfseries\scshape}{\thesection}{0em}{}
+\titlespacing{\section}{0pt}{8pt}{4pt}
+
+% Remove page numbers
+\pagenumbering{gobble}
+
+% Hyperlink styling
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accentcolor,
+    urlcolor=accentcolor
+}
+
+\begin{document}
+
+% Header with name and contact info
+%% HEADER_SECTION %%
+\begin{center}
+{\Huge\color{accentcolor}\bfseries {{USER_NAME}}}
+\vspace{0.5em}
+\hrule
+\vspace{0.3em}
+{\small {{USER_EMAIL}} \quad | \quad {{USER_PHONE}} \quad | \quad {{USER_LOCATION}}}
+\end{center}
+
+\vspace{0.8em}
+
+%% SUMMARY_SECTION %%
+\section*{Professional Summary}
+{{SUMMARY_TEXT}}
+
+\vspace{0.5em}
+
+%% WORK_EXPERIENCE_SECTION %%
+\section*{Experience}
+{{WORK_ENTRIES}}
+
+\vspace{0.5em}
+
+%% EDUCATION_SECTION %%
+\section*{Education}
+{{EDUCATION_ENTRIES}}
+
+\vspace{0.5em}
+
+%% SKILLS_SECTION %%
+\section*{Technical Skills}
+{{SKILLS_LIST}}
+
+\vspace{0.5em}
+
+%% PROJECTS_SECTION %%
+\section*{Projects}
+{{PROJECT_ENTRIES}}
+
+\end{document}

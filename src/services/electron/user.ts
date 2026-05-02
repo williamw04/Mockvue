@@ -1,9 +1,4 @@
-/**
- * Electron User Service Implementation
- * Uses IPC to communicate with the main process for user data operations
- */
-
-import type { UserProfile, Resume, Story, InterviewResponse } from '../../types';
+import type { UserProfile, Resume, Story, InterviewResponse, CandidateProfile, ResumeAnalysis, ATSAnalysisResult } from '../../types';
 import type { IUserService } from '../interfaces';
 
 export class ElectronUserService implements IUserService {
@@ -11,7 +6,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getUserProfile();
     } catch (error) {
@@ -50,7 +45,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getResume();
     } catch (error) {
@@ -76,7 +71,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getStories();
     } catch (error) {
@@ -89,7 +84,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getStory(id);
     } catch (error) {
@@ -141,7 +136,7 @@ export class ElectronUserService implements IUserService {
     if (!window.electronAPI) {
       throw new Error('Electron API not available');
     }
-    
+
     try {
       return await window.electronAPI.getInterviewResponses();
     } catch (error) {
@@ -185,6 +180,84 @@ export class ElectronUserService implements IUserService {
       await window.electronAPI.deleteInterviewResponse(id);
     } catch (error) {
       console.error('Error deleting interview response:', error);
+      throw error;
+    }
+  }
+
+  async getCandidateProfile(): Promise<CandidateProfile | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.getCandidateProfile();
+    } catch (error) {
+      console.error('Error getting candidate profile:', error);
+      return null;
+    }
+  }
+
+  async saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.saveCandidateProfile(profile);
+    } catch (error) {
+      console.error('Error saving candidate profile:', error);
+      throw error;
+    }
+  }
+
+  async getResumeAnalysis(): Promise<ResumeAnalysis | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.getResumeAnalysis();
+    } catch (error) {
+      console.error('Error getting resume analysis:', error);
+      return null;
+    }
+  }
+
+  async saveResumeAnalysis(analysis: ResumeAnalysis): Promise<ResumeAnalysis> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.saveResumeAnalysis(analysis);
+    } catch (error) {
+      console.error('Error saving resume analysis:', error);
+      throw error;
+    }
+  }
+
+  async getAtsAnalysis(): Promise<ATSAnalysisResult | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.getAtsAnalysis();
+    } catch (error) {
+      console.error('Error getting ATS analysis:', error);
+      return null;
+    }
+  }
+
+  async saveAtsAnalysis(analysis: ATSAnalysisResult): Promise<ATSAnalysisResult> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      return await window.electronAPI.saveAtsAnalysis(analysis);
+    } catch (error) {
+      console.error('Error saving ATS analysis:', error);
       throw error;
     }
   }

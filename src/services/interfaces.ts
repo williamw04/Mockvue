@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Service interfaces for platform abstraction
  */
@@ -10,10 +11,42 @@ import type {
   AgentFeatureType,
   UserProfile,
   Resume,
+  ResumeAnalysis,
+  CandidateProfile,
   Story,
   InterviewResponse,
   Document,
-  DocumentData
+  DocumentData,
+  ATSAnalysisResult,
+  AgentAssistantId,
+  AgentSession,
+  CreateAgentSessionInput,
+  AgentTurnInput,
+  AgentTurnResult,
+  AgentChatMessage,
+  CreateVoiceInterviewSessionInput,
+  VoiceInterviewSession,
+  VoiceTranscriptEvent,
+  AppendVoiceTranscriptEventInput,
+  VoiceInterviewEvent,
+  CoachingSessionData,
+  CoachingGoal,
+  CoachingGoalType,
+  CoachingTodo,
+  ChangeAlternative,
+  StagedChange,
+  AcceptedChange,
+  ResumeVersion,
+  CoachingUserProfile,
+  ResumeTemplate,
+  PDFGenerationResult,
+  PrepSheet,
+  PrepSheetSectionId,
+  PrepSheetSection,
+  CompanyTemplate,
+  ScrapedCompanyData,
+  ParsedJobDescription,
+  CreatePrepSheetInput,
 } from '../types';
 
 /**
@@ -53,10 +86,10 @@ export interface INotificationService {
 }
 
 /**
- * AI Agent service interface
- * Handles AI-powered features and agentic workflows
+ * Task execution service interface
+ * Handles AI task execution and streaming
  */
-export interface IAgentService {
+export interface ITaskExecutionService {
   /**
    * Get available agent capabilities
    */
@@ -95,11 +128,115 @@ export interface IAgentService {
     context?: AgentTask['context'],
     onChunk?: (chunk: string) => void
   ): Promise<AgentResponse>;
+}
 
+/**
+ * Resume service interface
+ * Handles resume parsing and analysis
+ */
+export interface IResumeService {
   /**
    * Parse a resume (raw text or file path handled by backend)
    */
   parseResume(filePath: string, apiKey: string): Promise<any>;
+
+  /**
+   * Analyze resume bullets for quality issues and identify trigger points
+   */
+  analyzeResume(resume: Resume, apiKey: string): Promise<ResumeAnalysis>;
+
+  /**
+   * Chat with AI about resume analysis
+   */
+  chatWithResume(
+    messages: Array<{ role: string; content: string }>,
+    analysisContext: any,
+    apiKey: string
+  ): Promise<string>;
+
+  /**
+   * Analyze resume PDF for ATS compatibility
+   */
+  analyzeAtsCompatibility(filePath: string): Promise<ATSAnalysisResult>;
+}
+
+/**
+ * Assistant session service interface
+ * Handles AI assistant session management
+ */
+export interface IAssistantSessionService {
+  /**
+   * Create a new assistant session
+   */
+  createAssistantSession(input: CreateAgentSessionInput): Promise<AgentSession>;
+
+  /**
+   * Get an assistant session by ID
+   */
+  getAssistantSession(sessionId: string): Promise<AgentSession | null>;
+
+  /**
+   * List assistant sessions, optionally filtered by assistant kind
+   */
+  listAssistantSessions(assistantId?: AgentAssistantId): Promise<AgentSession[]>;
+
+  /**
+   * Run a single assistant turn
+   */
+  runAssistantTurn(input: AgentTurnInput): Promise<AgentTurnResult>;
+
+  /**
+   * Clear memory associated with an assistant session
+   */
+  clearAssistantSessionMemory(sessionId: string): Promise<void>;
+
+  /**
+   * Get chat messages for a session
+   */
+  getSessionMessages(sessionId: string): Promise<AgentChatMessage[]>;
+
+  /**
+   * Set the API key for the agent runtime
+   */
+  setAgentApiKey(apiKey: string): void;
+
+  /**
+   * Rename a session
+   */
+  renameAssistantSession(sessionId: string, newTitle: string): Promise<AgentSession | null>;
+
+  /**
+   * Delete a session
+   */
+  deleteAssistantSession(sessionId: string): Promise<boolean>;
+}
+
+/**
+ * AI Agent service interface
+ * Handles AI-powered features and agentic workflows
+ * Combines task execution, resume analysis, and assistant session management
+ */
+export interface IAgentService
+  extends ITaskExecutionService, IResumeService, IAssistantSessionService {}
+
+/**
+ * Voice interview service interface
+ */
+export interface IVoiceInterviewService {
+  createSession(input: CreateVoiceInterviewSessionInput): Promise<VoiceInterviewSession>;
+  getSession(sessionId: string): Promise<VoiceInterviewSession | null>;
+  listSessions(): Promise<VoiceInterviewSession[]>;
+  startSession(sessionId: string): Promise<VoiceInterviewSession>;
+  pauseSession(sessionId: string): Promise<VoiceInterviewSession>;
+  resumeSession(sessionId: string): Promise<VoiceInterviewSession>;
+  interruptSession(sessionId: string): Promise<VoiceInterviewSession>;
+  endSession(sessionId: string): Promise<VoiceInterviewSession>;
+  getTranscript(sessionId: string): Promise<VoiceTranscriptEvent[]>;
+  appendTranscriptEvent(
+    sessionId: string,
+    input: AppendVoiceTranscriptEventInput
+  ): Promise<VoiceTranscriptEvent>;
+  getEvents(sessionId: string): Promise<VoiceInterviewEvent[]>;
 }
 
 /**
@@ -165,22 +302,58 @@ export interface IUserService {
   /**
    * Create interview response
    */
-  createInterviewResponse(response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<InterviewResponse>;
+  createInterviewResponse(
+    response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
+  ): Promise<InterviewResponse>;
 
   /**
    * Update interview response
    */
-  updateInterviewResponse(id: string, response: Partial<InterviewResponse>): Promise<InterviewResponse>;
+  updateInterviewResponse(
+    id: string,
+    response: Partial<InterviewResponse>
+  ): Promise<InterviewResponse>;
 
   /**
    * Delete interview response
    */
   deleteInterviewResponse(id: string): Promise<void>;
+
+  /**
+   * Get candidate profile (Resume Architect output)
+   */
+  getCandidateProfile(): Promise<CandidateProfile | null>;
+
+  /**
+   * Save candidate profile
+   */
+  saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile>;
+
+  /**
+   * Get cached resume analysis
+   */
+  getResumeAnalysis(): Promise<ResumeAnalysis | null>;
+
+  /**
+   * Save resume analysis
+   */
+  saveResumeAnalysis(analysis: ResumeAnalysis): Promise<ResumeAnalysis>;
+
+  /**
+   * Get cached ATS analysis
+   */
+  getAtsAnalysis(): Promise<ATSAnalysisResult | null>;
+
+  /**
+   * Save ATS analysis
+   */
+  saveAtsAnalysis(analysis: ATSAnalysisResult): Promise<ATSAnalysisResult>;
 }
 
 /**
  * Document Storage service interface
  * Handles document persistence across platforms
+ * @deprecated Use IPrepSheetService instead - Documents are being replaced by PrepSheets
  */
 export interface IDocumentService {
   /**
@@ -215,12 +388,207 @@ export interface IDocumentService {
 }
 
 /**
+ * Prep Sheet service interface
+ * Handles prep sheet CRUD, dynamic section management, template library, and scraper integration
+ */
+export interface IPrepSheetService {
+  // CRUD operations
+  /**
+   * Get all prep sheets for the current user
+   */
+  getPrepSheets(): Promise<PrepSheet[]>;
+
+  /**
+   * Get a single prep sheet by ID
+   */
+  getPrepSheet(id: string): Promise<PrepSheet | null>;
+
+  /**
+   * Create a new prep sheet with optional autofill from templates or scraped data
+   */
+  createPrepSheet(input: CreatePrepSheetInput): Promise<PrepSheet>;
+
+  /**
+   * Update a prep sheet with partial changes
+   */
+  updatePrepSheet(id: string, updates: Partial<PrepSheet>): Promise<PrepSheet>;
+
+  /**
+   * Delete a prep sheet
+   */
+  deletePrepSheet(id: string): Promise<void>;
+
+  // Dynamic section management
+  /**
+   * Add a new section to a prep sheet (creates default empty section)
+   */
+  addSection(sheetId: string, sectionId: PrepSheetSectionId): Promise<PrepSheet>;
+
+  /**
+   * Remove a section from a prep sheet
+   */
+  removeSection(sheetId: string, sectionId: PrepSheetSectionId): Promise<PrepSheet>;
+
+  /**
+   * Update a specific section's content
+   */
+  updateSection(
+    sheetId: string,
+    sectionId: PrepSheetSectionId,
+    data: Partial<PrepSheetSection>
+  ): Promise<PrepSheet>;
+
+  // Template library
+  /**
+   * Get all available company templates (bundled + user-created)
+   */
+  getCompanyTemplates(): Promise<CompanyTemplate[]>;
+
+  /**
+   * Get a specific company template by company name
+   */
+  getCompanyTemplate(companyName: string): Promise<CompanyTemplate | null>;
+
+  /**
+   * Get list of companies with available templates/scraped data
+   */
+  getAvailableCompanies(): Promise<string[]>;
+
+  // Scraper integration
+  /**
+   * Get scraped data for a company (from bundled data or runtime refresh)
+   */
+  getScrapedCompanyData(companyName: string): Promise<ScrapedCompanyData | null>;
+
+  /**
+   * Refresh scraped data for a company (trigger runtime scraper)
+   */
+  refreshScrapedData(companyName: string): Promise<ScrapedCompanyData>;
+
+  // JD parsing
+  /**
+   * Parse a job description text to extract role, skills, responsibilities
+   */
+  parseJobDescription(jdText: string): Promise<ParsedJobDescription>;
+}
+
+export interface ICoachingService {
+  getSessionData(sessionId: string): Promise<CoachingSessionData>;
+
+  addGoal(
+    sessionId: string,
+    input: {
+      type: CoachingGoalType;
+      title: string;
+      description: string;
+      targetMetric?: string;
+      targetValue?: number;
+    }
+  ): Promise<CoachingGoal>;
+  updateGoal(
+    sessionId: string,
+    goalId: string,
+    updates: Partial<Pick<CoachingGoal, 'status' | 'progress' | 'currentValue' | 'completedAt'>>
+  ): Promise<CoachingGoal | null>;
+
+  addTodo(
+    sessionId: string,
+    input: {
+      title: string;
+      goalId?: string;
+      description?: string;
+      targetType?: string;
+      targetId?: string;
+      proposedBy: 'user' | 'agent';
+    }
+  ): Promise<CoachingTodo>;
+  updateTodo(
+    sessionId: string,
+    todoId: string,
+    updates: Partial<Pick<CoachingTodo, 'status' | 'completedAt'>>
+  ): Promise<CoachingTodo | null>;
+
+  proposeChange(
+    sessionId: string,
+    input: {
+      todoId?: string;
+      targetPath: string;
+      targetType: string;
+      operation: string;
+      beforeValue: string;
+      proposedValue: string;
+      rationale: string;
+      alternatives?: ChangeAlternative[];
+    }
+  ): Promise<StagedChange>;
+  acceptChange(
+    sessionId: string,
+    changeId: string,
+    modification?: string
+  ): Promise<AcceptedChange | null>;
+  rejectChange(sessionId: string, changeId: string): Promise<StagedChange | null>;
+  getPendingChanges(sessionId: string): Promise<StagedChange[]>;
+
+  getChangeLog(sessionId: string): Promise<AcceptedChange[]>;
+
+  createVersion(
+    sessionId: string,
+    input: {
+      label: string;
+      trigger: string;
+      resumeData: Resume;
+      analysisData: ResumeAnalysis | null;
+      score: number;
+    }
+  ): Promise<ResumeVersion>;
+  listVersions(sessionId: string): Promise<ResumeVersion[]>;
+
+  getUserProfile(): Promise<CoachingUserProfile>;
+  updateUserProfile(updates: Partial<CoachingUserProfile>): Promise<CoachingUserProfile>;
+
+  clearSessionData(sessionId: string): Promise<void>;
+}
+
+/**
+ * PDF Generation service interface
+ * Handles LaTeX template compilation and PDF generation
+ */
+export interface IPDFService {
+  /**
+   * Get available resume templates
+   */
+  getTemplates(): Promise<ResumeTemplate[]>;
+
+  /**
+   * Generate PDF from resume using specified template
+   */
+  generatePDF(
+    resume: Resume,
+    templateId: string,
+    userProfile?: { name?: string; email?: string }
+  ): Promise<PDFGenerationResult>;
+
+  /**
+   * Open PDF in system viewer
+   */
+  openPDF(pdfPath: string): Promise<void>;
+
+  /**
+   * Get the path to the templates directory
+   */
+  getTemplatesPath(): string;
+}
+
+/**
  * Combined services interface
  */
 export interface IAppServices {
   notifications: INotificationService;
   agent: IAgentService;
+  voiceInterview: IVoiceInterviewService;
   user: IUserService;
   documents: IDocumentService;
+  prepSheets: IPrepSheetService;
+  coaching: ICoachingService;
+  pdf: IPDFService;
 }
-

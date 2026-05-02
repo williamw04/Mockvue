@@ -1,5 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, no-case-declarations, @typescript-eslint/ban-ts-comment, prefer-const */
 import { IAgentService } from '../interfaces';
-import { AgentCapability, AgentTask, AgentFeatureType, AgentResponse } from '../../types';
+import {
+  AgentAssistantId,
+  AgentCapability,
+  AgentFeatureType,
+  AgentResponse,
+  AgentSession,
+  AgentTask,
+  AgentTurnInput,
+  AgentTurnResult,
+  ATSAnalysisResult,
+  CreateAgentSessionInput,
+  Resume,
+  ResumeAnalysis,
+  AgentChatMessage,
+} from '../../types';
 
 /**
  * Electron Agent Service
@@ -10,14 +25,7 @@ import { AgentCapability, AgentTask, AgentFeatureType, AgentResponse } from '../
  * - Cloud APIs
  */
 export class ElectronAgentService implements IAgentService {
-  // private customEndpoint?: string; // Reserved for future use
-  // private apiKey?: string; // Reserved for future use
   private tasks: Map<string, AgentTask> = new Map();
-
-  constructor(_apiKey?: string, _endpoint?: string) {
-    // this.apiKey = apiKey;
-    // this.customEndpoint = endpoint;
-  }
 
   getCapabilities(): AgentCapability[] {
     return [
@@ -206,27 +214,6 @@ export class ElectronAgentService implements IAgentService {
   }
 
   /**
-   * In Electron, you could add support for local models
-   * Example: Using Ollama running locally
-   */
-  async useLocalModel(modelName: string): Promise<void> {
-    // Implementation would use IPC to communicate with main process
-    // which could run Ollama or other local models
-    console.log(`Switching to local model: ${modelName}`);
-  }
-
-  /**
-   * Cache results to file system (Electron-specific)
-   */
-  async cacheToFileSystem(taskId: string, result: string): Promise<void> {
-    // Use window.electronAPI to save to file system
-    if (window.electronAPI) {
-      // Implementation would save to app data directory
-      console.log(`Caching task ${taskId} with ${result.length} characters to file system`);
-    }
-  }
-
-  /**
    * Parse a resume by sending file path to Electron backend
    */
   async parseResume(filePath: string, apiKey: string): Promise<any> {
@@ -246,5 +233,150 @@ export class ElectronAgentService implements IAgentService {
       console.error('Error parsing resume:', error);
       throw error;
     }
+  }
+
+  /**
+   * Analyze resume bullets for quality issues and identify trigger points
+   */
+  async analyzeResume(resume: Resume, apiKey: string): Promise<ResumeAnalysis> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const result = await window.electronAPI.analyzeResumeBullets(resume, apiKey);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      return {
+        ...result.data,
+        analyzedAt: new Date().toISOString(),
+      } as ResumeAnalysis;
+    } catch (error) {
+      console.error('Error analyzing resume:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Chat with AI about resume analysis
+   */
+  async chatWithResume(
+    messages: Array<{ role: string; content: string }>,
+    analysisContext: any,
+    apiKey: string
+  ): Promise<string> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const result = await window.electronAPI.resumeChat(messages, analysisContext, apiKey);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      return result.reply || '';
+    } catch (error) {
+      console.error('Error in resume chat:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analyze resume PDF for ATS compatibility
+   */
+  async analyzeAtsCompatibility(filePath: string): Promise<ATSAnalysisResult> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const result = await window.electronAPI.analyzeAtsCompatibility(filePath);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      return result.data as ATSAnalysisResult;
+    } catch (error) {
+      console.error('Error analyzing ATS compatibility:', error);
+      throw error;
+    }
+  }
+
+  async createAssistantSession(input: CreateAgentSessionInput): Promise<AgentSession> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentCreateSession(input);
+  }
+
+  async getAssistantSession(sessionId: string): Promise<AgentSession | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentGetSession(sessionId);
+  }
+
+  async listAssistantSessions(assistantId?: AgentAssistantId): Promise<AgentSession[]> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentListSessions(assistantId);
+  }
+
+  async runAssistantTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentRunTurn(input);
+  }
+
+  async clearAssistantSessionMemory(sessionId: string): Promise<void> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    await window.electronAPI.agentClearSessionMemory(sessionId);
+  }
+
+  async getSessionMessages(sessionId: string): Promise<AgentChatMessage[]> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentGetSessionMessages(sessionId);
+  }
+
+  setAgentApiKey(apiKey: string): void {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    window.electronAPI.agentSetApiKey(apiKey);
+  }
+
+  async renameAssistantSession(sessionId: string, newTitle: string): Promise<AgentSession | null> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentRenameSession(sessionId, newTitle);
+  }
+
+  async deleteAssistantSession(sessionId: string): Promise<boolean> {
+    if (!window.electronAPI) {
+      throw new Error('Electron API not available');
+    }
+
+    return window.electronAPI.agentDeleteSession(sessionId);
   }
 }

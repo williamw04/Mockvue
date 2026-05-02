@@ -1,0 +1,72 @@
+% Minimal Resume Template - Clean minimalist design
+% Uses placeholders that will be replaced with Resume data
+
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.25in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+% Font settings - cleaner sans-serif
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Minimal styling - no section formatting
+% Just simple bold headers
+
+% Remove page numbers
+\pagenumbering{gobble}
+
+% Hyperlink styling
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=gray
+}
+
+% Custom commands for minimal look
+\newcommand{\heading}[1]{\vspace{0.8em}\textbf{#1}\vspace{0.3em}}
+\newcommand{\subheading}[2]{\textbf{#1} \hfill #2}
+
+\begin{document}
+
+% Header - simple name and contact
+%% HEADER_SECTION %%
+{\Large\bfseries {{USER_NAME}}}
+
+\vspace{0.3em}
+{\small {{USER_EMAIL}} \quad {{USER_PHONE}}}
+
+\vspace{1em}
+
+%% SUMMARY_SECTION %%
+\heading{Profile}
+{{SUMMARY_TEXT}}
+
+\vspace{0.5em}
+
+%% WORK_EXPERIENCE_SECTION %%
+\heading{Experience}
+{{WORK_ENTRIES}}
+
+\vspace{0.5em}
+
+%% EDUCATION_SECTION %%
+\heading{Education}
+{{EDUCATION_ENTRIES}}
+
+\vspace{0.5em}
+
+%% SKILLS_SECTION %%
+\heading{Skills}
+{{SKILLS_LIST}}
+
+\vspace{0.5em}
+
+%% PROJECTS_SECTION %%
+\heading{Projects}
+{{PROJECT_ENTRIES}}
+
+\end{document}

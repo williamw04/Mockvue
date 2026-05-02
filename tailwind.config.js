@@ -7,17 +7,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+        bg: '#faf7f2',
+        ink: {
+          DEFAULT: '#1a1814',
+          2: '#4a4640',
+          3: '#8a857d',
         },
-        surface: '#fafbfc',
+        rule: 'rgba(26,24,20,0.09)',
+        card: '#ffffff',
+        accent: {
+          hi: '#d9532b', // Ember hi
+          lo: '#f4e4d8', // Ember lo
+        }
+      },
+      fontFamily: {
+        serif: ['"Spectral"', '"Iowan Old Style"', 'Georgia', 'serif'],
+        sans: ['"Inter Tight"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', '"SF Mono"', 'ui-monospace', 'monospace'],
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
-

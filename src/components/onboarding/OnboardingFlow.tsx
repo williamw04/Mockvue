@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useNotifications } from '../../services';
@@ -20,7 +21,6 @@ export default function OnboardingFlow() {
   const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
 
   useEffect(() => {
-    // Check if user has already completed onboarding
     checkOnboardingStatus();
   }, []);
 
@@ -48,12 +48,11 @@ export default function OnboardingFlow() {
 
   const handleResumeComplete = async () => {
     try {
-      // Save user profile and move to completion
       await userService.saveUserProfile({
         name: userName,
         targetRole: targetRole,
         surveyResponses: surveyResponses,
-        onboardingCompleted: false, // Not yet - show stories then completion
+        onboardingCompleted: false,
       });
       setCurrentStep('stories');
     } catch (error) {
@@ -65,7 +64,7 @@ export default function OnboardingFlow() {
   const handleOnboardingComplete = async () => {
     try {
       await userService.completeOnboarding();
-      await notifications.showSuccess('Welcome to Mockvue! 🎉');
+      await notifications.showSuccess('Welcome to Mockvue!');
       navigate('/');
     } catch (error) {
       console.error('Error completing onboarding:', error);
@@ -85,38 +84,36 @@ export default function OnboardingFlow() {
     { id: 'completion', label: 'Complete', number: 5 },
   ];
 
-  const currentStepNumber = steps.find(s => s.id === currentStep)?.number || 1;
+  const currentStepNumber = steps.find((s) => s.id === currentStep)?.number || 1;
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-gray-100 text-gray-900">
-      {/* Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-surface border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Getting Started</h2>
-            <span className="text-sm text-gray-500">
+    <div className="min-h-screen bg-bg text-ink">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-rule">
+        <div className="max-w-4xl mx-auto px-14 py-4">
+          <div className="flex items-center justify-between mb-5">
+            <div className="font-serif text-xl font-medium">Getting Started</div>
+            <div className="font-mono text-[11px] text-ink-3">
               Step {currentStepNumber} of {steps.length}
-            </span>
+            </div>
           </div>
 
-          {/* Step Indicators */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center flex-1">
-                <div className="flex items-center gap-2 flex-1">
+                <div className="flex items-center gap-3 flex-1">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${step.number <= currentStepNumber
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-500'
-                      }`}
+                    className={`w-7 h-7 rounded-sm flex items-center justify-center font-mono text-[11px] font-semibold transition-colors ${
+                      step.number <= currentStepNumber
+                        ? 'bg-accent-hi text-white'
+                        : 'bg-bg text-ink-3 border border-rule'
+                    }`}
                   >
                     {step.number}
                   </div>
                   <span
-                    className={`text-sm font-medium ${step.number <= currentStepNumber
-                      ? 'text-gray-900'
-                      : 'text-gray-500'
-                      }`}
+                    className={`text-sm font-medium ${
+                      step.number <= currentStepNumber ? 'text-ink' : 'text-ink-3'
+                    }`}
                   >
                     {step.label}
                   </span>
@@ -124,10 +121,9 @@ export default function OnboardingFlow() {
 
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-2 rounded transition-colors ${step.number < currentStepNumber
-                      ? 'bg-blue-600'
-                      : 'bg-gray-200'
-                      }`}
+                    className={`flex-1 h-px mx-3 transition-colors ${
+                      step.number < currentStepNumber ? 'bg-accent-hi' : 'bg-rule'
+                    }`}
                   />
                 )}
               </div>
@@ -136,28 +132,17 @@ export default function OnboardingFlow() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="pt-32 pb-12 px-6">
+      <div className="pt-32 pb-12 px-14">
         <div className="max-w-4xl mx-auto">
-          {currentStep === 'welcome' && (
-            <WelcomeStep onComplete={handleWelcomeComplete} />
-          )}
+          {currentStep === 'welcome' && <WelcomeStep onComplete={handleWelcomeComplete} />}
 
-          {currentStep === 'survey' && (
-            <SurveyStep onComplete={handleSurveyComplete} />
-          )}
+          {currentStep === 'survey' && <SurveyStep onComplete={handleSurveyComplete} />}
 
-          {currentStep === 'resume' && (
-            <ResumeUploadStep onComplete={handleResumeComplete} />
-          )}
+          {currentStep === 'resume' && <ResumeUploadStep onComplete={handleResumeComplete} />}
 
-          {currentStep === 'stories' && (
-            <CoreStoryMatchStep onComplete={handleStoriesComplete} />
-          )}
+          {currentStep === 'stories' && <CoreStoryMatchStep onComplete={handleStoriesComplete} />}
 
-          {currentStep === 'completion' && (
-            <CompletionStep onComplete={handleOnboardingComplete} />
-          )}
+          {currentStep === 'completion' && <CompletionStep onComplete={handleOnboardingComplete} />}
         </div>
       </div>
     </div>

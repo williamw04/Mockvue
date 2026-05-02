@@ -3,15 +3,18 @@
  * Creates the appropriate service implementations based on the platform
  */
 
-
 import type { IAppServices } from './interfaces';
 
 // Electron services
 import {
   ElectronNotificationService,
   ElectronAgentService,
+  ElectronVoiceInterviewService,
   ElectronUserService,
   ElectronDocumentService,
+  ElectronPrepSheetService,
+  ElectronCoachingService,
+  ElectronPDFService,
 } from './electron';
 
 /**
@@ -22,8 +25,12 @@ export function createServices(): IAppServices {
   return {
     notifications: new ElectronNotificationService(),
     agent: new ElectronAgentService(),
+    voiceInterview: new ElectronVoiceInterviewService(),
     user: new ElectronUserService(),
     documents: new ElectronDocumentService(),
+    prepSheets: new ElectronPrepSheetService(),
+    coaching: new ElectronCoachingService(),
+    pdf: new ElectronPDFService(),
   };
 }
 
@@ -49,4 +56,3 @@ export function getServices(): IAppServices {
 export function resetServices(): void {
   servicesInstance = null;
 }
-

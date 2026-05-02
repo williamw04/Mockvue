@@ -5,83 +5,67 @@
 
 import type { Document, DocumentData } from '../../types';
 import type { IDocumentService } from '../interfaces';
+import { ServiceError } from '../errors';
 
 export class ElectronDocumentService implements IDocumentService {
-  async getDocuments(): Promise<Document[]> {
+  private get api() {
     if (!window.electronAPI) {
-      throw new Error('Electron API not available');
+      throw ServiceError.unavailable('Electron API not available');
     }
-    
+    return window.electronAPI;
+  }
+
+  async getDocuments(): Promise<Document[]> {
     try {
-      return await window.electronAPI.getDocuments();
+      return await this.api.getDocuments();
     } catch (error) {
       console.error('Error getting documents:', error);
-      return [];
+      throw ServiceError.storage('Failed to get documents', error instanceof Error ? error : undefined);
     }
   }
 
   async getDocument(id: string): Promise<Document | null> {
-    if (!window.electronAPI) {
-      throw new Error('Electron API not available');
-    }
-    
     try {
-      return await window.electronAPI.getDocument(id);
+      return await this.api.getDocument(id);
     } catch (error) {
       console.error('Error getting document:', error);
-      return null;
+      throw ServiceError.storage('Failed to get document', error instanceof Error ? error : undefined);
     }
   }
 
   async createDocument(data: DocumentData): Promise<Document> {
-    if (!window.electronAPI) {
-      throw new Error('Electron API not available');
-    }
-
     try {
-      return await window.electronAPI.createDocument(data);
+      return await this.api.createDocument(data);
     } catch (error) {
       console.error('Error creating document:', error);
-      throw error;
+      throw ServiceError.storage('Failed to create document', error instanceof Error ? error : undefined);
     }
   }
 
   async updateDocument(id: string, data: Partial<Document>): Promise<Document> {
-    if (!window.electronAPI) {
-      throw new Error('Electron API not available');
-    }
-
     try {
-      return await window.electronAPI.updateDocument(id, data);
+      return await this.api.updateDocument(id, data);
     } catch (error) {
       console.error('Error updating document:', error);
-      throw error;
+      throw ServiceError.storage('Failed to update document', error instanceof Error ? error : undefined);
     }
   }
 
   async deleteDocument(id: string): Promise<void> {
-    if (!window.electronAPI) {
-      throw new Error('Electron API not available');
-    }
-
     try {
-      await window.electronAPI.deleteDocument(id);
+      await this.api.deleteDocument(id);
     } catch (error) {
       console.error('Error deleting document:', error);
-      throw error;
+      throw ServiceError.storage('Failed to delete document', error instanceof Error ? error : undefined);
     }
   }
 
   async searchDocuments(query: string): Promise<Document[]> {
-    if (!window.electronAPI) {
-      throw new Error('Electron API not available');
-    }
-    
     try {
-      return await window.electronAPI.searchDocuments(query);
+      return await this.api.searchDocuments(query);
     } catch (error) {
       console.error('Error searching documents:', error);
-      return [];
+      throw ServiceError.storage('Failed to search documents', error instanceof Error ? error : undefined);
     }
   }
 }

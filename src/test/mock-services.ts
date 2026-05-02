@@ -5,6 +5,10 @@ import {
   IUserService,
   IAgentService,
   INotificationService,
+  IVoiceInterviewService,
+  ICoachingService,
+  IPDFService,
+  IPrepSheetService,
 } from '../services/interfaces';
 
 export function createMockDocumentService(): IDocumentService {
@@ -50,6 +54,12 @@ export function createMockUserService(): IUserService {
     createInterviewResponse: vi.fn().mockResolvedValue({}),
     updateInterviewResponse: vi.fn().mockResolvedValue({}),
     deleteInterviewResponse: vi.fn().mockResolvedValue(undefined),
+    getCandidateProfile: vi.fn().mockResolvedValue(null),
+    saveCandidateProfile: vi.fn().mockResolvedValue({}),
+    getResumeAnalysis: vi.fn().mockResolvedValue(null),
+    saveResumeAnalysis: vi.fn().mockResolvedValue({}),
+    getAtsAnalysis: vi.fn().mockResolvedValue(null),
+    saveAtsAnalysis: vi.fn().mockResolvedValue({}),
   };
 }
 
@@ -68,6 +78,124 @@ export function createMockAgentService(): IAgentService {
     getTask: vi.fn().mockResolvedValue(null),
     cancelTask: vi.fn().mockResolvedValue(true),
     parseResume: vi.fn().mockResolvedValue({ success: true, data: {} }),
+    analyzeResume: vi.fn().mockResolvedValue({
+      bulletAnalyses: [],
+      triggerPoints: [],
+      overallScore: 75,
+      analyzedAt: new Date().toISOString(),
+    }),
+    chatWithResume: vi.fn().mockResolvedValue('Mock AI response about your resume.'),
+    analyzeAtsCompatibility: vi.fn().mockResolvedValue({
+      overallScore: 80,
+      checks: [
+        { checkName: 'Single-Column Layout', status: 'pass', score: 20, details: 'Looks good' },
+        { checkName: 'Standard Fonts', status: 'pass', score: 20, details: 'Looks good' },
+        { checkName: 'Standardized Headings', status: 'pass', score: 20, details: 'Looks good' },
+        { checkName: 'No Graphics/Tables', status: 'pass', score: 20, details: 'Looks good' },
+        {
+          checkName: 'Reverse Chronological Order',
+          status: 'pass',
+          score: 20,
+          details: 'Looks good',
+        },
+      ],
+      analyzedAt: new Date().toISOString(),
+    }),
+    createAssistantSession: vi.fn().mockResolvedValue({
+      id: 'agent-session-1',
+      assistantId: 'resume-assistant',
+      title: 'Test Session',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messageCount: 0,
+    }),
+    getAssistantSession: vi.fn().mockResolvedValue(null),
+    listAssistantSessions: vi.fn().mockResolvedValue([]),
+    runAssistantTurn: vi.fn().mockResolvedValue({
+      session: {
+        id: 'agent-session-1',
+        assistantId: 'resume-assistant',
+        title: 'Test Session',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messageCount: 2,
+      },
+      reply: 'Mock grounded assistant reply.',
+      evidence: [],
+      memoryUpdated: false,
+      trace: { steps: [], totalToolCalls: 0 },
+    }),
+    clearAssistantSessionMemory: vi.fn().mockResolvedValue(undefined),
+    getSessionMessages: vi.fn().mockResolvedValue([]),
+    setAgentApiKey: vi.fn(),
+    renameAssistantSession: vi.fn().mockResolvedValue(null),
+    deleteAssistantSession: vi.fn().mockResolvedValue(true),
+  };
+}
+
+export function createMockVoiceInterviewService(): IVoiceInterviewService {
+  return {
+    createSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'draft',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    getSession: vi.fn().mockResolvedValue(null),
+    listSessions: vi.fn().mockResolvedValue([]),
+    startSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'active',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    pauseSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'paused',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    resumeSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'active',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    interruptSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'active',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    endSession: vi.fn().mockResolvedValue({
+      id: 'voice-session-1',
+      mode: 'text-only',
+      status: 'ended',
+      context: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    getTranscript: vi.fn().mockResolvedValue([]),
+    appendTranscriptEvent: vi.fn().mockResolvedValue({
+      id: 'voice-event-1',
+      sessionId: 'voice-session-1',
+      speaker: 'candidate',
+      text: 'Mock transcript',
+      createdAt: new Date().toISOString(),
+    }),
+    getEvents: vi.fn().mockResolvedValue([]),
   };
 }
 
@@ -82,11 +210,117 @@ export function createMockNotificationService(): INotificationService {
   };
 }
 
+export function createMockCoachingService(): ICoachingService {
+  return {
+    getSessionData: vi.fn().mockResolvedValue(null),
+    addGoal: vi.fn().mockResolvedValue({}),
+    updateGoal: vi.fn().mockResolvedValue(null),
+    addTodo: vi.fn().mockResolvedValue({}),
+    updateTodo: vi.fn().mockResolvedValue(null),
+    proposeChange: vi.fn().mockResolvedValue({}),
+    acceptChange: vi.fn().mockResolvedValue(null),
+    rejectChange: vi.fn().mockResolvedValue(null),
+    getPendingChanges: vi.fn().mockResolvedValue([]),
+    getChangeLog: vi.fn().mockResolvedValue([]),
+    createVersion: vi.fn().mockResolvedValue({}),
+    listVersions: vi.fn().mockResolvedValue([]),
+    getUserProfile: vi.fn().mockResolvedValue({
+      knownStrengths: [],
+      knownWeaknesses: [],
+      writingPreferences: {},
+    }),
+    updateUserProfile: vi.fn().mockResolvedValue({
+      knownStrengths: [],
+      knownWeaknesses: [],
+      writingPreferences: {},
+    }),
+    clearSessionData: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 export function createMockServices(): IAppServices {
   return {
     notifications: createMockNotificationService(),
     agent: createMockAgentService(),
+    voiceInterview: createMockVoiceInterviewService(),
     user: createMockUserService(),
     documents: createMockDocumentService(),
+    prepSheets: createMockPrepSheetService(),
+    coaching: createMockCoachingService(),
+    pdf: createMockPDFService(),
+  };
+}
+
+export function createMockPrepSheetService(): IPrepSheetService {
+  return {
+    getPrepSheets: vi.fn().mockResolvedValue([]),
+    getPrepSheet: vi.fn().mockResolvedValue(null),
+    createPrepSheet: vi.fn().mockResolvedValue({
+      id: 'sheet-1',
+      userId: 'user-1',
+      meta: {
+        companyName: 'Test Company',
+        templateType: 'full',
+      },
+      sections: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    updatePrepSheet: vi.fn().mockResolvedValue({}),
+    deletePrepSheet: vi.fn().mockResolvedValue(undefined),
+    addSection: vi.fn().mockResolvedValue({}),
+    removeSection: vi.fn().mockResolvedValue({}),
+    updateSection: vi.fn().mockResolvedValue({}),
+    getCompanyTemplates: vi.fn().mockResolvedValue([]),
+    getCompanyTemplate: vi.fn().mockResolvedValue(null),
+    getAvailableCompanies: vi.fn().mockResolvedValue([]),
+    getScrapedCompanyData: vi.fn().mockResolvedValue(null),
+    refreshScrapedData: vi.fn().mockResolvedValue({
+      companyName: 'Test Company',
+      behavioralQuestions: [],
+      technicalQuestions: [],
+      lastScrapedAt: new Date().toISOString(),
+      sources: [],
+    }),
+    parseJobDescription: vi.fn().mockResolvedValue({
+      roleTitle: 'Software Engineer',
+      responsibilities: [],
+      requiredSkills: [],
+    }),
+  };
+}
+
+export function createMockPDFService(): IPDFService {
+  return {
+    getTemplates: vi.fn().mockResolvedValue([
+      {
+        id: 'classic',
+        name: 'Classic',
+        description: 'Traditional layout',
+        style: 'classic',
+        texPath: 'classic.tex',
+      },
+      {
+        id: 'modern',
+        name: 'Modern',
+        description: 'Modern layout',
+        style: 'modern',
+        texPath: 'modern.tex',
+      },
+      {
+        id: 'minimal',
+        name: 'Minimal',
+        description: 'Minimal layout',
+        style: 'minimal',
+        texPath: 'minimal.tex',
+      },
+    ]),
+    generatePDF: vi.fn().mockResolvedValue({
+      pdfPath: '/mock/path/resume.pdf',
+      generatedAt: new Date().toISOString(),
+      templateId: 'classic',
+    }),
+    openPDF: vi.fn().mockResolvedValue(undefined),
+    getTemplatesPath: vi.fn().mockReturnValue('electron/templates'),
   };
 }

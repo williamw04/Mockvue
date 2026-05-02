@@ -1,0 +1,32 @@
+{
+  "name": "@mockvue/question-ingestion",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "mockvue-question-ingestion": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/cli.ts",
+    "ingest": "tsx src/cli.ts ingest",
+    "doctor": "tsx src/cli.ts doctor",
+    "scrape": "tsx src/cli.ts scrape"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "playwright": "^1.49.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^20.10.6",
+    "tsx": "^4.20.0",
+    "typescript": "^5.2.2"
+  }
+}

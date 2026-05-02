@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Services Context
  * Provides services to React components via Context API
@@ -29,11 +30,7 @@ export function ServicesProvider({ children, services }: ServicesProviderProps) 
     return services || createServices();
   }, [services]);
 
-  return (
-    <ServicesContext.Provider value={servicesInstance}>
-      {children}
-    </ServicesContext.Provider>
-  );
+  return <ServicesContext.Provider value={servicesInstance}>{children}</ServicesContext.Provider>;
 }
 
 /**
@@ -42,11 +39,11 @@ export function ServicesProvider({ children, services }: ServicesProviderProps) 
  */
 export function useServices(): IAppServices {
   const context = useContext(ServicesContext);
-  
+
   if (!context) {
     throw new Error('useServices must be used within a ServicesProvider');
   }
-  
+
   return context;
 }
 
@@ -67,6 +64,14 @@ export function useAgent() {
 }
 
 /**
+ * Hook to access voice interview service
+ */
+export function useVoiceInterview() {
+  const { voiceInterview } = useServices();
+  return voiceInterview;
+}
+
+/**
  * Hook to access user service
  */
 export function useUser() {
@@ -80,4 +85,17 @@ export function useUser() {
 export function useDocuments() {
   const { documents } = useServices();
   return documents;
+}
+
+export function useCoaching() {
+  const { coaching } = useServices();
+  return coaching;
+}
+
+/**
+ * Hook to access PDF service
+ */
+export function usePDF() {
+  const { pdf } = useServices();
+  return pdf;
 }
