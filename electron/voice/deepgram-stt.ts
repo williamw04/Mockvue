@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import type { Data } from 'ws';
 
 export interface STTConfig {
   apiKey: string;
@@ -130,7 +131,7 @@ export class DeepgramSTTProvider {
         resolve();
       });
 
-      this.ws.once('error', (error) => {
+      this.ws.once('error', (error: Error) => {
         clearTimeout(timeout);
         reject(error);
       });
@@ -140,7 +141,7 @@ export class DeepgramSTTProvider {
   private handleMessage(data: WebSocket.Data): void {
     try {
       const message = JSON.parse(data.toString());
-      
+
       if (message.type === 'Results') {
         const channel = message.channel?.alternatives?.[0];
         if (channel) {
@@ -148,12 +149,14 @@ export class DeepgramSTTProvider {
             transcript: channel.transcript || '',
             isFinal: message.is_final === true,
             confidence: channel.confidence || 0,
-            words: channel.words?.map((w: { word: string; start: number; end: number; confidence: number }) => ({
-              word: w.word,
-              start: w.start,
-              end: w.end,
-              confidence: w.confidence,
-            })),
+            words: channel.words?.map(
+              (w: { word: string; start: number; end: number; confidence: number }) => ({
+                word: w.word,
+                start: w.start,
+                end: w.end,
+                confidence: w.confidence,
+              })
+            ),
             speechFinal: message.speech_final === true,
           };
           this.handlers.onTranscript(result);
@@ -232,6 +235,10 @@ export class DeepgramSTTProvider {
   }
 }
 
-export function createSTTProvider(apiKey: string, handlers: STTEventHandler, config?: Partial<STTConfig>): DeepgramSTTProvider {
+export function createSTTProvider(
+  apiKey: string,
+  handlers: STTEventHandler,
+  config?: Partial<STTConfig>
+): DeepgramSTTProvider {
   return new DeepgramSTTProvider(apiKey, handlers, config);
 }

@@ -1,8 +1,8 @@
 # Design: Prep Sheets Architecture
 
-**Status**: Draft
+**Status**: Implemented (Types & Interfaces)
 **Author**: OpenCode
-**Last Updated**: 2026-04-17
+**Last Updated**: 2026-04-23
 
 ## Problem Statement
 
@@ -10,63 +10,61 @@ The current `Document` type is a flat Q&A list with no structure, no connection 
 
 We need a structured data model that:
 1. Represents a company-specific interview cheat sheet with 11 modular sections
-2. Integrates with scraped company data (values, questions, job postings)
-3. References existing stories instead of duplicating them
-4. Supports a creation wizard that autofills from multiple sources
+2. Supports **fully dynamic sections** (add/remove anytime, not just at creation)
+3. Integrates with scraped company data (values, questions, job postings)
+4. Provides **company templates** (pre-populated from scraped data)
+5. Supports a creation wizard that **autofills from templates and scraped data**
+6. References existing stories instead of duplicating them
 
 ## Decision: Replace Document with PrepSheet
 
-### Type System Changes
+### Type System Changes (Implemented)
 
 The `Document` type (`src/types.ts`) will be deprecated and replaced with `PrepSheet`.
 
+#### PrepSheet Core Type
+
 ```typescript
-// DEPRECATED: Document type
-export interface Document {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string;
-  questions: DocumentQuestion[];
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  lastModified: string;
+// Section identifiers - 11 total
+export type PrepSheetSectionId =
+  | 'company-snapshot'
+  | 'role-breakdown'
+  | 'story-bank'
+  | 'question-mapping'
+  | 'company-alignment'
+  | 'strengths-weaknesses'
+  | 'key-talking-points'
+  | 'questions-for-interviewer'
+  | 'technical-prep'
+  | 'logistics'
+  | 'post-interview-reflection';
+
+// PrepSheet metadata - company and role identification
+export interface PrepSheetMeta {
+  companyName: string;
+  roleTitle?: string;
+  templateType: 'behavioral' | 'technical' | 'full';
 }
 
-// NEW: PrepSheet type
+// PrepSheet - sections stored as map for dynamic add/remove
 export interface PrepSheet {
   id: string;
   userId: string;
-  companyName: string;
-  roleTitle?: string;
-  
-  companySnapshot?: CompanySnapshotSection;
-  roleBreakdown?: RoleBreakdownSection;
-  storyBank?: StoryBankSection;
-  questionMapping?: QuestionMappingSection;
-  companyAlignment?: CompanyAlignmentSection;
-  strengthsWeaknesses?: StrengthsWeaknessesSection;
-  keyTalkingPoints?: KeyTalkingPointsSection;
-  questionsForInterviewer?: QuestionsForInterviewerSection;
-  technicalPrep?: TechnicalPrepSection;
-  logistics?: LogisticsSection;
-  postInterviewReflection?: PostInterviewReflectionSection;
-  
-  includedSections: PrepSheetSectionId[];
-  templateType: 'behavioral' | 'technical' | 'full';
-  
+  meta: PrepSheetMeta;
+  sections: Partial<Record<PrepSheetSectionId, PrepSheetSection>>;
   createdAt: string;
   updatedAt: string;
-  lastModified: string;
 }
 ```
 
-### Section Types
+**Key Design Decision**: Sections are stored as a `Record` (map) rather than individual optional fields. This allows users to dynamically add/remove sections **at any time** - during creation and during editing.
 
-Each section has its own type definition:
+### Section Types (All Implemented)
+
+Each section has its own interface defined in `src/types.ts`:
 
 ```typescript
+// Section 1: Company Snapshot
 export interface CompanySnapshotSection {
   companyName: string;
   industry?: string;
@@ -80,6 +78,7 @@ export interface CompanySnapshotSection {
   dataSource: 'scraped' | 'manual' | 'mixed';
 }
 
+// Section 2: Role Breakdown
 export interface RoleBreakdownSection {
   roleTitle: string;
   teamOrg?: string;
@@ -90,8 +89,8 @@ export interface RoleBreakdownSection {
   dataSource: 'jd-parsed' | 'manual' | 'mixed';
 }
 
+// Section 3: Story Bank (references existing stories)
 export interface StoryBankSection {
-  // References, not duplicates
   linkedStoryIds: string[];
   perSheetNotes: Record<string, {
     keyTakeaway?: string;
@@ -99,6 +98,7 @@ export interface StoryBankSection {
   }>;
 }
 
+// Section 4: Question Mapping
 export interface QuestionMappingSection {
   mappings: QuestionMappingEntry[];
 }
@@ -109,35 +109,24 @@ export interface QuestionMappingEntry {
   linkedStoryIds: string[];
   notes?: string;
   source: 'scraped' | 'manual';
+  roleTitle?: string;   // for role-filtering
+  stage?: string;       // "phone screen", "onsite", etc.
 }
 
+// Section 5: Company Alignment
 export interface CompanyAlignmentSection {
   valueStoryMappings: ValueStoryMapping[];
   relevantExperiences?: string[];
   gapsToFrame?: string[];
 }
 
-export interface ValueStoryMapping {
-  companyValue: string;
-  linkedStoryId: string;
-  notes?: string;
-}
-
+// Section 6: Strengths & Weaknesses
 export interface StrengthsWeaknessesSection {
   strengths: StrengthEntry[];
   weaknesses: WeaknessEntry[];
 }
 
-export interface StrengthEntry {
-  strength: string;
-  supportingExample?: string;
-}
-
-export interface WeaknessEntry {
-  weakness: string;
-  mitigationStrategy?: string;
-}
-
+// Section 7: Key Talking Points
 export interface KeyTalkingPointsSection {
   whyCompany?: string;
   whyRole?: string;
@@ -145,12 +134,14 @@ export interface KeyTalkingPointsSection {
   careerNarrative?: string;
 }
 
+// Section 8: Questions for Interviewer
 export interface QuestionsForInterviewerSection {
   roleQuestions: string[];
   teamQuestions: string[];
   companyQuestions: string[];
 }
 
+// Section 9: Technical Prep
 export interface TechnicalPrepSection {
   keyConcepts?: string[];
   systemDesignPatterns?: string[];
@@ -158,21 +149,14 @@ export interface TechnicalPrepSection {
   projectDeepDive?: string[];
 }
 
+// Section 10: Logistics
 export interface LogisticsSection {
   interviewRounds: InterviewRound[];
   notesPerRound?: Record<string, string>;
   thankYouNotes?: string;
 }
 
-export interface InterviewRound {
-  id: string;
-  date?: string;
-  type: string;
-  interviewerName?: string;
-  interviewerRole?: string;
-  notes?: string;
-}
-
+// Section 11: Post-Interview Reflection
 export interface PostInterviewReflectionSection {
   wentWell?: string[];
   didntGoWell?: string[];
@@ -181,45 +165,45 @@ export interface PostInterviewReflectionSection {
 }
 ```
 
-### Service Interface Changes
+### Scraper Data Contract (Implemented)
 
-`IDocumentService` becomes `IPrepSheetService`:
+Defines what scrapers output for autofill:
 
 ```typescript
-export interface IPrepSheetService {
-  getPrepSheets(): Promise<PrepSheet[]>;
-  getPrepSheet(id: string): Promise<PrepSheet | null>;
-  createPrepSheet(input: CreatePrepSheetInput): Promise<PrepSheet>;
-  updatePrepSheet(id: string, updates: Partial<PrepSheet>): Promise<PrepSheet>;
-  deletePrepSheet(id: string): Promise<void>;
-  
-  // Scraper integration
-  getScrapedCompanyData(companyName: string): Promise<ScrapedCompanyData | null>;
-  refreshScrapedData(companyName: string): Promise<ScrapedCompanyData>;
-  
-  // JD parsing
-  parseJobDescription(jdText: string): Promise<ParsedJobDescription>;
-}
-
-export interface CreatePrepSheetInput {
-  companyName: string;
+// Scraped question with metadata
+export interface ScrapedQuestion {
+  text: string;
   roleTitle?: string;
-  jobDescription?: string;
-  includedSections: PrepSheetSectionId[];
-  templateType: 'behavioral' | 'technical' | 'full';
-  useScrapedData?: boolean;
+  stage?: string;
+  source: string;
 }
 
+// Data contract for scraper-to-prep-sheet flow
 export interface ScrapedCompanyData {
   companyName: string;
+  
+  // For Company Snapshot section
   values?: string[];
   mission?: string;
-  interviewQuestions?: string[];
+  industry?: string;
+  product?: string;
   interviewFormat?: string;
-  technicalQuestions?: string[];
+  
+  // For Question Mapping section
+  behavioralQuestions: ScrapedQuestion[];
+  
+  // For Technical Prep section
+  technicalQuestions: ScrapedQuestion[];
+  
+  // For Role Breakdown section
+  roleRequirements?: string[];
+  
+  // Provenance
   lastScrapedAt: string;
+  sources: string[];
 }
 
+// JD parsing output
 export interface ParsedJobDescription {
   roleTitle: string;
   responsibilities: string[];
@@ -229,68 +213,136 @@ export interface ParsedJobDescription {
 }
 ```
 
-## Scraper Integration Architecture
+### Company Templates (Implemented)
 
-### Data Flow
-
-```
-[Scraper Pipeline]                [Mockvue App]
-tools/question-ingestion/         src/services/
-     |                                 |
-     v                                 v
-ingestion.db (SQLite)          scraped-data.json (bundled)
-     |                                 |
-     | [build script]                  |
-     +------------------------->-------+
-                                   |
-                                   v
-                          IPrepSheetService.getScrapedCompanyData()
-                                   |
-                                   v
-                          Prep Sheet Creation Wizard autofill
-```
-
-### Bundled Data Strategy
-
-1. **Scraper runs as dev tool** — Developers run `npm run scrape --company "Google"` to ingest data
-2. **Build script exports to JSON** — Before app build, scraped data is exported from SQLite to a JSON bundle
-3. **App ships with bundled data** — Top 50 companies have pre-scraped data included
-4. **Refresh on demand** — Users can trigger a refresh for any company (calls scraper at runtime)
-
-### Scraper Output Format
-
-The `tools/question-ingestion/src/types.ts` already defines:
-- `QuestionObservation` — individual scraped question with provenance
-- `NormalizedQuestion` — deduplicated canonical question
-- `QuestionCluster` — grouped similar questions
-
-We need a new export format that groups by company:
+Templates are pre-populated sheets from scraped data that users can select:
 
 ```typescript
-export interface ScrapedCompanyExport {
+// Company template - reusable starting point
+export interface CompanyTemplate {
+  id: string;
   companyName: string;
-  observations: {
-    values: string[];
-    mission?: string;
-    interviewQuestions: string[];
-    technicalQuestions: string[];
-    roleRequirements: string[];
+  isBundled: boolean;  // true for shipped templates
+  
+  // Pre-populated section data from scraping
+  sections: {
+    companySnapshot?: Partial<CompanySnapshotSection>;
+    questionMapping?: Partial<QuestionMappingSection>;
+    technicalPrep?: Partial<TechnicalPrepSection>;
   };
-  provenance: {
-    sources: string[];
-    lastFetchedAt: string;
-  };
+  
+  createdAt: string;
+  updatedAt: string;
+  lastScrapedAt: string;
+}
+
+// User can also save their own sheets as templates
+export interface UserSavedTemplate {
+  id: string;
+  userId: string;
+  name: string;
+  basedOnSheetId: string;
+  sections: PrepSheetSectionId[];
+  createdAt: string;
+}
+
+// Input for creating a new prep sheet
+export interface CreatePrepSheetInput {
+  companyName: string;
+  roleTitle?: string;
+  jobDescription?: string;
+  sections: PrepSheetSectionId[];
+  templateType: 'behavioral' | 'technical' | 'full';
+  useTemplate?: string;            // company template ID to use
+  useScrapedData?: boolean;        // whether to autofill from scraped data
 }
 ```
 
-### Scraper Adapter Mapping
+### Service Interface (Implemented)
 
-| Adapter | What it provides | Prep Sheet Section |
-|---------|------------------|-------------------|
-| `careers.ts` | Company values, mission, culture, job postings | Company Snapshot, Role Breakdown |
-| `glassdoor.ts` | Interview questions, format notes | Question Mapping, Company Snapshot |
-| `leetcode.ts` | Technical/coding questions, OA questions | Technical Prep |
-| `reddit.ts` | Behavioral questions, interview experiences | Question Mapping |
+`IPrepSheetService` in `src/services/interfaces.ts`:
+
+```typescript
+export interface IPrepSheetService {
+  // CRUD operations
+  getPrepSheets(): Promise<PrepSheet[]>;
+  getPrepSheet(id: string): Promise<PrepSheet | null>;
+  createPrepSheet(input: CreatePrepSheetInput): Promise<PrepSheet>;
+  updatePrepSheet(id: string, updates: Partial<PrepSheet>): Promise<PrepSheet>;
+  deletePrepSheet(id: string): Promise<void>;
+  
+  // Dynamic section management (add/remove anytime)
+  addSection(sheetId: string, sectionId: PrepSheetSectionId): Promise<PrepSheet>;
+  removeSection(sheetId: string, sectionId: PrepSheetSectionId): Promise<PrepSheet>;
+  updateSection(sheetId: string, sectionId: PrepSheetSectionId, data: Partial<PrepSheetSection>): Promise<PrepSheet>;
+  
+  // Template library
+  getCompanyTemplates(): Promise<CompanyTemplate[]>;
+  getCompanyTemplate(companyName: string): Promise<CompanyTemplate | null>;
+  getAvailableCompanies(): Promise<string[]>;
+  
+  // Scraper integration
+  getScrapedCompanyData(companyName: string): Promise<ScrapedCompanyData | null>;
+  refreshScrapedData(companyName: string): Promise<ScrapedCompanyData>;
+  
+  // JD parsing
+  parseJobDescription(jdText: string): Promise<ParsedJobDescription>;
+}
+```
+
+## Architecture Overview
+
+### Data Flow
+
+```mermaid
+flowchart TB
+  subgraph Scrapers [Question Ingestion Pipeline]
+    careers[careers.ts<br/>Values/Mission/Jobs]
+    glassdoor[glassdoor.ts<br/>Questions/Format]
+    leetcode[leetcode.ts<br/>Technical Questions]
+    reddit[reddit.ts<br/>Behavioral Questions]
+  end
+  
+  subgraph Export [Export Script]
+    normalize[normalize.ts<br/>Deduplication]
+    exportScript[export-bundle.ts<br/>NEW]
+  end
+  
+  subgraph BundledData [electron/storage/scraped-data/]
+    companies[companies.json<br/>Bundled Templates]
+    lastUpdated[last-updated.json]
+  end
+  
+  subgraph App [Mockvue App]
+    service[IPrepSheetService]
+    templates[Template Library UI]
+    wizard[Creation Wizard]
+    editor[Prep Sheet Editor]
+  end
+  
+  careers --> normalize
+  glassdoor --> normalize
+  leetcode --> normalize
+  reddit --> normalize
+  normalize --> exportScript
+  exportScript --> companies
+  companies --> service
+  service --> templates
+  templates --> wizard
+  wizard --> editor
+  service --> editor
+```
+
+### Scraper-to-PrepSheet Mapping
+
+| Adapter | What it provides | Prep Sheet Section | Field Mapping |
+|---------|------------------|-------------------|---------------|
+| `careers.ts` | Company values, mission, culture | `company-snapshot` | `mission`, `companyValues` |
+| `careers.ts` | Job requirements | `role-breakdown` | `keyResponsibilities`, `topSkills` |
+| `glassdoor.ts` | Interview format | `company-snapshot` | `interviewFormat` |
+| `glassdoor.ts` | Behavioral questions | `question-mapping` | `behavioralQuestions` |
+| `leetcode.ts` | Technical/coding questions | `technical-prep` | `technicalQuestions` |
+| `reddit.ts` | Behavioral questions | `question-mapping` | `behavioralQuestions` |
 
 ## Storage Strategy
 
@@ -315,155 +367,153 @@ electron/storage/
 
 ### Prep Sheet File Format
 
-Each prep sheet is stored as a JSON file with full section data:
+Each prep sheet is stored as a JSON file with section data as a map:
 
 ```json
 {
   "id": "sheet-123",
   "userId": "user-abc",
-  "companyName": "Google",
-  "roleTitle": "Software Engineer L4",
-  "includedSections": [
-    "company-snapshot",
-    "role-breakdown",
-    "story-bank",
-    "question-mapping",
-    "technical-prep",
-    "key-talking-points",
-    "logistics"
-  ],
-  "templateType": "full",
-  "companySnapshot": {
+  "meta": {
     "companyName": "Google",
-    "industry": "Technology",
-    "product": "Search, Cloud, AI",
-    "companyValues": [
-      "Focus on the user",
-      "Democracy of information",
-      "You can be serious without a suit"
-    ],
-    "mission": "Organize the world's information...",
-    "interviewFormat": "Phone screen + onsite (4-5 rounds)",
-    "dataSource": "scraped"
+    "roleTitle": "Software Engineer L4",
+    "templateType": "full"
   },
-  "storyBank": {
-    "linkedStoryIds": ["story-1", "story-3", "story-7"],
-    "perSheetNotes": {
-      "story-1": {
-        "keyTakeaway": "Customer obsession example",
-        "followUpAngles": ["What would you do differently?"]
+  "sections": {
+    "company-snapshot": {
+      "companyName": "Google",
+      "industry": "Technology",
+      "product": "Search, Cloud, AI",
+      "companyValues": [
+        "Focus on the user",
+        "Democracy of information"
+      ],
+      "mission": "Organize the world's information...",
+      "interviewFormat": "Phone screen + onsite (4-5 rounds)",
+      "dataSource": "scraped"
+    },
+    "story-bank": {
+      "linkedStoryIds": ["story-1", "story-3", "story-7"],
+      "perSheetNotes": {
+        "story-1": {
+          "keyTakeaway": "Customer obsession example"
+        }
       }
+    },
+    "question-mapping": {
+      "mappings": [
+        {
+          "id": "qm-1",
+          "questionText": "Tell me about a time you failed",
+          "linkedStoryIds": ["story-3"],
+          "source": "scraped"
+        }
+      ]
     }
   },
-  "questionMapping": {
-    "mappings": [
-      {
-        "id": "qm-1",
-        "questionText": "Tell me about a time you failed",
-        "linkedStoryIds": ["story-3"],
-        "source": "scraped"
-      }
-    ]
-  },
   "createdAt": "2026-04-17T10:00:00Z",
-  "updatedAt": "2026-04-17T12:30:00Z",
-  "lastModified": "2026-04-17T12:30:00Z"
+  "updatedAt": "2026-04-17T12:30:00Z"
 }
 ```
 
-## Creation Wizard UI Design
+## UI Design
 
-### Modal-Based Flow
+### Creation Wizard (Modal-Based)
 
-The wizard opens as a modal overlay, not a full-page navigation.
+The wizard opens as a modal overlay with three steps:
 
 ```
-[Dashboard] → Click "Create Prep Sheet" → [Modal Wizard]
-
-Modal Steps:
+Step 1: Company Selection
 ┌─────────────────────────────────────────────┐
-│ Step 1: Company                             │
-│ ┌─────────────────────────────────────┐    │
-│ │ Company name: [________________]     │    │
-│ │                                     │    │
-│ │ ✓ Data available (last scraped Apr 10)│  │
-│ │   - Values: 5 entries               │    │
-│ │   - Questions: 42 entries           │    │
-│ │                                     │    │
-│ │ [Refresh Data] (optional)           │    │
-│ └─────────────────────────────────────┘    │
+│ Company name: [________________]            │
+│                                             │
+│ Template available? [Use Google Template]   │
+│                                             │
+│ ✓ Scraped data available (last: Apr 10)    │
+│   - Values: 5 entries                      │
+│   - Behavioral Questions: 42               │
+│   - Technical Questions: 15                │
+│                                             │
+│ [Refresh Data]                             │
 │                    [Next]                   │
 └─────────────────────────────────────────────┘
 
+Step 2: Role Setup
 ┌─────────────────────────────────────────────┐
-│ Step 2: Role                                │
-│ ┌─────────────────────────────────────┐    │
-│ │ Paste job description here:         │    │
-│ │ [_______________________________]   │    │
-│ │ [_______________________________]   │    │
-│ │                                     │    │
-│ │ Parsed:                             │    │
-│ │   Role: Software Engineer           │    │
-│ │   Skills: Python, AWS, Kubernetes   │    │
-│ │                                     │    │
-│ │ [Edit parsed fields]                │    │
-│ └─────────────────────────────────────┘    │
+│ Paste job description here:                │
+│ [_______________________________________]   │
+│                                             │
+│ Parsed:                                     │
+│   Role: Software Engineer                   │
+│   Skills: Python, AWS, Kubernetes           │
+│                                             │
 │                    [Next]                   │
 └─────────────────────────────────────────────┘
 
+Step 3: Section Selection
 ┌─────────────────────────────────────────────┐
-│ Step 3: Sections                            │
-│ ┌─────────────────────────────────────┐    │
-│ │ Core (always included):             │    │
-│ │   ✓ Company Snapshot                │    │
-│ │   ✓ Role Breakdown                  │    │
-│ │   ✓ Key Talking Points              │    │
-│ │                                     │    │
-│ │ Behavioral:                         │    │
-│ │   ☑ Story Bank                      │    │
-│ │   ☑ Question Mapping                │    │
-│ │   ☑ Company Alignment               │    │
-│ │   ☐ Strengths & Weaknesses          │    │
-│ │                                     │    │
-│ │ Technical:                          │    │
-│ │   ☑ Technical Prep                  │    │
-│ │                                     │    │
-│ │ Logistics:                          │    │
-│ │   ☑ Logistics & Notes               │    │
-│ │   ☐ Post-Interview Reflection       │    │
-│ └─────────────────────────────────────┘    │
+│ Core sections:                              │
+│   ☑ Company Snapshot (autofilled)          │
+│   ☑ Role Breakdown (autofilled)            │
+│   ☑ Key Talking Points                     │
+│                                             │
+│ Behavioral sections:                        │
+│   ☑ Story Bank                             │
+│   ☑ Question Mapping (autofilled)          │
+│   ☐ Company Alignment                      │
+│   ☐ Strengths & Weaknesses                 │
+│                                             │
+│ Technical sections:                         │
+│   ☑ Technical Prep (autofilled)            │
+│                                             │
+│ Logistics:                                  │
+│   ☑ Logistics & Notes                      │
+│   ☐ Post-Interview Reflection              │
+│                                             │
 │                [Create Sheet]               │
 └─────────────────────────────────────────────┘
 ```
 
-### Wizard State Management
+### Editor UI (Dynamic Sections)
+
+The editor supports adding/removing sections at any time:
 
 ```typescript
-interface WizardState {
-  step: 1 | 2 | 3;
-  
-  company: {
-    name: string;
-    scrapedData: ScrapedCompanyData | null;
-    isRefreshing: boolean;
-  };
-  
-  role: {
-    jobDescription: string;
-    parsed: ParsedJobDescription | null;
-    isParsing: boolean;
-  };
-  
-  sections: {
-    included: PrepSheetSectionId[];
-    templateType: 'behavioral' | 'technical' | 'full';
-  };
+// Editor state management pattern
+interface PrepSheetEditorState {
+  sheet: PrepSheet;
+  hasChanges: boolean;
+  expandedSection: PrepSheetSectionId | null;
+}
+
+// Add section (creates default empty section)
+function addSection(sectionId: PrepSheetSectionId) {
+  const defaultSection = createDefaultSection(sectionId);
+  setSheet(prev => ({
+    ...prev,
+    sections: { ...prev.sections, [sectionId]: defaultSection }
+  }));
+}
+
+// Remove section (deletes from map)
+function removeSection(sectionId: PrepSheetSectionId) {
+  setSheet(prev => {
+    const newSections = { ...prev.sections };
+    delete newSections[sectionId];
+    return { ...prev, sections: newSections };
+  });
+}
+
+// Update section content
+function updateSection(sectionId: PrepSheetSectionId, data: Partial<PrepSheetSection>) {
+  setSheet(prev => ({
+    ...prev,
+    sections: {
+      ...prev.sections,
+      [sectionId]: { ...prev.sections[sectionId], ...data }
+    }
+  }));
 }
 ```
-
-## Editor UI Design
-
-Each section has a dedicated editor component. The main prep sheet editor shows a tabbed or accordion interface.
 
 ```
 [Prep Sheet Editor]
@@ -471,36 +521,26 @@ Each section has a dedicated editor component. The main prep sheet editor shows 
 │ Google - Software Engineer L4                   │
 │ Last modified: Apr 17, 2:30 PM                  │
 ├─────────────────────────────────────────────────┤
-│ [Company] [Role] [Stories] [Questions] [Tech] ...│
+│ [+ Add Section] dropdown                        │
 ├─────────────────────────────────────────────────┤
 │                                                 │
 │ ┌── Company Snapshot ────────────────────────┐ │
+│ │ [Remove Section]                            │ │
 │ │ Company: Google                             │ │
 │ │ Industry: Technology                        │ │
-│ │ Product: Search, Cloud, AI                  │ │
-│ │                                             │ │
-│ │ Company Values (5):                         │ │
-│ │   • Focus on the user                       │ │
-│ │   • Democracy of information                │ │
-│ │   [Edit values]                             │ │
-│ │                                             │ │
-│ │ Interview Format:                           │ │
-│ │ Phone screen + onsite (4-5 rounds)          │ │
-│ │                                             │ │
-│ │ Source: scraped (Glassdoor, Careers)        │ │
+│ │ ...                                         │ │
 │ └─────────────────────────────────────────────┘ │
 │                                                 │
-│ ┌── Story Bank ──────────────────────────────┐ │
-│ │ Linked Stories (3):                         │ │
-│ │                                             │ │
-│ │ ✓ Story 1: "Customer obsession..."          │ │
-│ │   Key takeaway: [_____________]             │ │
-│ │                                             │ │
-│ │ ✓ Story 3: "Project failure..."             │ │
-│ │   Key takeaway: [_____________]             │ │
-│ │                                             │ │
-│ │ [Add another story]                         │ │
+│ ┌── Question Mapping ────────────────────────┐ │
+│ │ [Remove Section]                            │ │
+│ │ Questions (42 from scraped + 3 manual):    │ │
+│ │ ...                                         │ │
 │ └─────────────────────────────────────────────┘ │
+│                                                 │
+│ [+ Add Section] shows available:               │
+│   - Company Alignment (not added)              │
+│   - Strengths & Weaknesses (not added)         │
+│   - Post-Interview Reflection (not added)      │
 │                                                 │
 │ [Save]                                          │
 └─────────────────────────────────────────────────┘
@@ -508,31 +548,38 @@ Each section has a dedicated editor component. The main prep sheet editor shows 
 
 ## Alternatives Considered
 
-1. **Keep Document type, add sections as fields**
-   - Rejected: Document is too generic. PrepSheet is a distinct concept with specific sections.
+1. **Sections as optional fields** (original design)
+   - Rejected: Cannot dynamically add/remove after creation. Using a map instead.
 
-2. **Duplicate stories in each sheet**
+2. **Keep Document type, add sections as fields**
+   - Rejected: Document is too generic. PrepSheet is a distinct concept.
+
+3. **Duplicate stories in each sheet**
    - Rejected: One master story bank is a design principle. Sheets reference, not duplicate.
 
-3. **Scrape on-demand only**
-   - Rejected: Too slow for user experience. Bundled data + refresh is better.
+4. **Templates only (no autofill wizard)**
+   - Rejected: Users want both - templates to start, and autofill during creation.
 
-4. **Full-page wizard instead of modal**
-   - Rejected: Modal keeps user on dashboard, feels faster, less navigation friction.
+5. **Full-page wizard instead of modal**
+   - Rejected: Modal keeps user on dashboard, feels faster.
 
-## Implementation Notes
+## Implementation Status
 
-- Existing `Document` records should be migrated to `PrepSheet` format (or deprecated)
-- `IDocumentService` becomes `IPrepSheetService`
-- React components renamed: `DocumentPage` → `PrepSheetEditor`, etc.
-- Scraper pipeline needs export script to generate bundled JSON
-- JD parsing uses Gemini API (existing agent infrastructure)
+### Completed
+- [x] Type system updated (`src/types.ts`)
+- [x] Service interface updated (`src/services/interfaces.ts`)
+- [x] `PrepSheet` type with dynamic sections map
+- [x] All 11 section interfaces defined
+- [x] `ScrapedCompanyData` and `ScrapedQuestion` types
+- [x] `CompanyTemplate` and `UserSavedTemplate` types
+- [x] `CreatePrepSheetInput` with template/autofill options
+- [x] `IPrepSheetService` with CRUD + section management + scraper integration
 
-## Verification Status
-
-- [ ] Type system updated
-- [ ] Service interface updated
-- [ ] Scraper export script created
+### Remaining (Future Phases)
+- [ ] ElectronPrepSheetService implementation
+- [ ] Scraper export script (`tools/question-ingestion/scripts/export-bundle.ts`)
+- [ ] Bundled data shipped (`electron/storage/scraped-data/companies.json`)
 - [ ] Creation wizard UI built
-- [ ] Section editors built
-- [ ] Bundled data shipped
+- [ ] Prep sheet editor UI with dynamic section add/remove
+- [ ] Section editor components (11 individual editors)
+- [ ] Document migration (old Document → PrepSheet)

@@ -30,11 +30,7 @@ export function ServicesProvider({ children, services }: ServicesProviderProps) 
     return services || createServices();
   }, [services]);
 
-  return (
-    <ServicesContext.Provider value={servicesInstance}>
-      {children}
-    </ServicesContext.Provider>
-  );
+  return <ServicesContext.Provider value={servicesInstance}>{children}</ServicesContext.Provider>;
 }
 
 /**
@@ -43,11 +39,11 @@ export function ServicesProvider({ children, services }: ServicesProviderProps) 
  */
 export function useServices(): IAppServices {
   const context = useContext(ServicesContext);
-  
+
   if (!context) {
     throw new Error('useServices must be used within a ServicesProvider');
   }
-  
+
   return context;
 }
 
@@ -94,4 +90,12 @@ export function useDocuments() {
 export function useCoaching() {
   const { coaching } = useServices();
   return coaching;
+}
+
+/**
+ * Hook to access PDF service
+ */
+export function usePDF() {
+  const { pdf } = useServices();
+  return pdf;
 }

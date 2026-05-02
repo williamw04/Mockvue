@@ -7,6 +7,8 @@ import {
   INotificationService,
   IVoiceInterviewService,
   ICoachingService,
+  IPDFService,
+  IPrepSheetService,
 } from '../services/interfaces';
 
 export function createMockDocumentService(): IDocumentService {
@@ -90,7 +92,12 @@ export function createMockAgentService(): IAgentService {
         { checkName: 'Standard Fonts', status: 'pass', score: 20, details: 'Looks good' },
         { checkName: 'Standardized Headings', status: 'pass', score: 20, details: 'Looks good' },
         { checkName: 'No Graphics/Tables', status: 'pass', score: 20, details: 'Looks good' },
-        { checkName: 'Reverse Chronological Order', status: 'pass', score: 20, details: 'Looks good' },
+        {
+          checkName: 'Reverse Chronological Order',
+          status: 'pass',
+          score: 20,
+          details: 'Looks good',
+        },
       ],
       analyzedAt: new Date().toISOString(),
     }),
@@ -238,6 +245,82 @@ export function createMockServices(): IAppServices {
     voiceInterview: createMockVoiceInterviewService(),
     user: createMockUserService(),
     documents: createMockDocumentService(),
+    prepSheets: createMockPrepSheetService(),
     coaching: createMockCoachingService(),
+    pdf: createMockPDFService(),
+  };
+}
+
+export function createMockPrepSheetService(): IPrepSheetService {
+  return {
+    getPrepSheets: vi.fn().mockResolvedValue([]),
+    getPrepSheet: vi.fn().mockResolvedValue(null),
+    createPrepSheet: vi.fn().mockResolvedValue({
+      id: 'sheet-1',
+      userId: 'user-1',
+      meta: {
+        companyName: 'Test Company',
+        templateType: 'full',
+      },
+      sections: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    updatePrepSheet: vi.fn().mockResolvedValue({}),
+    deletePrepSheet: vi.fn().mockResolvedValue(undefined),
+    addSection: vi.fn().mockResolvedValue({}),
+    removeSection: vi.fn().mockResolvedValue({}),
+    updateSection: vi.fn().mockResolvedValue({}),
+    getCompanyTemplates: vi.fn().mockResolvedValue([]),
+    getCompanyTemplate: vi.fn().mockResolvedValue(null),
+    getAvailableCompanies: vi.fn().mockResolvedValue([]),
+    getScrapedCompanyData: vi.fn().mockResolvedValue(null),
+    refreshScrapedData: vi.fn().mockResolvedValue({
+      companyName: 'Test Company',
+      behavioralQuestions: [],
+      technicalQuestions: [],
+      lastScrapedAt: new Date().toISOString(),
+      sources: [],
+    }),
+    parseJobDescription: vi.fn().mockResolvedValue({
+      roleTitle: 'Software Engineer',
+      responsibilities: [],
+      requiredSkills: [],
+    }),
+  };
+}
+
+export function createMockPDFService(): IPDFService {
+  return {
+    getTemplates: vi.fn().mockResolvedValue([
+      {
+        id: 'classic',
+        name: 'Classic',
+        description: 'Traditional layout',
+        style: 'classic',
+        texPath: 'classic.tex',
+      },
+      {
+        id: 'modern',
+        name: 'Modern',
+        description: 'Modern layout',
+        style: 'modern',
+        texPath: 'modern.tex',
+      },
+      {
+        id: 'minimal',
+        name: 'Minimal',
+        description: 'Minimal layout',
+        style: 'minimal',
+        texPath: 'minimal.tex',
+      },
+    ]),
+    generatePDF: vi.fn().mockResolvedValue({
+      pdfPath: '/mock/path/resume.pdf',
+      generatedAt: new Date().toISOString(),
+      templateId: 'classic',
+    }),
+    openPDF: vi.fn().mockResolvedValue(undefined),
+    getTemplatesPath: vi.fn().mockReturnValue('electron/templates'),
   };
 }

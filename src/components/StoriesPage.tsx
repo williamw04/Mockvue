@@ -3,6 +3,7 @@ import { useUser, useNotifications } from '../services';
 import type { Story, Resume, CoreStoryCategory, CoreStoryMatch } from '../types';
 import { TopNavBar } from './TopNavBar';
 import { LoadingSpinner } from './ui/LoadingSpinner';
+import { StoryEditorWorkspace } from './StoryEditorWorkspace';
 
 const CORE_STORIES: {
   category: CoreStoryCategory;
@@ -220,13 +221,14 @@ export default function StoriesPage() {
   const handleEdit = (category: CoreStoryCategory) => {
     const existingStories = getStoriesForCategory(category);
     const meta = CORE_STORIES.find((c) => c.category === category)!;
+    const match = getAiMatchForCategory(category);
 
     if (existingStories.length > 0) {
       setEditForm(existingStories[0]);
     } else {
       setEditForm({
         id: crypto.randomUUID(),
-        title: meta.name,
+        title: match ? `[Draft] ${match.relatedExperienceId}` : meta.name,
         coreCategory: category,
         situation: '',
         task: '',
@@ -280,113 +282,119 @@ export default function StoriesPage() {
     <div className="min-h-screen bg-bg text-ink flex flex-col">
       <TopNavBar />
 
-      <div className="flex-1 pt-14 flex overflow-hidden">
-        <div className="flex-1 overflow-y-auto px-7 py-7 pb-14">
-          <div className="max-w-[900px]">
-            <div className="mb-6">
-              <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-1.5">
-                The Rule of 10
-              </div>
-              <h1 className="font-serif text-[32px] font-normal tracking-tight m-0">
-                Your Story Library
-              </h1>
-              <p className="text-[13px] text-ink-3 mt-1.5">
-                Cover all 10 categories before your first final round.
-              </p>
-
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex-1 h-1.5 bg-rule rounded-sm">
-                  <div
-                    className="h-full bg-accent-hi rounded-sm transition-all duration-500"
-                    style={{ width: `${(builtCount / 10) * 100}%` }}
-                  />
+      {isEditing && selectedMeta ? (
+        <StoryEditorWorkspace
+          meta={selectedMeta}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          aiMatch={aiMatch}
+          onSave={handleSave}
+          onCancel={() => setIsEditing(false)}
+        />
+      ) : (
+        <div className="flex-1 pt-14 flex overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-7 py-7 pb-14">
+            <div className="max-w-[900px]">
+              <div className="mb-6">
+                <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-1.5">
+                  The Rule of 10
                 </div>
-                <div className="font-mono text-[11px] text-accent-hi font-semibold">
-                  {builtCount}/10
-                </div>
-              </div>
-            </div>
+                <h1 className="font-serif text-[32px] font-normal tracking-tight m-0">
+                  Your Story Library
+                </h1>
+                <p className="text-[13px] text-ink-3 mt-1.5">
+                  Cover all 10 categories before your first final round.
+                </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {CORE_STORIES.map((meta) => {
-                const categoryStories = stories.filter((s) => s.coreCategory === meta.category);
-                const count = categoryStories.length;
-                const hasMetricsInResult = categoryStories.some((s) => hasMetrics(s.result));
-                const status = computeStatus(count, meta.target, hasMetricsInResult);
-                const ss = STATUS_CONFIG[status];
-                const isSelected = selectedCategory === meta.category;
-
-                return (
-                  <div
-                    key={meta.category}
-                    onClick={() => handleCategoryClick(meta.category)}
-                    className={`${ss.bg} border ${isSelected ? 'border-accent-hi shadow-[0_0_0_2px_rgba(217,83,43,0.15)]' : ss.border} px-4 py-4 cursor-pointer transition-all duration-150`}
-                  >
-                    <div className="flex items-start justify-between mb-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-2 h-2 rounded-sm ${ss.dot} shrink-0`} />
-                        <div className="text-[14px] font-semibold text-ink">{meta.name}</div>
-                      </div>
-                      <div
-                        className={`font-mono text-[10px] tracking-[0.05em] px-1.5 py-0.5 bg-white/60 border ${ss.border} ${ss.text}`}
-                      >
-                        {ss.label.toUpperCase()}
-                      </div>
-                    </div>
-
-                    {categoryStories.length > 0 ? (
-                      <div className="flex flex-col gap-1.5">
-                        {categoryStories.map((st) => (
-                          <div
-                            key={st.id}
-                            className="px-2.5 py-1.5 bg-white/70 border border-white/50 flex items-center gap-2.5"
-                          >
-                            <div className="flex-1 text-[12px] text-ink font-medium">
-                              {st.title}
-                            </div>
-                            <StrengthBar pct={computeStoryStrength(st)} />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-2.5 flex items-center gap-2">
-                        <div className="text-[12px] text-ink-3 italic">No story yet</div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(meta.category);
-                          }}
-                          className="bg-transparent border border-dashed border-ink-3 px-2.5 py-0.5 text-[11px] text-ink-3 cursor-pointer hover:bg-white/50 transition-colors"
-                        >
-                          + Add
-                        </button>
-                      </div>
-                    )}
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="flex-1 h-1.5 bg-rule rounded-sm">
+                    <div
+                      className="h-full bg-accent-hi rounded-sm transition-all duration-500"
+                      style={{ width: `${(builtCount / 10) * 100}%` }}
+                    />
                   </div>
-                );
-              })}
+                  <div className="font-mono text-[11px] text-accent-hi font-semibold">
+                    {builtCount}/10
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {CORE_STORIES.map((meta) => {
+                  const categoryStories = stories.filter((s) => s.coreCategory === meta.category);
+                  const count = categoryStories.length;
+                  const hasMetricsInResult = categoryStories.some((s) => hasMetrics(s.result));
+                  const status = computeStatus(count, meta.target, hasMetricsInResult);
+                  const ss = STATUS_CONFIG[status];
+                  const isSelected = selectedCategory === meta.category;
+
+                  return (
+                    <div
+                      key={meta.category}
+                      onClick={() => handleCategoryClick(meta.category)}
+                      className={`${ss.bg} border ${isSelected ? 'border-accent-hi shadow-[0_0_0_2px_rgba(217,83,43,0.15)]' : ss.border} px-4 py-4 cursor-pointer transition-all duration-150`}
+                    >
+                      <div className="flex items-start justify-between mb-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-2 h-2 rounded-sm ${ss.dot} shrink-0`} />
+                          <div className="text-[14px] font-semibold text-ink">{meta.name}</div>
+                        </div>
+                        <div
+                          className={`font-mono text-[10px] tracking-[0.05em] px-1.5 py-0.5 bg-white/60 border ${ss.border} ${ss.text}`}
+                        >
+                          {ss.label.toUpperCase()}
+                        </div>
+                      </div>
+
+                      {categoryStories.length > 0 ? (
+                        <div className="flex flex-col gap-1.5">
+                          {categoryStories.map((st) => (
+                            <div
+                              key={st.id}
+                              className="px-2.5 py-1.5 bg-white/70 border border-white/50 flex items-center gap-2.5"
+                            >
+                              <div className="flex-1 text-[12px] text-ink font-medium">
+                                {st.title}
+                              </div>
+                              <StrengthBar pct={computeStoryStrength(st)} />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-2.5 flex items-center gap-2">
+                          <div className="text-[12px] text-ink-3 italic">No story yet</div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(meta.category);
+                            }}
+                            className="bg-transparent border border-dashed border-ink-3 px-2.5 py-0.5 text-[11px] text-ink-3 cursor-pointer hover:bg-white/50 transition-colors"
+                          >
+                            + Add
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
 
-        <aside className="w-[300px] border-l border-rule bg-card overflow-y-auto px-5 py-6">
-          {selectedCategory ? (
-            <CategoryDetailPanel
-              meta={selectedMeta!}
-              stories={selectedStories}
-              aiMatch={aiMatch}
-              onEdit={() => handleEdit(selectedCategory)}
-              isEditing={isEditing}
-              editForm={editForm}
-              setEditForm={setEditForm}
-              onSave={handleSave}
-              onCancel={() => setIsEditing(false)}
-            />
-          ) : (
-            <LibraryStatsPanel stories={stories} />
-          )}
-        </aside>
-      </div>
+          <aside className="w-[300px] border-l border-rule bg-card overflow-y-auto px-5 py-6">
+            {selectedCategory ? (
+              <CategoryDetailPanel
+                meta={selectedMeta!}
+                stories={selectedStories}
+                aiMatch={aiMatch}
+                onEdit={() => handleEdit(selectedCategory)}
+              />
+            ) : (
+              <LibraryStatsPanel stories={stories} />
+            )}
+          </aside>
+        </div>
+      )}
     </div>
   );
 }
@@ -396,11 +404,6 @@ function CategoryDetailPanel({
   stories,
   aiMatch,
   onEdit,
-  isEditing,
-  editForm,
-  setEditForm,
-  onSave,
-  onCancel,
 }: {
   meta: {
     category: CoreStoryCategory;
@@ -412,11 +415,6 @@ function CategoryDetailPanel({
   stories: Story[];
   aiMatch: CoreStoryMatch | null;
   onEdit: () => void;
-  isEditing: boolean;
-  editForm: Partial<Story>;
-  setEditForm: React.Dispatch<React.SetStateAction<Partial<Story>>>;
-  onSave: () => void;
-  onCancel: () => void;
 }) {
   const status = computeStatus(
     stories.length,
@@ -424,90 +422,6 @@ function CategoryDetailPanel({
     stories.some((s) => hasMetrics(s.result))
   );
   const ss = STATUS_CONFIG[status];
-
-  if (isEditing) {
-    return (
-      <div>
-        <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-2">
-          Editing Story
-        </div>
-        <h3 className="font-serif text-[24px] font-medium tracking-tight m-0 mb-4">{meta.name}</h3>
-
-        <div className="mb-4">
-          <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase mb-1.5">
-            Story Title
-          </div>
-          <input
-            type="text"
-            value={editForm.title || ''}
-            onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
-            className="w-full px-3 py-2 border border-rule bg-card outline-none text-ink font-serif text-[15px] font-medium focus:border-accent-hi"
-            placeholder="Give it a memorable name"
-          />
-        </div>
-
-        {[
-          {
-            key: 'situation',
-            label: 'Situation',
-            hint: 'Set the scene. What was broken, unclear, or at risk?',
-          },
-          {
-            key: 'task',
-            label: 'Task',
-            hint: 'What were you specifically responsible for solving?',
-          },
-          {
-            key: 'action',
-            label: 'Action',
-            hint: 'What did YOU do? Be specific. Use "I" not "we".',
-          },
-          { key: 'result', label: 'Result', hint: 'What changed? A number makes this land.' },
-        ].map((field) => (
-          <div key={field.key} className="mb-4">
-            <div className="flex items-baseline gap-2.5 mb-1.5">
-              <div className="font-mono text-[14px] text-accent-hi font-bold w-4">
-                {field.key.toUpperCase()}
-              </div>
-              <div className="font-mono text-[10px] tracking-[0.15em] text-ink-3 uppercase">
-                {field.label}
-              </div>
-            </div>
-            <div className="text-[11px] text-ink-3 italic mb-1">{field.hint}</div>
-            <textarea
-              value={(editForm as Record<string, string>)[field.key] || ''}
-              onChange={(e) => setEditForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
-              className={`w-full px-3 py-3 text-[13px] leading-relaxed border outline-none resize-none min-h-[68px] ${
-                field.key === 'result' && editForm.result && !hasMetrics(editForm.result)
-                  ? 'border-accent-hi bg-accent-lo'
-                  : 'border-rule bg-card'
-              }`}
-            />
-            {field.key === 'result' && editForm.result && !hasMetrics(editForm.result) && (
-              <div className="font-mono text-[11px] text-accent-hi mt-1 tracking-[0.05em]">
-                ↑ No number detected — try adding a %, $, or timeframe.
-              </div>
-            )}
-          </div>
-        ))}
-
-        <div className="flex gap-2.5 mt-4">
-          <button
-            onClick={onSave}
-            className="bg-accent-hi text-white border-none px-5 py-2.5 text-[14px] font-semibold cursor-pointer"
-          >
-            Save to Story Bank ✓
-          </button>
-          <button
-            onClick={onCancel}
-            className="bg-transparent text-ink-3 border border-rule px-4 py-2.5 text-[13px] cursor-pointer"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>

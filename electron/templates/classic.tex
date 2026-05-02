@@ -1,0 +1,71 @@
+% Classic Resume Template - Traditional single-column layout
+% Uses placeholders that will be replaced with Resume data
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+
+% Font settings
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Section formatting
+\titleformat{\section}{\bfseries\Large}{\uppercase{\thesection}}{1em}{}
+\titlespacing{\section}{0pt}{12pt}{6pt}
+
+% Remove page numbers
+\pagenumbering{gobble}
+
+% Hyperlink styling
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue
+}
+
+\begin{document}
+
+% Header with name (placeholder for user name)
+%% HEADER_SECTION %%
+\begin{center}
+{\LARGE\bfseries {{USER_NAME}}}
+\vspace{0.3em}
+{\small {{USER_EMAIL}} \quad {{USER_PHONE}}}
+\end{center}
+
+\vspace{1em}
+
+%% SUMMARY_SECTION %%
+\section*{Summary}
+{{SUMMARY_TEXT}}
+
+\vspace{1em}
+
+%% WORK_EXPERIENCE_SECTION %%
+\section*{Work Experience}
+{{WORK_ENTRIES}}
+
+\vspace{1em}
+
+%% EDUCATION_SECTION %%
+\section*{Education}
+{{EDUCATION_ENTRIES}}
+
+\vspace{1em}
+
+%% SKILLS_SECTION %%
+\section*{Skills}
+{{SKILLS_LIST}}
+
+\vspace{1em}
+
+%% PROJECTS_SECTION %%
+\section*{Projects}
+{{PROJECT_ENTRIES}}
+
+\end{document}

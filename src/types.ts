@@ -222,7 +222,12 @@ export interface DocumentData {
 
 // Resume Architect Types
 
-export type BulletIssueType = 'weak_verb' | 'no_metrics' | 'too_brief' | 'bad_structure' | 'passive_voice';
+export type BulletIssueType =
+  | 'weak_verb'
+  | 'no_metrics'
+  | 'too_brief'
+  | 'bad_structure'
+  | 'passive_voice';
 
 export interface BulletIssue {
   type: BulletIssueType;
@@ -433,7 +438,12 @@ export interface AgentTurnResult {
 
 // Coaching Workspace Types
 
-export type CoachingGoalType = 'score_improvement' | 'weakness_elimination' | 'section_overhaul' | 'role_tailoring' | 'custom';
+export type CoachingGoalType =
+  | 'score_improvement'
+  | 'weakness_elimination'
+  | 'section_overhaul'
+  | 'role_tailoring'
+  | 'custom';
 export type CoachingGoalStatus = 'not_started' | 'in_progress' | 'completed' | 'abandoned';
 export type TodoStatus = 'pending' | 'in_progress' | 'completed' | 'blocked';
 export type StagedChangeStatus = 'pending' | 'accepted' | 'rejected' | 'modified';
@@ -544,12 +554,7 @@ export interface CoachingSessionData {
 // Voice Interview Types
 export type VoiceInterviewMode = 'text-only' | 'stt-llm-tts' | 'realtime-s2s';
 
-export type VoiceInterviewSessionStatus =
-  | 'draft'
-  | 'active'
-  | 'paused'
-  | 'ended'
-  | 'error';
+export type VoiceInterviewSessionStatus = 'draft' | 'active' | 'paused' | 'ended' | 'error';
 
 export type VoiceInterviewSpeaker = 'system' | 'interviewer' | 'candidate';
 
@@ -604,4 +609,351 @@ export interface VoiceInterviewEvent {
   type: VoiceInterviewEventType;
   createdAt: string;
   payload?: Record<string, unknown>;
+}
+
+// Resume Template Types
+export type ResumeTemplateStyle = 'classic' | 'modern' | 'minimal';
+
+export interface ResumeTemplate {
+  id: string;
+  name: string;
+  description: string;
+  style: ResumeTemplateStyle;
+  texPath: string;
+}
+
+export interface PDFGenerationResult {
+  pdfPath: string;
+  generatedAt: string;
+  templateId: string;
+}
+
+// ============================================================================
+// Prep Sheet Types (Interview Cheat Sheets)
+// ============================================================================
+
+/**
+ * Section identifiers for prep sheets - 11 modular sections
+ * Users can dynamically add/remove sections at creation and during editing
+ */
+export type PrepSheetSectionId =
+  | 'company-snapshot'
+  | 'role-breakdown'
+  | 'story-bank'
+  | 'question-mapping'
+  | 'company-alignment'
+  | 'strengths-weaknesses'
+  | 'key-talking-points'
+  | 'questions-for-interviewer'
+  | 'technical-prep'
+  | 'logistics'
+  | 'post-interview-reflection';
+
+/**
+ * Prep sheet metadata - company and role identification
+ */
+export interface PrepSheetMeta {
+  companyName: string;
+  roleTitle?: string;
+  templateType: 'behavioral' | 'technical' | 'full';
+}
+
+/**
+ * Section 1: Company Snapshot - Basic context reviewed before every interview
+ */
+export interface CompanySnapshotSection {
+  companyName: string;
+  industry?: string;
+  product?: string;
+  businessModel?: string;
+  recentNews?: string;
+  competitors?: string[];
+  companyValues?: string[];
+  mission?: string;
+  interviewFormat?: string;
+  dataSource: 'scraped' | 'manual' | 'mixed';
+}
+
+/**
+ * Section 2: Role Breakdown - Maps job requirements to what you need to demonstrate
+ */
+export interface RoleBreakdownSection {
+  roleTitle: string;
+  teamOrg?: string;
+  keyResponsibilities: string[];
+  topSkills: string[];
+  successLooksLike?: string;
+  hiringSignals?: string[];
+  dataSource: 'jd-parsed' | 'manual' | 'mixed';
+}
+
+/**
+ * Section 3: Story Bank - References to existing STAR stories with per-sheet notes
+ * Stories come from Core Stories feature - prep sheets reference, not duplicate
+ */
+export interface StoryBankSection {
+  linkedStoryIds: string[];
+  perSheetNotes: Record<
+    string,
+    {
+      keyTakeaway?: string;
+      followUpAngles?: string[];
+    }
+  >;
+}
+
+/**
+ * Individual question mapping entry
+ */
+export interface QuestionMappingEntry {
+  id: string;
+  questionText: string;
+  linkedStoryIds: string[];
+  notes?: string;
+  source: 'scraped' | 'manual';
+  roleTitle?: string;
+  stage?: string;
+}
+
+/**
+ * Section 4: Question Mapping - Pre-map behavioral questions to stories
+ */
+export interface QuestionMappingSection {
+  mappings: QuestionMappingEntry[];
+}
+
+/**
+ * Value-to-story mapping for company alignment
+ */
+export interface ValueStoryMapping {
+  companyValue: string;
+  linkedStoryId: string;
+  notes?: string;
+}
+
+/**
+ * Section 5: Company-Specific Alignment - Customize stories per company values
+ */
+export interface CompanyAlignmentSection {
+  valueStoryMappings: ValueStoryMapping[];
+  relevantExperiences?: string[];
+  gapsToFrame?: string[];
+}
+
+/**
+ * Strength entry with supporting example
+ */
+export interface StrengthEntry {
+  strength: string;
+  supportingExample?: string;
+}
+
+/**
+ * Weakness entry with mitigation strategy
+ */
+export interface WeaknessEntry {
+  weakness: string;
+  mitigationStrategy?: string;
+}
+
+/**
+ * Section 6: Strengths & Weaknesses - Self-awareness positioning
+ */
+export interface StrengthsWeaknessesSection {
+  strengths: StrengthEntry[];
+  weaknesses: WeaknessEntry[];
+}
+
+/**
+ * Section 7: Key Talking Points - Short, repeatable positioning statements
+ */
+export interface KeyTalkingPointsSection {
+  whyCompany?: string;
+  whyRole?: string;
+  tellMeAboutYourselfShort?: string;
+  careerNarrative?: string;
+}
+
+/**
+ * Section 8: Questions for Interviewer - Prepared questions by category
+ */
+export interface QuestionsForInterviewerSection {
+  roleQuestions: string[];
+  teamQuestions: string[];
+  companyQuestions: string[];
+}
+
+/**
+ * Section 9: Technical Prep - For technical interviews, system design, coding rounds
+ */
+export interface TechnicalPrepSection {
+  keyConcepts?: string[];
+  systemDesignPatterns?: string[];
+  commonTechnicalQuestions: QuestionMappingEntry[];
+  projectDeepDive?: string[];
+}
+
+/**
+ * Interview round details
+ */
+export interface InterviewRound {
+  id: string;
+  date?: string;
+  type: string;
+  interviewerName?: string;
+  interviewerRole?: string;
+  notes?: string;
+}
+
+/**
+ * Section 10: Logistics & Notes - Interview scheduling and round notes
+ */
+export interface LogisticsSection {
+  interviewRounds: InterviewRound[];
+  notesPerRound?: Record<string, string>;
+  thankYouNotes?: string;
+}
+
+/**
+ * Section 11: Post-Interview Reflection - Learning and improvement tracking
+ */
+export interface PostInterviewReflectionSection {
+  wentWell?: string[];
+  didntGoWell?: string[];
+  struggledQuestions?: string[];
+  storiesToRefine?: string[];
+}
+
+/**
+ * Union type for all prep sheet sections
+ */
+export type PrepSheetSection =
+  | CompanySnapshotSection
+  | RoleBreakdownSection
+  | StoryBankSection
+  | QuestionMappingSection
+  | CompanyAlignmentSection
+  | StrengthsWeaknessesSection
+  | KeyTalkingPointsSection
+  | QuestionsForInterviewerSection
+  | TechnicalPrepSection
+  | LogisticsSection
+  | PostInterviewReflectionSection;
+
+/**
+ * Prep Sheet - Company-specific interview cheat sheet with dynamic sections
+ * Sections are stored as a map allowing add/remove at any time
+ */
+export interface PrepSheet {
+  id: string;
+  userId: string;
+  meta: PrepSheetMeta;
+  sections: Partial<Record<PrepSheetSectionId, PrepSheetSection>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================================
+// Scraper Data Contract Types
+// ============================================================================
+
+/**
+ * Scraped question with metadata for filtering by role/stage
+ */
+export interface ScrapedQuestion {
+  text: string;
+  roleTitle?: string;
+  stage?: string;
+  source: string;
+}
+
+/**
+ * Scraped company data - Output contract from question ingestion pipeline
+ * Used for autofilling prep sheet sections during creation wizard
+ */
+export interface ScrapedCompanyData {
+  companyName: string;
+
+  // For Company Snapshot section
+  values?: string[];
+  mission?: string;
+  industry?: string;
+  product?: string;
+  interviewFormat?: string;
+
+  // For Question Mapping section
+  behavioralQuestions: ScrapedQuestion[];
+
+  // For Technical Prep section
+  technicalQuestions: ScrapedQuestion[];
+
+  // For Role Breakdown section
+  roleRequirements?: string[];
+
+  // Provenance
+  lastScrapedAt: string;
+  sources: string[];
+}
+
+/**
+ * Parsed job description - Output from JD parsing (Gemini AI)
+ * Used for autofilling Role Breakdown section
+ */
+export interface ParsedJobDescription {
+  roleTitle: string;
+  responsibilities: string[];
+  requiredSkills: string[];
+  successIndicators?: string[];
+  teamOrg?: string;
+}
+
+// ============================================================================
+// Company Template Types
+// ============================================================================
+
+/**
+ * Company template - Pre-populated prep sheet template from scraped data
+ * Users can select these templates when creating a new prep sheet
+ */
+export interface CompanyTemplate {
+  id: string;
+  companyName: string;
+  isBundled: boolean;
+
+  // Pre-populated section data from scraping
+  sections: {
+    companySnapshot?: Partial<CompanySnapshotSection>;
+    questionMapping?: Partial<QuestionMappingSection>;
+    technicalPrep?: Partial<TechnicalPrepSection>;
+  };
+
+  // Template metadata
+  createdAt: string;
+  updatedAt: string;
+  lastScrapedAt: string;
+}
+
+/**
+ * User saved template - User's own prep sheet saved as reusable template
+ */
+export interface UserSavedTemplate {
+  id: string;
+  userId: string;
+  name: string;
+  basedOnSheetId: string;
+  sections: PrepSheetSectionId[];
+  createdAt: string;
+}
+
+/**
+ * Input for creating a new prep sheet
+ */
+export interface CreatePrepSheetInput {
+  companyName: string;
+  roleTitle?: string;
+  jobDescription?: string;
+  sections: PrepSheetSectionId[];
+  templateType: 'behavioral' | 'technical' | 'full';
+  useTemplate?: string;
+  useScrapedData?: boolean;
 }

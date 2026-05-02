@@ -137,14 +137,24 @@ export interface ElectronAPI {
 
   // Interview response operations
   getInterviewResponses: () => Promise<InterviewResponse[]>;
-  createInterviewResponse: (response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<InterviewResponse>;
-  updateInterviewResponse: (id: string, response: Partial<InterviewResponse>) => Promise<InterviewResponse>;
+  createInterviewResponse: (
+    response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
+  ) => Promise<InterviewResponse>;
+  updateInterviewResponse: (
+    id: string,
+    response: Partial<InterviewResponse>
+  ) => Promise<InterviewResponse>;
   deleteInterviewResponse: (id: string) => Promise<void>;
 
   // Document operations
   getDocuments: () => Promise<Document[]>;
   getDocument: (id: string) => Promise<Document | null>;
-  createDocument: (data: { title: string; description?: string; questions?: DocumentQuestion[]; tags?: string[] }) => Promise<Document>;
+  createDocument: (data: {
+    title: string;
+    description?: string;
+    questions?: DocumentQuestion[];
+    tags?: string[];
+  }) => Promise<Document>;
   updateDocument: (id: string, data: Partial<Document>) => Promise<Document>;
   deleteDocument: (id: string) => Promise<void>;
   searchDocuments: (query: string) => Promise<Document[]>;
@@ -154,18 +164,29 @@ export interface ElectronAPI {
     filters?: Array<{ name: string; extensions: string[] }>;
     defaultPath?: string;
   }) => Promise<FileDialogResult>;
-  showSaveDialog: (content: string, options?: {
-    defaultPath?: string;
-    filters?: Array<{ name: string; extensions: string[] }>;
-  }) => Promise<FileDialogResult>;
+  showSaveDialog: (
+    content: string,
+    options?: {
+      defaultPath?: string;
+      filters?: Array<{ name: string; extensions: string[] }>;
+    }
+  ) => Promise<FileDialogResult>;
 
   // Platform info
   platform: string;
 
   // AI/Agent operations
-  parseResume: (filePath: string, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
-  analyzeResumeBullets: (resumeData: any, apiKey: string) => Promise<{ success: boolean; data?: any; error?: string }>;
-  analyzeAtsCompatibility: (filePath: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+  parseResume: (
+    filePath: string,
+    apiKey: string
+  ) => Promise<{ success: boolean; data?: any; error?: string }>;
+  analyzeResumeBullets: (
+    resumeData: any,
+    apiKey: string
+  ) => Promise<{ success: boolean; data?: any; error?: string }>;
+  analyzeAtsCompatibility: (
+    filePath: string
+  ) => Promise<{ success: boolean; data?: any; error?: string }>;
 
   // Resume Architect operations
   getCandidateProfile: () => Promise<any | null>;
@@ -173,6 +194,16 @@ export interface ElectronAPI {
 
   // PDF operations
   openResumePdf: (pdfPath: string) => Promise<void>;
+
+  // PDF generation operations
+  pdfGetTemplates: () => Promise<any[]>;
+  pdfGenerate: (
+    resume: any,
+    templateId: string,
+    userProfile?: any
+  ) => Promise<{ pdfPath: string; generatedAt: string; templateId: string }>;
+  pdfOpen: (pdfPath: string) => Promise<void>;
+  pdfGetTemplatesPath: () => Promise<string>;
 
   // Agent foundation operations
   agentCreateSession: (input: CreateAgentSessionInput) => Promise<AgentSession>;
@@ -182,7 +213,9 @@ export interface ElectronAPI {
   agentClearSessionMemory: (sessionId: string) => Promise<void>;
 
   // Voice interview operations
-  voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => Promise<VoiceInterviewSession>;
+  voiceInterviewCreateSession: (
+    input: CreateVoiceInterviewSessionInput
+  ) => Promise<VoiceInterviewSession>;
   voiceInterviewGetSession: (sessionId: string) => Promise<VoiceInterviewSession | null>;
   voiceInterviewListSessions: () => Promise<VoiceInterviewSession[]>;
   voiceInterviewStartSession: (sessionId: string) => Promise<VoiceInterviewSession>;
@@ -191,26 +224,42 @@ export interface ElectronAPI {
   voiceInterviewInterruptSession: (sessionId: string) => Promise<VoiceInterviewSession>;
   voiceInterviewEndSession: (sessionId: string) => Promise<VoiceInterviewSession>;
   voiceInterviewGetTranscript: (sessionId: string) => Promise<VoiceTranscriptEvent[]>;
-  voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => Promise<VoiceTranscriptEvent>;
+  voiceInterviewAppendTranscriptEvent: (
+    sessionId: string,
+    input: AppendVoiceTranscriptEventInput
+  ) => Promise<VoiceTranscriptEvent>;
   voiceInterviewGetEvents: (sessionId: string) => Promise<VoiceInterviewEvent[]>;
 
   // Voice interview streaming operations (STT-LLM-TTS pipeline)
   voiceInterviewStreamingCreate: (input: any) => Promise<{ success: boolean; sessionId: string }>;
   voiceInterviewStreamingStart: (sessionId: string) => Promise<{ success: boolean }>;
-  voiceInterviewStreamingSendAudio: (sessionId: string, audioBase64: string) => Promise<{ success: boolean }>;
+  voiceInterviewStreamingSendAudio: (
+    sessionId: string,
+    audioBase64: string
+  ) => Promise<{ success: boolean }>;
   voiceInterviewStreamingPause: (sessionId: string) => Promise<{ success: boolean }>;
   voiceInterviewStreamingResume: (sessionId: string) => Promise<{ success: boolean }>;
   voiceInterviewStreamingInterrupt: (sessionId: string) => Promise<{ success: boolean }>;
   voiceInterviewStreamingEnd: (sessionId: string) => Promise<{ success: boolean }>;
-  voiceInterviewStreamingGetState: (sessionId: string) => Promise<{ pipelineState: string; isReady: boolean }>;
+  voiceInterviewStreamingGetState: (
+    sessionId: string
+  ) => Promise<{ pipelineState: string; isReady: boolean }>;
   voiceInterviewStreamingListActive: () => Promise<string[]>;
 
   // Voice interview streaming event listeners
-  onVoiceInterviewCandidateTranscript: (callback: (sessionId: string, text: string, isFinal: boolean) => void) => () => void;
-  onVoiceInterviewInterviewerResponse: (callback: (sessionId: string, text: string) => void) => () => void;
-  onVoiceInterviewAudioOutput: (callback: (sessionId: string, audioBase64: string) => void) => () => void;
+  onVoiceInterviewCandidateTranscript: (
+    callback: (sessionId: string, text: string, isFinal: boolean) => void
+  ) => () => void;
+  onVoiceInterviewInterviewerResponse: (
+    callback: (sessionId: string, text: string) => void
+  ) => () => void;
+  onVoiceInterviewAudioOutput: (
+    callback: (sessionId: string, audioBase64: string) => void
+  ) => () => void;
   onVoiceInterviewStateChange: (callback: (sessionId: string, state: any) => void) => () => void;
-  onVoiceInterviewPhaseChange: (callback: (sessionId: string, from: string, to: string) => void) => () => void;
+  onVoiceInterviewPhaseChange: (
+    callback: (sessionId: string, from: string, to: string) => void
+  ) => () => void;
   onVoiceInterviewSpeechStarted: (callback: (sessionId: string) => void) => () => void;
   onVoiceInterviewSpeechEnded: (callback: (sessionId: string) => void) => () => void;
   onVoiceInterviewError: (callback: (sessionId: string, error: string) => void) => () => void;
@@ -224,7 +273,11 @@ export interface ElectronAPI {
     addTodo: (sessionId: string, input: any) => Promise<CoachingTodo>;
     updateTodo: (sessionId: string, todoId: string, updates: any) => Promise<CoachingTodo | null>;
     proposeChange: (sessionId: string, input: any) => Promise<StagedChange>;
-    acceptChange: (sessionId: string, changeId: string, modification?: string) => Promise<AcceptedChange | null>;
+    acceptChange: (
+      sessionId: string,
+      changeId: string,
+      modification?: string
+    ) => Promise<AcceptedChange | null>;
     rejectChange: (sessionId: string, changeId: string) => Promise<StagedChange | null>;
     getPendingChanges: (sessionId: string) => Promise<StagedChange[]>;
     getChangeLog: (sessionId: string) => Promise<AcceptedChange[]>;
@@ -257,8 +310,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Interview response operations
   getInterviewResponses: () => ipcRenderer.invoke('get-interview-responses'),
-  createInterviewResponse: (response: any) => ipcRenderer.invoke('create-interview-response', response),
-  updateInterviewResponse: (id: string, response: any) => ipcRenderer.invoke('update-interview-response', id, response),
+  createInterviewResponse: (response: any) =>
+    ipcRenderer.invoke('create-interview-response', response),
+  updateInterviewResponse: (id: string, response: any) =>
+    ipcRenderer.invoke('update-interview-response', id, response),
   deleteInterviewResponse: (id: string) => ipcRenderer.invoke('delete-interview-response', id),
 
   // Document operations
@@ -271,7 +326,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // File dialogs
   showOpenDialog: (options?: any) => ipcRenderer.invoke('show-open-dialog', options),
-  showSaveDialog: (content: string, options?: any) => ipcRenderer.invoke('show-save-dialog', content, options),
+  showSaveDialog: (content: string, options?: any) =>
+    ipcRenderer.invoke('show-save-dialog', content, options),
 
   // Platform info
   platform: process.platform,
@@ -279,8 +335,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // AI/Agent operations
   parseResume: (filePath: string, apiKey: string) =>
     ipcRenderer.invoke('resume:parse', { filePath, apiKey }),
-  replaceResumePdf: (filePath: string) =>
-    ipcRenderer.invoke('resume:replace-pdf', { filePath }),
+  replaceResumePdf: (filePath: string) => ipcRenderer.invoke('resume:replace-pdf', { filePath }),
   analyzeResumeBullets: (resumeData: any, apiKey: string) =>
     ipcRenderer.invoke('resume:analyze-bullets', { resumeData, apiKey }),
   analyzeAtsCompatibility: (filePath: string) =>
@@ -291,8 +346,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveCandidateProfile: (profile: any) => ipcRenderer.invoke('save-candidate-profile', profile),
 
   // PDF operations
-  openResumePdf: (pdfPath: string) =>
-    ipcRenderer.invoke('open-resume-pdf', pdfPath),
+  openResumePdf: (pdfPath: string) => ipcRenderer.invoke('open-resume-pdf', pdfPath),
+
+  // PDF generation operations
+  pdfGetTemplates: () => ipcRenderer.invoke('pdf:get-templates'),
+  pdfGenerate: (resume: any, templateId: string, userProfile?: any) =>
+    ipcRenderer.invoke('pdf:generate', resume, templateId, userProfile),
+  pdfOpen: (pdfPath: string) => ipcRenderer.invoke('pdf:open', pdfPath),
+  pdfGetTemplatesPath: () => ipcRenderer.invoke('pdf:get-templates-path'),
 
   // Resume chat
   resumeChat: (messages: any[], analysisContext: any, apiKey: string) =>
@@ -307,24 +368,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveAtsAnalysis: (analysis: any) => ipcRenderer.invoke('save-ats-analysis', analysis),
 
   // Agent foundation operations
-  agentCreateSession: (input: CreateAgentSessionInput) => ipcRenderer.invoke('agent:create-session', input),
+  agentCreateSession: (input: CreateAgentSessionInput) =>
+    ipcRenderer.invoke('agent:create-session', input),
   agentGetSession: (sessionId: string) => ipcRenderer.invoke('agent:get-session', sessionId),
-  agentListSessions: (assistantId?: AgentAssistantId) => ipcRenderer.invoke('agent:list-sessions', assistantId),
+  agentListSessions: (assistantId?: AgentAssistantId) =>
+    ipcRenderer.invoke('agent:list-sessions', assistantId),
   agentRunTurn: (input: AgentTurnInput) => ipcRenderer.invoke('agent:run-turn', input),
-  agentClearSessionMemory: (sessionId: string) => ipcRenderer.invoke('agent:clear-session-memory', sessionId),
-  agentGetSessionMessages: (sessionId: string) => ipcRenderer.invoke('agent:get-session-messages', sessionId),
+  agentClearSessionMemory: (sessionId: string) =>
+    ipcRenderer.invoke('agent:clear-session-memory', sessionId),
+  agentGetSessionMessages: (sessionId: string) =>
+    ipcRenderer.invoke('agent:get-session-messages', sessionId),
   agentSetApiKey: (apiKey: string) => ipcRenderer.send('agent:set-api-key', apiKey),
-  agentRenameSession: (sessionId: string, newTitle: string) => ipcRenderer.invoke('agent:rename-session', sessionId, newTitle),
+  agentRenameSession: (sessionId: string, newTitle: string) =>
+    ipcRenderer.invoke('agent:rename-session', sessionId, newTitle),
   agentDeleteSession: (sessionId: string) => ipcRenderer.invoke('agent:delete-session', sessionId),
 
   // Agent streaming events
   onAgentChunk: (callback: (sessionId: string, text: string) => void) => {
-    const listener = (_event: any, data: { sessionId: string; text: string }) => callback(data.sessionId, data.text);
+    const listener = (_event: any, data: { sessionId: string; text: string }) =>
+      callback(data.sessionId, data.text);
     ipcRenderer.on('agent:chunk', listener);
     return () => ipcRenderer.removeListener('agent:chunk', listener);
   },
   onAgentStep: (callback: (sessionId: string, step: any) => void) => {
-    const listener = (_event: any, data: { sessionId: string; step: any }) => callback(data.sessionId, data.step);
+    const listener = (_event: any, data: { sessionId: string; step: any }) =>
+      callback(data.sessionId, data.step);
     ipcRenderer.on('agent:step', listener);
     return () => ipcRenderer.removeListener('agent:step', listener);
   },
@@ -337,55 +405,81 @@ contextBridge.exposeInMainWorld('electronAPI', {
   agentOpenLogsDir: () => ipcRenderer.invoke('agent:open-logs-dir'),
 
   // Voice interview operations
-  voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) => ipcRenderer.invoke('voice-interview:create-session', input),
-  voiceInterviewGetSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-session', sessionId),
+  voiceInterviewCreateSession: (input: CreateVoiceInterviewSessionInput) =>
+    ipcRenderer.invoke('voice-interview:create-session', input),
+  voiceInterviewGetSession: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:get-session', sessionId),
   voiceInterviewListSessions: () => ipcRenderer.invoke('voice-interview:list-sessions'),
-  voiceInterviewStartSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:start-session', sessionId),
-  voiceInterviewPauseSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:pause-session', sessionId),
-  voiceInterviewResumeSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:resume-session', sessionId),
-  voiceInterviewInterruptSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:interrupt-session', sessionId),
-  voiceInterviewEndSession: (sessionId: string) => ipcRenderer.invoke('voice-interview:end-session', sessionId),
-  voiceInterviewGetTranscript: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-transcript', sessionId),
-  voiceInterviewAppendTranscriptEvent: (sessionId: string, input: AppendVoiceTranscriptEventInput) => ipcRenderer.invoke('voice-interview:append-transcript-event', sessionId, input),
-  voiceInterviewGetEvents: (sessionId: string) => ipcRenderer.invoke('voice-interview:get-events', sessionId),
+  voiceInterviewStartSession: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:start-session', sessionId),
+  voiceInterviewPauseSession: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:pause-session', sessionId),
+  voiceInterviewResumeSession: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:resume-session', sessionId),
+  voiceInterviewInterruptSession: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:interrupt-session', sessionId),
+  voiceInterviewEndSession: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:end-session', sessionId),
+  voiceInterviewGetTranscript: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:get-transcript', sessionId),
+  voiceInterviewAppendTranscriptEvent: (
+    sessionId: string,
+    input: AppendVoiceTranscriptEventInput
+  ) => ipcRenderer.invoke('voice-interview:append-transcript-event', sessionId, input),
+  voiceInterviewGetEvents: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview:get-events', sessionId),
 
   // Voice interview streaming operations (STT-LLM-TTS pipeline)
-  voiceInterviewStreamingCreate: (input: any) => ipcRenderer.invoke('voice-interview-streaming:create', input),
-  voiceInterviewStreamingStart: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:start', sessionId),
-  voiceInterviewStreamingSendAudio: (sessionId: string, audioBase64: string) => 
+  voiceInterviewStreamingCreate: (input: any) =>
+    ipcRenderer.invoke('voice-interview-streaming:create', input),
+  voiceInterviewStreamingStart: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview-streaming:start', sessionId),
+  voiceInterviewStreamingSendAudio: (sessionId: string, audioBase64: string) =>
     ipcRenderer.invoke('voice-interview-streaming:send-audio', { sessionId, audioBase64 }),
-  voiceInterviewStreamingPause: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:pause', sessionId),
-  voiceInterviewStreamingResume: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:resume', sessionId),
-  voiceInterviewStreamingInterrupt: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:interrupt', sessionId),
-  voiceInterviewStreamingEnd: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:end', sessionId),
-  voiceInterviewStreamingGetState: (sessionId: string) => ipcRenderer.invoke('voice-interview-streaming:get-state', sessionId),
-  voiceInterviewStreamingListActive: () => ipcRenderer.invoke('voice-interview-streaming:list-active'),
+  voiceInterviewStreamingPause: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview-streaming:pause', sessionId),
+  voiceInterviewStreamingResume: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview-streaming:resume', sessionId),
+  voiceInterviewStreamingInterrupt: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview-streaming:interrupt', sessionId),
+  voiceInterviewStreamingEnd: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview-streaming:end', sessionId),
+  voiceInterviewStreamingGetState: (sessionId: string) =>
+    ipcRenderer.invoke('voice-interview-streaming:get-state', sessionId),
+  voiceInterviewStreamingListActive: () =>
+    ipcRenderer.invoke('voice-interview-streaming:list-active'),
 
   // Voice interview streaming event listeners
-  onVoiceInterviewCandidateTranscript: (callback: (sessionId: string, text: string, isFinal: boolean) => void) => {
-    const listener = (_event: any, data: { sessionId: string; text: string; isFinal: boolean }) => 
+  onVoiceInterviewCandidateTranscript: (
+    callback: (sessionId: string, text: string, isFinal: boolean) => void
+  ) => {
+    const listener = (_event: any, data: { sessionId: string; text: string; isFinal: boolean }) =>
       callback(data.sessionId, data.text, data.isFinal);
     ipcRenderer.on('voice-interview:candidate-transcript', listener);
     return () => ipcRenderer.removeListener('voice-interview:candidate-transcript', listener);
   },
   onVoiceInterviewInterviewerResponse: (callback: (sessionId: string, text: string) => void) => {
-    const listener = (_event: any, data: { sessionId: string; text: string }) => callback(data.sessionId, data.text);
+    const listener = (_event: any, data: { sessionId: string; text: string }) =>
+      callback(data.sessionId, data.text);
     ipcRenderer.on('voice-interview:interviewer-response', listener);
     return () => ipcRenderer.removeListener('voice-interview:interviewer-response', listener);
   },
   onVoiceInterviewAudioOutput: (callback: (sessionId: string, audioBase64: string) => void) => {
-    const listener = (_event: any, data: { sessionId: string; audioBase64: string }) => 
+    const listener = (_event: any, data: { sessionId: string; audioBase64: string }) =>
       callback(data.sessionId, data.audioBase64);
     ipcRenderer.on('voice-interview:audio-output', listener);
     return () => ipcRenderer.removeListener('voice-interview:audio-output', listener);
   },
   onVoiceInterviewStateChange: (callback: (sessionId: string, state: any) => void) => {
-    const listener = (_event: any, data: { sessionId: string; state: any }) => callback(data.sessionId, data.state);
+    const listener = (_event: any, data: { sessionId: string; state: any }) =>
+      callback(data.sessionId, data.state);
     ipcRenderer.on('voice-interview:state-change', listener);
     return () => ipcRenderer.removeListener('voice-interview:state-change', listener);
   },
-  onVoiceInterviewPhaseChange: (callback: (sessionId: string, from: string, to: string) => void) => {
-    const listener = (_event: any, data: { sessionId: string; from: string; to: string }) => 
+  onVoiceInterviewPhaseChange: (
+    callback: (sessionId: string, from: string, to: string) => void
+  ) => {
+    const listener = (_event: any, data: { sessionId: string; from: string; to: string }) =>
       callback(data.sessionId, data.from, data.to);
     ipcRenderer.on('voice-interview:phase-change', listener);
     return () => ipcRenderer.removeListener('voice-interview:phase-change', listener);
@@ -401,7 +495,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('voice-interview:speech-ended', listener);
   },
   onVoiceInterviewError: (callback: (sessionId: string, error: string) => void) => {
-    const listener = (_event: any, data: { sessionId: string; error: string }) => callback(data.sessionId, data.error);
+    const listener = (_event: any, data: { sessionId: string; error: string }) =>
+      callback(data.sessionId, data.error);
     ipcRenderer.on('voice-interview:error', listener);
     return () => ipcRenderer.removeListener('voice-interview:error', listener);
   },
@@ -417,21 +512,33 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   coaching: {
-    getSessionData: (sessionId: string) => ipcRenderer.invoke('coaching:get-session-data', sessionId),
-    addGoal: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:add-goal', sessionId, input),
-    updateGoal: (sessionId: string, goalId: string, updates: any) => ipcRenderer.invoke('coaching:update-goal', sessionId, goalId, updates),
-    addTodo: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:add-todo', sessionId, input),
-    updateTodo: (sessionId: string, todoId: string, updates: any) => ipcRenderer.invoke('coaching:update-todo', sessionId, todoId, updates),
-    proposeChange: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:propose-change', sessionId, input),
-    acceptChange: (sessionId: string, changeId: string, modification?: string) => ipcRenderer.invoke('coaching:accept-change', sessionId, changeId, modification),
-    rejectChange: (sessionId: string, changeId: string) => ipcRenderer.invoke('coaching:reject-change', sessionId, changeId),
-    getPendingChanges: (sessionId: string) => ipcRenderer.invoke('coaching:get-pending-changes', sessionId),
+    getSessionData: (sessionId: string) =>
+      ipcRenderer.invoke('coaching:get-session-data', sessionId),
+    addGoal: (sessionId: string, input: any) =>
+      ipcRenderer.invoke('coaching:add-goal', sessionId, input),
+    updateGoal: (sessionId: string, goalId: string, updates: any) =>
+      ipcRenderer.invoke('coaching:update-goal', sessionId, goalId, updates),
+    addTodo: (sessionId: string, input: any) =>
+      ipcRenderer.invoke('coaching:add-todo', sessionId, input),
+    updateTodo: (sessionId: string, todoId: string, updates: any) =>
+      ipcRenderer.invoke('coaching:update-todo', sessionId, todoId, updates),
+    proposeChange: (sessionId: string, input: any) =>
+      ipcRenderer.invoke('coaching:propose-change', sessionId, input),
+    acceptChange: (sessionId: string, changeId: string, modification?: string) =>
+      ipcRenderer.invoke('coaching:accept-change', sessionId, changeId, modification),
+    rejectChange: (sessionId: string, changeId: string) =>
+      ipcRenderer.invoke('coaching:reject-change', sessionId, changeId),
+    getPendingChanges: (sessionId: string) =>
+      ipcRenderer.invoke('coaching:get-pending-changes', sessionId),
     getChangeLog: (sessionId: string) => ipcRenderer.invoke('coaching:get-change-log', sessionId),
-    createVersion: (sessionId: string, input: any) => ipcRenderer.invoke('coaching:create-version', sessionId, input),
+    createVersion: (sessionId: string, input: any) =>
+      ipcRenderer.invoke('coaching:create-version', sessionId, input),
     listVersions: (sessionId: string) => ipcRenderer.invoke('coaching:list-versions', sessionId),
     getUserProfile: () => ipcRenderer.invoke('coaching:get-user-profile'),
-    updateUserProfile: (updates: any) => ipcRenderer.invoke('coaching:update-user-profile', updates),
-    clearSessionData: (sessionId: string) => ipcRenderer.invoke('coaching:clear-session-data', sessionId),
+    updateUserProfile: (updates: any) =>
+      ipcRenderer.invoke('coaching:update-user-profile', updates),
+    clearSessionData: (sessionId: string) =>
+      ipcRenderer.invoke('coaching:clear-session-data', sessionId),
   },
 });
 

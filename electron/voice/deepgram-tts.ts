@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import type { Data } from 'ws';
 
 export interface TTSConfig {
   apiKey: string;
@@ -112,7 +113,7 @@ export class DeepgramTTSProvider {
         resolve();
       });
 
-      this.ws.once('error', (error) => {
+      this.ws.once('error', (error: Error) => {
         clearTimeout(timeout);
         reject(error);
       });
@@ -122,7 +123,7 @@ export class DeepgramTTSProvider {
   private handleControlMessage(data: string): void {
     try {
       const message = JSON.parse(data);
-      
+
       if (message.type === 'Flushed') {
         this.handlers.onFlushed?.();
         this.handlers.onComplete();
@@ -255,7 +256,11 @@ export class DeepgramTTSProvider {
   }
 }
 
-export function createTTSProvider(apiKey: string, handlers: TTSEventHandler, config?: Partial<TTSConfig>): DeepgramTTSProvider {
+export function createTTSProvider(
+  apiKey: string,
+  handlers: TTSEventHandler,
+  config?: Partial<TTSConfig>
+): DeepgramTTSProvider {
   return new DeepgramTTSProvider(apiKey, handlers, config);
 }
 

@@ -12,6 +12,7 @@ export type {
   IUserService,
   IDocumentService,
   ICoachingService,
+  IPDFService,
 } from './interfaces';
 
 // Factory
@@ -27,6 +28,7 @@ export {
   useUser,
   useDocuments,
   useCoaching,
+  usePDF,
 } from './context';
 
 // Individual service implementations (for advanced usage)
@@ -37,6 +39,5 @@ export {
   ElectronUserService,
   ElectronDocumentService,
   ElectronCoachingService,
+  ElectronPDFService,
 } from './electron';
-
-

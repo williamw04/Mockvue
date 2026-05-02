@@ -214,7 +214,12 @@ export interface AgentTurnResult {
 
 // Coaching Workspace Types
 
-export type CoachingGoalType = 'score_improvement' | 'weakness_elimination' | 'section_overhaul' | 'role_tailoring' | 'custom';
+export type CoachingGoalType =
+  | 'score_improvement'
+  | 'weakness_elimination'
+  | 'section_overhaul'
+  | 'role_tailoring'
+  | 'custom';
 export type CoachingGoalStatus = 'not_started' | 'in_progress' | 'completed' | 'abandoned';
 export type TodoStatus = 'pending' | 'in_progress' | 'completed' | 'blocked';
 export type StagedChangeStatus = 'pending' | 'accepted' | 'rejected' | 'modified';
@@ -379,4 +384,21 @@ export interface VoiceInterviewEvent {
   type: VoiceInterviewEventType;
   createdAt: string;
   payload?: Record<string, unknown>;
+}
+
+// Resume Template Types
+export type ResumeTemplateStyle = 'classic' | 'modern' | 'minimal';
+
+export interface ResumeTemplate {
+  id: string;
+  name: string;
+  description: string;
+  style: ResumeTemplateStyle;
+  texPath: string;
+}
+
+export interface PDFGenerationResult {
+  pdfPath: string;
+  generatedAt: string;
+  templateId: string;
 }

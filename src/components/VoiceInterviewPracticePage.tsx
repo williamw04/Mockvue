@@ -25,9 +25,9 @@ export default function VoiceInterviewPracticePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const userService = useUser();
-  
+
   const prepSheet = location.state?.prepSheet as Document | undefined;
-  
+
   const [resume, setResume] = useState<Resume | null>(null);
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,11 +37,11 @@ export default function VoiceInterviewPracticePage() {
   const [error, setError] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [interviewPhase, setInterviewPhase] = useState<string>('opening');
-  
+
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioWorkletRef = useRef<AudioWorkletNode | null>(null);
-  
+
   const cleanupFunctionsRef = useRef<(() => void)[]>([]);
 
   useEffect(() => {
@@ -49,10 +49,10 @@ export default function VoiceInterviewPracticePage() {
       try {
         const resumeData = await userService.getResume();
         setResume(resumeData);
-        
+
         const storiesData = await userService.getStories();
         setStories(storiesData);
-        
+
         if (!prepSheet) {
           setError('No prep sheet selected. Please select a prep sheet first.');
         }
@@ -85,8 +85,8 @@ export default function VoiceInterviewPracticePage() {
 
       const result = await api.voiceInterviewStreamingCreate({
         sessionId: newSessionId,
-        deepgramApiKey: '',  // API keys handled in main process
-        geminiApiKey: '',    // API keys handled in main process  
+        deepgramApiKey: import.meta.env.VITE_DEEPGRAM_API_KEY || '',
+        geminiApiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
         interviewConfig,
       });
 
@@ -97,9 +97,9 @@ export default function VoiceInterviewPracticePage() {
       setupEventListeners(newSessionId);
 
       await api.voiceInterviewStreamingStart(newSessionId);
-      
+
       await initializeAudioCapture(newSessionId);
-      
+
       setSessionState('active');
     } catch (err) {
       console.error('Error starting session:', err);
@@ -109,7 +109,7 @@ export default function VoiceInterviewPracticePage() {
   };
 
   const buildInterviewConfig = (sheet: Document, resumeData: Resume, storiesData: Story[]) => {
-    const role = sheet.title.includes(' - ') 
+    const role = sheet.title.includes(' - ')
       ? sheet.title.split(' - ')[1]?.trim() || sheet.title
       : sheet.title;
     const company = sheet.title.includes(' - ')
@@ -136,10 +136,38 @@ export default function VoiceInterviewPracticePage() {
       candidateSummary: resumeData.summary || undefined,
       rubric: {
         criteria: [
-          { name: 'Communication', description: 'Clear and structured responses', weight: 25, probingAreas: [], redFlags: [], greenFlags: [] },
-          { name: 'Problem Solving', description: 'Approach to challenges', weight: 25, probingAreas: [], redFlags: [], greenFlags: [] },
-          { name: 'Story Delivery', description: 'STAR structure and impact', weight: 25, probingAreas: [], redFlags: [], greenFlags: [] },
-          { name: 'Role Fit', description: 'Alignment with role requirements', weight: 25, probingAreas: [], redFlags: [], greenFlags: [] },
+          {
+            name: 'Communication',
+            description: 'Clear and structured responses',
+            weight: 25,
+            probingAreas: [],
+            redFlags: [],
+            greenFlags: [],
+          },
+          {
+            name: 'Problem Solving',
+            description: 'Approach to challenges',
+            weight: 25,
+            probingAreas: [],
+            redFlags: [],
+            greenFlags: [],
+          },
+          {
+            name: 'Story Delivery',
+            description: 'STAR structure and impact',
+            weight: 25,
+            probingAreas: [],
+            redFlags: [],
+            greenFlags: [],
+          },
+          {
+            name: 'Role Fit',
+            description: 'Alignment with role requirements',
+            weight: 25,
+            probingAreas: [],
+            redFlags: [],
+            greenFlags: [],
+          },
         ],
         overallPassThreshold: 70,
         focusAreas: [],
@@ -153,79 +181,75 @@ export default function VoiceInterviewPracticePage() {
         moveOnSignals: [],
       },
       plan: {
-        questions: sheet.questions?.map((q, i) => ({
-          id: `q-${i}`,
-          category: 'behavioral',
-          phase: i < 2 ? 'opening' : i < 4 ? 'behavioral-deep' : 'closing',
-          question: q.text,
-          followupPrompts: [],
-          evaluationCriteria: [],
-          timeBudgetMinutes: 5,
-          priority: i,
-        })) || [],
+        questions:
+          sheet.questions?.map((q, i) => ({
+            id: `q-${i}`,
+            category: 'behavioral',
+            phase: i < 2 ? 'opening' : i < 4 ? 'behavioral-deep' : 'closing',
+            question: q.text,
+            followupPrompts: [],
+            evaluationCriteria: [],
+            timeBudgetMinutes: 5,
+            priority: i,
+          })) || [],
         totalDurationMinutes: 30,
         phaseOrder: ['opening', 'behavioral-deep', 'closing'],
         openingPrompt: `Hello, I'll be conducting your interview for the ${role} position. Let's start with you telling me about yourself and your background.`,
-        closingPrompt: 'Thank you for your time today. Do you have any questions for me before we wrap up?',
+        closingPrompt:
+          'Thank you for your time today. Do you have any questions for me before we wrap up?',
       },
     };
   };
 
   const setupEventListeners = (_sessionId: string) => {
     const api = getElectronAPI();
-    
-    const unsubTranscript = api.onVoiceInterviewCandidateTranscript(
-      (_, text, isFinal) => {
-        if (isFinal) {
-          setTranscript(prev => [...prev, {
+
+    const unsubTranscript = api.onVoiceInterviewCandidateTranscript((_, text, isFinal) => {
+      if (isFinal) {
+        setTranscript((prev) => [
+          ...prev,
+          {
             speaker: 'candidate',
             text,
             timestamp: new Date().toISOString(),
-          }]);
-        }
+          },
+        ]);
       }
-    );
+    });
     cleanupFunctionsRef.current.push(unsubTranscript);
 
-    const unsubResponse = api.onVoiceInterviewInterviewerResponse(
-      (_, text) => {
-        setTranscript(prev => [...prev, {
+    const unsubResponse = api.onVoiceInterviewInterviewerResponse((_, text) => {
+      setTranscript((prev) => [
+        ...prev,
+        {
           speaker: 'interviewer',
           text,
           timestamp: new Date().toISOString(),
-        }]);
-      }
-    );
+        },
+      ]);
+    });
     cleanupFunctionsRef.current.push(unsubResponse);
 
-    const unsubAudio = api.onVoiceInterviewAudioOutput(
-      (_, audioBase64) => {
-        playAudioChunk(audioBase64);
-      }
-    );
+    const unsubAudio = api.onVoiceInterviewAudioOutput((_, audioBase64) => {
+      playAudioChunk(audioBase64);
+    });
     cleanupFunctionsRef.current.push(unsubAudio);
 
-    const unsubState = api.onVoiceInterviewStateChange(
-      (_, state) => {
-        if (state && typeof state === 'object' && 'currentPhase' in state) {
-          setInterviewPhase((state as { currentPhase: string }).currentPhase);
-        }
+    const unsubState = api.onVoiceInterviewStateChange((_, state) => {
+      if (state && typeof state === 'object' && 'currentPhase' in state) {
+        setInterviewPhase((state as { currentPhase: string }).currentPhase);
       }
-    );
+    });
     cleanupFunctionsRef.current.push(unsubState);
 
-    const unsubPhase = api.onVoiceInterviewPhaseChange(
-      (_, _from, to) => {
-        setInterviewPhase(to);
-      }
-    );
+    const unsubPhase = api.onVoiceInterviewPhaseChange((_, _from, to) => {
+      setInterviewPhase(to);
+    });
     cleanupFunctionsRef.current.push(unsubPhase);
 
-    const unsubError = api.onVoiceInterviewError(
-      (_, errorMsg) => {
-        setError(errorMsg);
-      }
-    );
+    const unsubError = api.onVoiceInterviewError((_, errorMsg) => {
+      setError(errorMsg);
+    });
     cleanupFunctionsRef.current.push(unsubError);
 
     const unsubReady = api.onVoiceInterviewSessionReady(() => {
@@ -253,16 +277,16 @@ export default function VoiceInterviewPracticePage() {
 
       audioContextRef.current = new AudioContext({ sampleRate: 16000 });
       const source = audioContextRef.current.createMediaStreamSource(stream);
-      
+
       // Note: AudioWorklet requires a separate file - for now we'll use a simple approach
       // This is a placeholder - in production you'd need an audio-processor.js worklet file
       const analyzer = audioContextRef.current.createAnalyser();
       source.connect(analyzer);
-      
+
       // For demo purposes, we'll simulate audio capture with intervals
       // In production, this would use AudioWorklet for proper streaming
       setIsRecording(true);
-      
+
       console.log('Audio capture initialized for session:', currentSessionId);
     } catch (err) {
       console.error('Error initializing audio:', err);
@@ -275,17 +299,17 @@ export default function VoiceInterviewPracticePage() {
       audioWorkletRef.current.disconnect();
       audioWorkletRef.current = null;
     }
-    
+
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
-    
+
     if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
     }
-    
+
     setIsRecording(false);
   };
 
@@ -301,16 +325,20 @@ export default function VoiceInterviewPracticePage() {
         bytes[i] = binaryString.charCodeAt(i);
       }
 
-      audioContextRef.current.decodeAudioData(bytes.buffer, (buffer) => {
-        if (audioContextRef.current) {
-          const source = audioContextRef.current.createBufferSource();
-          source.buffer = buffer;
-          source.connect(audioContextRef.current.destination);
-          source.start();
+      audioContextRef.current.decodeAudioData(
+        bytes.buffer,
+        (buffer) => {
+          if (audioContextRef.current) {
+            const source = audioContextRef.current.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContextRef.current.destination);
+            source.start();
+          }
+        },
+        (err) => {
+          console.error('Error decoding audio:', err);
         }
-      }, (err) => {
-        console.error('Error decoding audio:', err);
-      });
+      );
     } catch (err) {
       console.error('Error playing audio:', err);
     }
@@ -318,7 +346,7 @@ export default function VoiceInterviewPracticePage() {
 
   const pauseSession = async () => {
     if (!sessionId) return;
-    
+
     try {
       const api = getElectronAPI();
       await api.voiceInterviewStreamingPause(sessionId);
@@ -331,7 +359,7 @@ export default function VoiceInterviewPracticePage() {
 
   const resumeSession = async () => {
     if (!sessionId) return;
-    
+
     try {
       const api = getElectronAPI();
       await api.voiceInterviewStreamingResume(sessionId);
@@ -344,15 +372,15 @@ export default function VoiceInterviewPracticePage() {
 
   const endSession = async () => {
     if (!sessionId) return;
-    
+
     try {
       const api = getElectronAPI();
       await api.voiceInterviewStreamingEnd(sessionId);
       stopAudioCapture();
-      
-      cleanupFunctionsRef.current.forEach(fn => fn());
+
+      cleanupFunctionsRef.current.forEach((fn) => fn());
       cleanupFunctionsRef.current = [];
-      
+
       setSessionState('ended');
     } catch (err) {
       console.error('Error ending session:', err);
@@ -361,7 +389,7 @@ export default function VoiceInterviewPracticePage() {
 
   const interruptSession = async () => {
     if (!sessionId) return;
-    
+
     try {
       const api = getElectronAPI();
       await api.voiceInterviewStreamingInterrupt(sessionId);
@@ -372,7 +400,7 @@ export default function VoiceInterviewPracticePage() {
 
   useEffect(() => {
     return () => {
-      cleanupFunctionsRef.current.forEach(fn => fn());
+      cleanupFunctionsRef.current.forEach((fn) => fn());
       stopAudioCapture();
     };
   }, []);
@@ -413,10 +441,13 @@ export default function VoiceInterviewPracticePage() {
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col font-sans">
       <TopNavBar />
-      
+
       <div className="px-14 py-10 max-w-5xl">
         <div className="flex items-center gap-2 text-ink-3 mb-6">
-          <button onClick={() => navigate('/practice')} className="flex items-center gap-1 hover:text-ink transition-colors">
+          <button
+            onClick={() => navigate('/practice')}
+            className="flex items-center gap-1 hover:text-ink transition-colors"
+          >
             <ChevronLeft className="w-4 h-4" />
             Back to Practice
           </button>
@@ -430,7 +461,8 @@ export default function VoiceInterviewPracticePage() {
             {prepSheet.title}
           </h1>
           <div className="text-[15px] text-ink-2">
-            Practice a mock interview with an AI interviewer. Speak naturally and receive follow-up questions based on your responses.
+            Practice a mock interview with an AI interviewer. Speak naturally and receive follow-up
+            questions based on your responses.
           </div>
         </div>
 
@@ -456,7 +488,7 @@ export default function VoiceInterviewPracticePage() {
                 {sessionState === 'ended' && 'Session Complete'}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               {sessionState === 'idle' && (
                 <button
@@ -467,7 +499,7 @@ export default function VoiceInterviewPracticePage() {
                   Start Interview
                 </button>
               )}
-              
+
               {sessionState === 'active' && (
                 <>
                   <button
@@ -491,7 +523,7 @@ export default function VoiceInterviewPracticePage() {
                   </button>
                 </>
               )}
-              
+
               {sessionState === 'paused' && (
                 <>
                   <button
@@ -509,7 +541,7 @@ export default function VoiceInterviewPracticePage() {
                   </button>
                 </>
               )}
-              
+
               {sessionState === 'ended' && (
                 <button
                   onClick={() => {
@@ -528,9 +560,11 @@ export default function VoiceInterviewPracticePage() {
           {/* Microphone Indicator */}
           {sessionState === 'active' && (
             <div className="flex items-center gap-4 border-t border-rule pt-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                isRecording ? 'bg-accent-hi text-white animate-pulse' : 'bg-bg text-ink-3'
-              }`}>
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  isRecording ? 'bg-accent-hi text-white animate-pulse' : 'bg-bg text-ink-3'
+                }`}
+              >
                 {isRecording ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
               </div>
               <div>
@@ -551,28 +585,38 @@ export default function VoiceInterviewPracticePage() {
             <div className="font-mono text-[10px] text-ink-3 tracking-widest uppercase mb-4">
               Conversation Transcript
             </div>
-            
+
             <div className="space-y-4 max-h-[400px] overflow-y-auto">
               {transcript.map((entry, index) => (
-                <div key={index} className={`flex gap-3 ${entry.speaker === 'interviewer' ? '' : 'flex-row-reverse'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    entry.speaker === 'interviewer' 
-                      ? 'bg-accent-lo text-accent-hi' 
-                      : 'bg-bg text-ink-2'
-                  }`}>
-                    {entry.speaker === 'interviewer' 
-                      ? <Volume2 className="w-4 h-4" /> 
-                      : <Mic className="w-4 h-4" />
-                    }
+                <div
+                  key={index}
+                  className={`flex gap-3 ${entry.speaker === 'interviewer' ? '' : 'flex-row-reverse'}`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      entry.speaker === 'interviewer'
+                        ? 'bg-accent-lo text-accent-hi'
+                        : 'bg-bg text-ink-2'
+                    }`}
+                  >
+                    {entry.speaker === 'interviewer' ? (
+                      <Volume2 className="w-4 h-4" />
+                    ) : (
+                      <Mic className="w-4 h-4" />
+                    )}
                   </div>
-                  <div className={`flex-1 max-w-[80%] ${
-                    entry.speaker === 'interviewer' ? 'text-left' : 'text-right'
-                  }`}>
-                    <div className={`inline-block p-3 ${
-                      entry.speaker === 'interviewer' 
-                        ? 'bg-bg border border-rule' 
-                        : 'bg-accent-lo'
-                    }`}>
+                  <div
+                    className={`flex-1 max-w-[80%] ${
+                      entry.speaker === 'interviewer' ? 'text-left' : 'text-right'
+                    }`}
+                  >
+                    <div
+                      className={`inline-block p-3 ${
+                        entry.speaker === 'interviewer'
+                          ? 'bg-bg border border-rule'
+                          : 'bg-accent-lo'
+                      }`}
+                    >
                       <div className="text-[13px]">{entry.text}</div>
                     </div>
                     <div className="font-mono text-[10px] text-ink-3 mt-1">

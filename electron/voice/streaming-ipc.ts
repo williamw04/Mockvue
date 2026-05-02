@@ -34,6 +34,21 @@ export function registerVoiceInterviewStreamingIpcHandlers(
         throw new Error('Main window not available');
       }
 
+      // Resolve API keys from input or environment
+      const deepgramApiKey = input.deepgramApiKey || process.env.VITE_DEEPGRAM_API_KEY || '';
+      const geminiApiKey = input.geminiApiKey || process.env.VITE_GEMINI_API_KEY || '';
+
+      if (!deepgramApiKey) {
+        throw new Error(
+          'Deepgram API key not configured. Set VITE_DEEPGRAM_API_KEY in your .env file.'
+        );
+      }
+      if (!geminiApiKey) {
+        throw new Error(
+          'Gemini API key not configured. Set VITE_GEMINI_API_KEY in your .env file.'
+        );
+      }
+
       const handlers: STTLLMTTSEventHandler = {
         onCandidateTranscript: (text: string, isFinal: boolean) => {
           mainWindow.webContents.send('voice-interview:candidate-transcript', {
@@ -98,8 +113,8 @@ export function registerVoiceInterviewStreamingIpcHandlers(
 
       const provider = new STTLLMTTSVoiceProvider(
         {
-          deepgramApiKey: input.deepgramApiKey,
-          geminiApiKey: input.geminiApiKey,
+          deepgramApiKey,
+          geminiApiKey,
           interviewConfig: input.interviewConfig,
         },
         handlers

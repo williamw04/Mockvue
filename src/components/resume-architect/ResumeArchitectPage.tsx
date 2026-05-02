@@ -6,11 +6,18 @@ import { BulletDiffEditor } from './BulletDiffEditor';
 import { CompanyChatPanel } from './CompanyChatPanel';
 import { InsightsRail } from './InsightsRail';
 import { JobDescriptionUpload } from './JobDescriptionUpload';
-import { Loader2, FileText } from 'lucide-react';
+import { SummaryEditor } from './SummaryEditor';
+import { WorkExperienceEditor } from './WorkExperienceEditor';
+import { EducationEditor } from './EducationEditor';
+import { SkillsEditor } from './SkillsEditor';
+import { ProjectsEditor } from './ProjectsEditor';
+import { TemplateSelector } from './TemplateSelector';
+import { getResumeSections, type ResumeSection } from './section-utils';
+import { Loader2, FileText, Download } from 'lucide-react';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import type { Resume, ResumeAnalysis, BulletAnalysis } from '../../types';
 
-type Mode = 'diff' | 'agent';
+type Mode = 'diff' | 'edit' | 'agent';
 
 interface CompanyChat {
   id: string;
@@ -54,6 +61,8 @@ export default function ResumeArchitectPage() {
   const [activeChatId, setActiveChatId] = useState<string>('general');
   const [showChatDropdown, setShowChatDropdown] = useState(false);
 
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -66,6 +75,14 @@ export default function ResumeArchitectPage() {
           if (cachedAnalysis.bulletAnalyses.length > 0) {
             const firstExpId = cachedAnalysis.bulletAnalyses[0].experienceId;
             setActiveSection(firstExpId);
+          }
+        }
+
+        // Set initial active section for edit mode
+        if (resumeData) {
+          const sections = getResumeSections(resumeData);
+          if (sections.length > 0) {
+            setActiveSection(sections[0].id);
           }
         }
       } catch (err) {
@@ -137,6 +154,19 @@ export default function ResumeArchitectPage() {
     );
   }, []);
 
+  // Resume update handler for edit mode
+  const handleUpdateResume = useCallback(
+    async (updatedResume: Resume) => {
+      try {
+        await userService.saveResume(updatedResume);
+        setResume(updatedResume);
+      } catch (err) {
+        console.error('Error saving resume:', err);
+      }
+    },
+    [userService]
+  );
+
   const activeChat = companyChats.find((c) => c.id === activeChatId) || companyChats[0];
 
   const allBullets = analysis?.bulletAnalyses || [];
@@ -146,12 +176,13 @@ export default function ResumeArchitectPage() {
   const totalCount = allBullets.length;
   const progressPercent = totalCount > 0 ? Math.round((acceptedCount / totalCount) * 100) : 0;
 
-  const sections: { id: string; title: string; bullets: BulletAnalysis[] }[] = [];
+  // Sections for diff mode
+  const diffSections: { id: string; title: string; bullets: BulletAnalysis[] }[] = [];
   if (resume && analysis) {
     resume.workExperiences.forEach((exp) => {
       const expBullets = analysis.bulletAnalyses.filter((b) => b.experienceId === exp.id);
       if (expBullets.length > 0) {
-        sections.push({
+        diffSections.push({
           id: exp.id,
           title: `${exp.company} · ${exp.position} · ${exp.startDate.slice(0, 4)}${exp.endDate ? '–' + exp.endDate.slice(0, 4) : '–Present'}`,
           bullets: expBullets,
@@ -160,7 +191,27 @@ export default function ResumeArchitectPage() {
     });
   }
 
-  const activeSectionData = sections.find((s) => s.id === activeSection);
+  // Sections for edit mode
+  const resumeSections: ResumeSection[] = resume ? getResumeSections(resume) : [];
+
+  const activeDiffSection = diffSections.find((s) => s.id === activeSection);
+  const activeEditSection = resumeSections.find((s) => s.id === activeSection);
+
+  // Handle mode switch - update active section appropriately
+  const handleModeChange = useCallback(
+    (newMode: Mode) => {
+      setMode(newMode);
+      if (newMode === 'edit' && resume) {
+        const sections = getResumeSections(resume);
+        if (sections.length > 0) {
+          setActiveSection(sections[0].id);
+        }
+      } else if (newMode === 'diff' && analysis && analysis.bulletAnalyses.length > 0) {
+        setActiveSection(analysis.bulletAnalyses[0].experienceId);
+      }
+    },
+    [resume, analysis]
+  );
 
   if (loading) {
     return (
@@ -204,46 +255,59 @@ export default function ResumeArchitectPage() {
 
         {/* Mode Toggle */}
         <div className="flex bg-bg border border-rule rounded-sm p-0.5 gap-0.5">
-          {(['diff', 'agent'] as Mode[]).map((m) => (
+          {(['diff', 'edit', 'agent'] as Mode[]).map((m) => (
             <button
               key={m}
-              onClick={() => setMode(m)}
+              onClick={() => handleModeChange(m)}
               className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
                 mode === m ? 'bg-ink text-white' : 'text-ink-3 hover:text-ink'
               }`}
             >
-              {m === 'diff' ? 'Diff Editor' : 'Agent Mode'}
+              {m === 'diff' ? 'Diff Editor' : m === 'edit' ? 'Edit Sections' : 'Agent Mode'}
             </button>
           ))}
         </div>
 
         <div className="flex-1" />
 
-        {/* Progress */}
-        <div className="flex items-center gap-2">
-          <div className="w-24 h-1 bg-rule rounded-sm">
-            <div
-              className="h-full bg-accent-hi rounded-sm transition-all"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <span className="font-mono text-[11px] text-accent-hi font-semibold">
-            {progressPercent}%
-          </span>
-        </div>
+        {/* Export Button */}
+        <button
+          onClick={() => setShowTemplateSelector(true)}
+          className="flex items-center gap-2 bg-accent-hi text-white px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          <Download className="w-4 h-4" />
+          Export PDF
+        </button>
 
-        <span className="font-mono text-[10px] text-ink-3 tracking-wider">
-          {analysis
-            ? `ANALYZED ${new Date(analysis.analyzedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-            : 'NOT ANALYZED'}
-        </span>
+        {/* Progress (only show in diff mode) */}
+        {mode === 'diff' && (
+          <>
+            <div className="w-24 h-1 bg-rule rounded-sm">
+              <div
+                className="h-full bg-accent-hi rounded-sm transition-all"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="font-mono text-[11px] text-accent-hi font-semibold">
+              {progressPercent}%
+            </span>
+
+            <span className="font-mono text-[10px] text-ink-3 tracking-wider">
+              {analysis
+                ? `ANALYZED ${new Date(analysis.analyzedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                : 'NOT ANALYZED'}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Main Content */}
       <div className="flex-1 grid grid-cols-[200px_1fr_260px] overflow-hidden">
         {/* Section Nav Sidebar */}
         <SectionNav
-          sections={sections}
+          mode={mode}
+          sections={mode === 'diff' ? diffSections : undefined}
+          resumeSections={mode === 'edit' ? resumeSections : undefined}
           activeSection={activeSection}
           onSelectSection={setActiveSection}
           bulletStates={bulletStates}
@@ -260,7 +324,8 @@ export default function ResumeArchitectPage() {
             </div>
           )}
 
-          {!analysis && !analyzing && (
+          {/* Diff Mode Content */}
+          {mode === 'diff' && !analysis && !analyzing && (
             <div className="bg-card border border-rule p-10 text-center max-w-xl mx-auto">
               <div className="w-10 h-10 rounded-sm bg-ink mx-auto mb-4 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-accent-hi" />
@@ -279,7 +344,7 @@ export default function ResumeArchitectPage() {
             </div>
           )}
 
-          {analyzing && (
+          {mode === 'diff' && analyzing && (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <Loader2 className="w-8 h-8 text-accent-hi animate-spin mx-auto mb-4" />
@@ -289,15 +354,81 @@ export default function ResumeArchitectPage() {
             </div>
           )}
 
-          {analysis && !analyzing && activeSectionData && (
+          {mode === 'diff' && analysis && !analyzing && activeDiffSection && (
             <BulletDiffEditor
-              section={activeSectionData}
+              section={activeDiffSection}
               bulletStates={bulletStates}
               expandedBullet={expandedBullet}
               onExpand={setExpandedBullet}
               onSetBulletState={handleSetBulletState}
               flagColors={FLAG_COLORS}
             />
+          )}
+
+          {/* Edit Mode Content */}
+          {mode === 'edit' && activeEditSection && (
+            <>
+              {activeEditSection.type === 'summary' && (
+                <SummaryEditor
+                  summary={resume.summary || ''}
+                  onUpdate={(newSummary) =>
+                    handleUpdateResume({
+                      ...resume,
+                      summary: newSummary,
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }
+                />
+              )}
+              {activeEditSection.type === 'work-experience' && (
+                <WorkExperienceEditor
+                  experiences={resume.workExperiences}
+                  onUpdate={(newExperiences) =>
+                    handleUpdateResume({
+                      ...resume,
+                      workExperiences: newExperiences,
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }
+                />
+              )}
+              {activeEditSection.type === 'education' && (
+                <EducationEditor
+                  education={resume.education}
+                  onUpdate={(newEducation) =>
+                    handleUpdateResume({
+                      ...resume,
+                      education: newEducation,
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }
+                />
+              )}
+              {activeEditSection.type === 'skills' && (
+                <SkillsEditor
+                  skills={resume.skills}
+                  onUpdate={(newSkills) =>
+                    handleUpdateResume({
+                      ...resume,
+                      skills: newSkills,
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }
+                />
+              )}
+              {activeEditSection.type === 'projects' && (
+                <ProjectsEditor
+                  projects={resume.projects}
+                  onUpdate={(newProjects) =>
+                    handleUpdateResume({
+                      ...resume,
+                      projects: newProjects,
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }
+                />
+              )}
+            </>
           )}
         </main>
 
@@ -323,6 +454,11 @@ export default function ResumeArchitectPage() {
           />
         )}
       </div>
+
+      {/* Template Selector Modal */}
+      {showTemplateSelector && (
+        <TemplateSelector resume={resume} onClose={() => setShowTemplateSelector(false)} />
+      )}
     </div>
   );
 }

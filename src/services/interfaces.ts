@@ -38,6 +38,15 @@ import type {
   AcceptedChange,
   ResumeVersion,
   CoachingUserProfile,
+  ResumeTemplate,
+  PDFGenerationResult,
+  PrepSheet,
+  PrepSheetSectionId,
+  PrepSheetSection,
+  CompanyTemplate,
+  ScrapedCompanyData,
+  ParsedJobDescription,
+  CreatePrepSheetInput,
 } from '../types';
 
 /**
@@ -207,7 +216,8 @@ export interface IAssistantSessionService {
  * Handles AI-powered features and agentic workflows
  * Combines task execution, resume analysis, and assistant session management
  */
-export interface IAgentService extends ITaskExecutionService, IResumeService, IAssistantSessionService {}
+export interface IAgentService
+  extends ITaskExecutionService, IResumeService, IAssistantSessionService {}
 
 /**
  * Voice interview service interface
@@ -292,12 +302,17 @@ export interface IUserService {
   /**
    * Create interview response
    */
-  createInterviewResponse(response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<InterviewResponse>;
+  createInterviewResponse(
+    response: Omit<InterviewResponse, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
+  ): Promise<InterviewResponse>;
 
   /**
    * Update interview response
    */
-  updateInterviewResponse(id: string, response: Partial<InterviewResponse>): Promise<InterviewResponse>;
+  updateInterviewResponse(
+    id: string,
+    response: Partial<InterviewResponse>
+  ): Promise<InterviewResponse>;
 
   /**
    * Delete interview response
@@ -338,6 +353,7 @@ export interface IUserService {
 /**
  * Document Storage service interface
  * Handles document persistence across platforms
+ * @deprecated Use IPrepSheetService instead - Documents are being replaced by PrepSheets
  */
 export interface IDocumentService {
   /**
@@ -371,29 +387,196 @@ export interface IDocumentService {
   searchDocuments(query: string): Promise<Document[]>;
 }
 
+/**
+ * Prep Sheet service interface
+ * Handles prep sheet CRUD, dynamic section management, template library, and scraper integration
+ */
+export interface IPrepSheetService {
+  // CRUD operations
+  /**
+   * Get all prep sheets for the current user
+   */
+  getPrepSheets(): Promise<PrepSheet[]>;
+
+  /**
+   * Get a single prep sheet by ID
+   */
+  getPrepSheet(id: string): Promise<PrepSheet | null>;
+
+  /**
+   * Create a new prep sheet with optional autofill from templates or scraped data
+   */
+  createPrepSheet(input: CreatePrepSheetInput): Promise<PrepSheet>;
+
+  /**
+   * Update a prep sheet with partial changes
+   */
+  updatePrepSheet(id: string, updates: Partial<PrepSheet>): Promise<PrepSheet>;
+
+  /**
+   * Delete a prep sheet
+   */
+  deletePrepSheet(id: string): Promise<void>;
+
+  // Dynamic section management
+  /**
+   * Add a new section to a prep sheet (creates default empty section)
+   */
+  addSection(sheetId: string, sectionId: PrepSheetSectionId): Promise<PrepSheet>;
+
+  /**
+   * Remove a section from a prep sheet
+   */
+  removeSection(sheetId: string, sectionId: PrepSheetSectionId): Promise<PrepSheet>;
+
+  /**
+   * Update a specific section's content
+   */
+  updateSection(
+    sheetId: string,
+    sectionId: PrepSheetSectionId,
+    data: Partial<PrepSheetSection>
+  ): Promise<PrepSheet>;
+
+  // Template library
+  /**
+   * Get all available company templates (bundled + user-created)
+   */
+  getCompanyTemplates(): Promise<CompanyTemplate[]>;
+
+  /**
+   * Get a specific company template by company name
+   */
+  getCompanyTemplate(companyName: string): Promise<CompanyTemplate | null>;
+
+  /**
+   * Get list of companies with available templates/scraped data
+   */
+  getAvailableCompanies(): Promise<string[]>;
+
+  // Scraper integration
+  /**
+   * Get scraped data for a company (from bundled data or runtime refresh)
+   */
+  getScrapedCompanyData(companyName: string): Promise<ScrapedCompanyData | null>;
+
+  /**
+   * Refresh scraped data for a company (trigger runtime scraper)
+   */
+  refreshScrapedData(companyName: string): Promise<ScrapedCompanyData>;
+
+  // JD parsing
+  /**
+   * Parse a job description text to extract role, skills, responsibilities
+   */
+  parseJobDescription(jdText: string): Promise<ParsedJobDescription>;
+}
+
 export interface ICoachingService {
   getSessionData(sessionId: string): Promise<CoachingSessionData>;
 
-  addGoal(sessionId: string, input: { type: CoachingGoalType; title: string; description: string; targetMetric?: string; targetValue?: number }): Promise<CoachingGoal>;
-  updateGoal(sessionId: string, goalId: string, updates: Partial<Pick<CoachingGoal, 'status' | 'progress' | 'currentValue' | 'completedAt'>>): Promise<CoachingGoal | null>;
+  addGoal(
+    sessionId: string,
+    input: {
+      type: CoachingGoalType;
+      title: string;
+      description: string;
+      targetMetric?: string;
+      targetValue?: number;
+    }
+  ): Promise<CoachingGoal>;
+  updateGoal(
+    sessionId: string,
+    goalId: string,
+    updates: Partial<Pick<CoachingGoal, 'status' | 'progress' | 'currentValue' | 'completedAt'>>
+  ): Promise<CoachingGoal | null>;
 
-  addTodo(sessionId: string, input: { title: string; goalId?: string; description?: string; targetType?: string; targetId?: string; proposedBy: 'user' | 'agent' }): Promise<CoachingTodo>;
-  updateTodo(sessionId: string, todoId: string, updates: Partial<Pick<CoachingTodo, 'status' | 'completedAt'>>): Promise<CoachingTodo | null>;
+  addTodo(
+    sessionId: string,
+    input: {
+      title: string;
+      goalId?: string;
+      description?: string;
+      targetType?: string;
+      targetId?: string;
+      proposedBy: 'user' | 'agent';
+    }
+  ): Promise<CoachingTodo>;
+  updateTodo(
+    sessionId: string,
+    todoId: string,
+    updates: Partial<Pick<CoachingTodo, 'status' | 'completedAt'>>
+  ): Promise<CoachingTodo | null>;
 
-  proposeChange(sessionId: string, input: { todoId?: string; targetPath: string; targetType: string; operation: string; beforeValue: string; proposedValue: string; rationale: string; alternatives?: ChangeAlternative[] }): Promise<StagedChange>;
-  acceptChange(sessionId: string, changeId: string, modification?: string): Promise<AcceptedChange | null>;
+  proposeChange(
+    sessionId: string,
+    input: {
+      todoId?: string;
+      targetPath: string;
+      targetType: string;
+      operation: string;
+      beforeValue: string;
+      proposedValue: string;
+      rationale: string;
+      alternatives?: ChangeAlternative[];
+    }
+  ): Promise<StagedChange>;
+  acceptChange(
+    sessionId: string,
+    changeId: string,
+    modification?: string
+  ): Promise<AcceptedChange | null>;
   rejectChange(sessionId: string, changeId: string): Promise<StagedChange | null>;
   getPendingChanges(sessionId: string): Promise<StagedChange[]>;
 
   getChangeLog(sessionId: string): Promise<AcceptedChange[]>;
 
-  createVersion(sessionId: string, input: { label: string; trigger: string; resumeData: Resume; analysisData: ResumeAnalysis | null; score: number }): Promise<ResumeVersion>;
+  createVersion(
+    sessionId: string,
+    input: {
+      label: string;
+      trigger: string;
+      resumeData: Resume;
+      analysisData: ResumeAnalysis | null;
+      score: number;
+    }
+  ): Promise<ResumeVersion>;
   listVersions(sessionId: string): Promise<ResumeVersion[]>;
 
   getUserProfile(): Promise<CoachingUserProfile>;
   updateUserProfile(updates: Partial<CoachingUserProfile>): Promise<CoachingUserProfile>;
 
   clearSessionData(sessionId: string): Promise<void>;
+}
+
+/**
+ * PDF Generation service interface
+ * Handles LaTeX template compilation and PDF generation
+ */
+export interface IPDFService {
+  /**
+   * Get available resume templates
+   */
+  getTemplates(): Promise<ResumeTemplate[]>;
+
+  /**
+   * Generate PDF from resume using specified template
+   */
+  generatePDF(
+    resume: Resume,
+    templateId: string,
+    userProfile?: { name?: string; email?: string }
+  ): Promise<PDFGenerationResult>;
+
+  /**
+   * Open PDF in system viewer
+   */
+  openPDF(pdfPath: string): Promise<void>;
+
+  /**
+   * Get the path to the templates directory
+   */
+  getTemplatesPath(): string;
 }
 
 /**
@@ -405,5 +588,7 @@ export interface IAppServices {
   voiceInterview: IVoiceInterviewService;
   user: IUserService;
   documents: IDocumentService;
+  prepSheets: IPrepSheetService;
   coaching: ICoachingService;
+  pdf: IPDFService;
 }

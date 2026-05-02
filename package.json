@@ -31,6 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.554.0",
+    "node-latex-compiler": "^1.0.5",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
     "react": "^18.2.0",
